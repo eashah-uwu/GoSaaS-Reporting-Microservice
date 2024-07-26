@@ -1,13 +1,12 @@
 {
-    "db": {
-      "host": "localhost",
-      "port": 12345,
-      "database": "",
-      "user": "",
-      "password": ""
-    },
-    "server": {
-      "port": 3000
-    }
+  "db": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "",
+    "user": "",
+    "password": ""
+  },
+  "server": {
+    "port": 3000
   }
-  
+}

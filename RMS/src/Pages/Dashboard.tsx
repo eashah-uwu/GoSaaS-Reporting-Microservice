@@ -1,7 +1,8 @@
 import React from 'react'
 import Navbar from '../Components/Navbar'
+import Table from '../Components/Table/Table'
 
-function Dasboard() {
+function Dashboard() {
   return (
     <>
     <Navbar/>
@@ -10,4 +11,4 @@ function Dasboard() {
   )
 }
 
-export default Dasboard
+export default Dashboard

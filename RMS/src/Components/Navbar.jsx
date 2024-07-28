@@ -8,6 +8,7 @@ function Navbar() {
             <ul >
                 <li><Link className="li" to="/">Dashboard</Link></li>
                 <li><Link className="li" to="/login">Login</Link> </li>
+                <li><Link className="li" to="/application">Application</Link> </li>
             </ul>
         </div>
     );

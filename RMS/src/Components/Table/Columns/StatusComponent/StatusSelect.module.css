@@ -1,0 +1,46 @@
+.status_select_container {
+    display: inline-block;
+    position: relative;
+  }
+  
+  .status_select {
+    background-color: white;
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    font-size: 1rem;
+    border-radius: 4px;
+    appearance: none;
+    outline: none;
+    padding-right: 30px; 
+  }
+  
+  .status_active {
+    color: #4caf50;
+    background-color: white;
+  }
+  
+  .status_delete {
+    color: #f44336;
+    background-color: white;
+  }
+  
+  .status_inactive {
+    color: #ff9800;
+    background-color: white;
+  }
+  
+  .status_select::-ms-expand {
+    display: none;
+  }
+  
+  .dropdown_icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.2rem;
+    color: #000000;
+  }
+  

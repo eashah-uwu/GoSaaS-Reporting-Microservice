@@ -1,7 +1,7 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import StatusSelect from "./StatusComponent/StatusSelect";
-
+import classes from "./Columns.module.css"
 export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean) => {
   const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus);
   return Columns;

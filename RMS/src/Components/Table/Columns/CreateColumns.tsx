@@ -1,13 +1,14 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import StatusSelect from "./StatusComponent/StatusSelect";
-import classes from "./Columns.module.css"
-export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean) => {
-  const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus);
+import classes from "./Columns.module.css";
+
+export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void) => {
+  const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus, handleStatusChange);
   return Columns;
 };
 
-const createColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean): ColumnDef<any>[] => {
+const createColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void): ColumnDef<any>[] => {
   const columns: ColumnDef<any>[] = baseColumns.map((col) => ({
     accessorKey: col.accessorKey,
     header: col.header,
@@ -17,7 +18,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string }[], i
     columns.push({
       accessorKey: 'status',
       header: 'Status',
-      cell: (info:any) => <StatusSelect value={info.getValue()} />,
+      cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original.id} handleStatusChange={handleStatusChange} />,
     });
   }
 

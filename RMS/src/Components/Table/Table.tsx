@@ -3,10 +3,11 @@ import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, Ta
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
-
+import classes from "./Table.module.css"
 interface TableProps {
     data: any[];
     columns: ColumnDef<any>[];
+    
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -47,7 +48,7 @@ const Table: FC<TableProps> = ({ data, columns }) => {
     };
 
     return (
-        <>
+        <div className={classes.main_body}>
             <TableContainer component={Paper}>
                 <MuiTable sx={{ minWidth: 700 }} aria-label="customized table">
                     <TableHead>
@@ -79,16 +80,18 @@ const Table: FC<TableProps> = ({ data, columns }) => {
                     </TableBody>
                 </MuiTable>
             </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={data.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-        </>
+            <span className={classes.pagination_span} >
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={data.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+            </span>
+        </div>
     );
 };
 

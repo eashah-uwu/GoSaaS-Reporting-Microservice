@@ -23,11 +23,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(testMiddleware);
 
-// Error handling middleware
-app.use(errorHandler);
-
 // Routes
 app.use("/", indexRouter);
 app.use("/api", applicationRoutes);
+
+// Error handling middleware
+app.use(errorHandler);
 
 module.exports = app;

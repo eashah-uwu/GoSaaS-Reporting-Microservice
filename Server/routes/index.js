@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const checkDatabaseConnection = require('../Controllers/indexController');
+const checkDatabaseConnection = require("../controllers/indexController");
 
-router.get('/', checkDatabaseConnection);
+router.get("/", checkDatabaseConnection);
 
 module.exports = router;

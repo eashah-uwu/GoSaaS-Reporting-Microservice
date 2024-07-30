@@ -7,7 +7,7 @@ const config = require("config");
 require("dotenv").config();
 
 // Retrieve the port from environment variables or use default from the config
-const port = normalizePort(process.env.PORT || config.get("server.port"));
+const port = normalizePort(process.env.PORT || config.get("port"));
 app.set("port", port);
 
 const server = http.createServer(app);

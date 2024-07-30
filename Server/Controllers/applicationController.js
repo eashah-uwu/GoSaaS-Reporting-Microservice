@@ -1,3 +1,4 @@
+const { StatusCodes } = require("http-status-codes");
 const Application = require("../models/applicationModel");
 
 async function createApplication(req, res, next) {
@@ -12,7 +13,7 @@ async function createApplication(req, res, next) {
       createdBy,
       updatedBy,
     });
-    res.status(201).json({
+    res.status(StatusCodes.CREATED).json({
       message: "Application created successfully!",
       application,
     });

@@ -1,0 +1,49 @@
+/* src/components/Sidebar.module.css */
+.sidebar {
+    position: fixed;
+    top: 60px; /* Adjust this value to match the height of your navbar */
+    left: -250px;
+    width: 250px;
+    height: calc(100% - 60px); /* Adjust this value to match the height of your navbar */
+    background-color: white; /* Set background to white */
+    border: 1px solid black; /* Add black border */
+    color: black; /* Change text color to black */
+    transition: 0.3s;
+    padding: 0; /* Removed padding */
+    z-index: 1000;
+    font-family: 'Calibri', sans-serif; /* Set font to Calibri */
+  }
+  
+  .open {
+    left: 0;
+  }
+  
+  .ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0; /* Ensure no extra margin */
+  }
+  
+  .li {
+    padding: 8px 16px;
+    text-align: left;
+    border-bottom: 1px solid black; /* Add underline to list items */
+    margin: 0; /* Ensure no extra margin */
+  }
+  
+  .a {
+    color: black; /* Change link color to black */
+    text-decoration: none; /* Remove default underline */
+    display: block;
+    margin: 0; /* Ensure no extra margin */
+    padding: 0; /* Ensure no extra padding */
+  }
+  
+  .a:hover {
+    background-color: #f0f0f0; /* Change background on hover */
+  }
+  
+  .innerUl {
+    padding-left: 20px;
+  }
+  

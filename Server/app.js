@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const config = require("config");
 const testMiddleware = require("./middlewares/index");
+const errorHandler = require("./middlewares/errorMiddleware"); // Your custom error handler
 
 // Import routes
 const indexRouter = require("./routes/index");
@@ -21,6 +22,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(testMiddleware);
+
+// Error handling middleware
+app.use(errorHandler);
 
 // Routes
 app.use("/", indexRouter);

@@ -67,7 +67,7 @@ function LoginPage() {
   //     }
   // };
 
-  const handleFormSubmit = async (values, onSubmitProps) => {
+  const handleFormSubmit = async () => {
     // await login(values, onSubmitProps);
   };
 
@@ -251,7 +251,5 @@ function LoginPage() {
     </>
   );
 }
-
-export default LoginPage;
 
 export default LoginPage;

@@ -7,6 +7,7 @@ const applicationSchema = z.object({
   userID: z.number().int(),
   createdBy: z.number().int().optional(),
   updatedBy: z.number().int().optional(),
+  isDeleted: z.boolean().default(false),
 });
 
 module.exports = applicationSchema;

@@ -64,7 +64,7 @@ const updateApplication = asyncHandler(async (req, res) => {
   }
 });
 
-// Delete an application
+// Delete an application (soft delete)
 const deleteApplication = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const application = await Application.delete(id);

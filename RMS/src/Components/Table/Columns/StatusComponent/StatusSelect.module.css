@@ -17,17 +17,17 @@
   
   .status_active {
     color: #4caf50;
-    background-color: white;
+    background-color: transparent;
   }
   
   .status_delete {
     color: #f44336;
-    background-color: white;
+    background-color: transparent;
   }
   
   .status_inactive {
     color: #ff9800;
-    background-color: white;
+    background-color: transparent;
   }
   
   .status_select::-ms-expand {

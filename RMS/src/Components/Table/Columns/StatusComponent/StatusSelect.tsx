@@ -2,13 +2,17 @@ import React from "react";
 import classes from "./StatusSelect.module.css";
 interface StatusSelectProps {
     value: string;
+    rowId: string;
+    handleStatusChange: (id: string, newStatus: string) => void;
 }
 
-const StatusSelect: React.FC<StatusSelectProps> = ({ value }) => {
+const StatusSelect: React.FC<StatusSelectProps> = ({ value,rowId,handleStatusChange }) => {
     const [status, setStatus] = React.useState(value);
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setStatus(event.target.value);
+        const newStatus = event.target.value;
+        setStatus(newStatus);
+        handleStatusChange(rowId, newStatus);
     };
 
     return (

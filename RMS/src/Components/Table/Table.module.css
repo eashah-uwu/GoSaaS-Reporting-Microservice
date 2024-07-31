@@ -1,3 +1,9 @@
 .main_body{
     text-align: center;
 }
+
+
+.pagination_span{
+    float: left;
+
+}

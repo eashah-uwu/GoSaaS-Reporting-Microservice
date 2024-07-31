@@ -1,0 +1,10 @@
+{
+  "db": {
+    "host": "PGHOST",
+    "port": "PGPORT",
+    "user": "PGUSER",
+    "password": "PGPASSWORD",
+    "database": "PGDATABASE"
+  },
+  "port": "PORT"
+}

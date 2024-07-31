@@ -1,0 +1,9 @@
+{
+  "port": 8000,
+  "db": {
+    "host": "prod-db-host",
+    "user": "prod_user",
+    "password": "prod_password",
+    "database": "prod_db"
+  }
+}

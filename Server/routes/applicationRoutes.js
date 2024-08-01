@@ -14,4 +14,5 @@ router.get("/applications/:id", getApplicationById);
 router.put("/applications/:id", updateApplication);
 router.delete("/applications/:id", deleteApplication);
 
+
 module.exports = router;

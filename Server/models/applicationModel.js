@@ -5,15 +5,15 @@ class Application {
     const { name, description, isActive, userID, createdBy, updatedBy, isDeleted } = data;
     const [application] = await knex("application")
       .insert({
-        Name: name,
-        Description: description,
-        isActive: isActive,
-        UserID: userID,
-        CreatedAt: new Date(),
-        UpdatedAt: new Date(),
-        CreatedBy: createdBy,
-        UpdatedBy: updatedBy,
-        isDeleted: isDeleted,  // Use provided isDeleted value
+        name: name,
+        description: description,
+        isactive: isActive,
+        userid: userID,
+        createdat: new Date(),
+        updatedat: new Date(),
+        createdby: createdBy,
+        updatedby: updatedBy,
+        isdeleted: isDeleted,
       })
       .returning("*");
     return application;
@@ -22,26 +22,26 @@ class Application {
   static async findAll() {
     return knex("application")
       .select("*")
-      .where({ isDeleted: false });  // Filter out deleted records
+      .where({ isdeleted: false });
   }
 
   static async findById(id) {
     return knex("application")
-      .where({ ApplicationID: id, isDeleted: false })  // Filter out deleted records
+      .where({ applicationid: id, isdeleted: false })
       .first();
   }
 
   static async update(id, data) {
     const { name, description, isActive, updatedBy, isDeleted } = data;
     const [application] = await knex("application")
-      .where({ ApplicationID: id })
+      .where({ applicationid: id })
       .update({
-        Name: name,
-        Description: description,
-        isActive: isActive,
-        UpdatedAt: new Date(),
-        UpdatedBy: updatedBy,
-        isDeleted: isDeleted,  // Update isDeleted field
+        name: name,
+        description: description,
+        isactive: isActive,
+        updatedat: new Date(),
+        updatedby: updatedBy,
+        isdeleted: isDeleted,
       })
       .returning("*");
     return application;
@@ -49,8 +49,8 @@ class Application {
 
   static async delete(id) {
     const [application] = await knex("application")
-      .where({ ApplicationID: id })
-      .update({ isDeleted: true, UpdatedAt: new Date() })  // Perform soft delete
+      .where({ applicationid: id })
+      .update({ isdeleted: true, updatedat: new Date() })
       .returning("*");
     return application;
   }

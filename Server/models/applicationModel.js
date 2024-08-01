@@ -19,6 +19,9 @@ class Application {
   }
 
   static async findAll() {
+    return knex("application").select("applicationid","name","isactive","isdeleted","createdat");
+  }
+  static async searchAll() {
     return knex("application").select("*");
   }
 

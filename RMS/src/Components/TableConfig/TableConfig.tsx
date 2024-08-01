@@ -1,126 +1,124 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Box, Button } from '@mui/material';
-import Table from "../Table/Table"
-import {setColumns} from "../Table/Columns/CreateColumns"
-import classes from "./TableConfig.module.css"
-import Confirmation from "../ConfirmationDialogue/Confirmation"
-import Filter from "../Filter/Filter"
-const baseColumns = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'email', header: 'Email' },
-    { accessorKey: 'gender', header: 'Gender' },
-];
+import React, { useEffect, useState, FC } from "react";
+import { Box, Button } from "@mui/material";
+import Table from "../Table/Table";
+import { setColumns } from "../Table/Columns/CreateColumns";
+import Confirmation from "../ConfirmationDialogue/Confirmation";
+import Filter from "../Filter/Filter";
+import classes from "./TableConfig.module.css";
 
-const DATA = [
-    { id: "1", name: "a", email: "fads@gmail.com", gender: "male", status: "inactive" },
-    { id: "2", name: "b", email: "eqwebc@gmail.com", gender: "male", status: "active" },
-    { id: "3", name: "c", email: "fadsg@gmail.com", gender: "male", status: "active" },
-    { id: "4", name: "d", email: "fdsac@gmail.com", gender: "female", status: "inactive" },
-    { id: "5", name: "e", email: "rqw@gmail.com", gender: "male", status: "active" },
-    { id: "6", name: "f", email: "adfs@gmail.com", gender: "male", status: "active" },
-    { id: "7", name: "g", email: "erw@gmail.com", gender: "female", status: "active" },
-    { id: "8", name: "h", email: "gsfd@gmail.com", gender: "male", status: "active" },
-    { id: "9", name: "i", email: "rew@gmail.com", gender: "male", status: "active" },
-]
-const TableConfig = () => {
-    const [initialUsers, setInitialUsers] = useState<any[]>(DATA);
-    const [users, setUsers] = useState<any[]>(DATA);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+interface TableConfigProps {
+    data: any[];
+    includeStatus: boolean;
+    baseColumns:any[];
+}
+
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) => {
+    const [initialData, setInitialData] = useState<any[]>(data);
+    const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [selectedDataId, setSelectedDataId] = useState<string | null>(null);
     const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false);
-    const [filters, setFilters] = useState({ searchText: '', sortField: '', sortOrder: 'asc' });
-
-    const fetchUsers = async () => {
-        try {
-            const { data } = await axios.get('https://gorest.co.in/public/v2/users');
-            setUsers(data);
-            setInitialUsers(data)
-        } catch (err) {
-            setError('Failed to fetch users');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [filters, setFilters] = useState({ searchText: "", sortField: "", sortOrder: "asc" });
 
     useEffect(() => {
-        setLoading(false);
-        // fetchUsers();
-    }, []);
+        console.log("data",data)
+        setTableData(data);
+        setInitialData(data);
+    }, [data]);
+    
     useEffect(() => {
-        const isChanged = JSON.stringify(initialUsers) !== JSON.stringify(users);
-        console.log(isChanged)
+        const isChanged = JSON.stringify(initialData) !== JSON.stringify(tableData);
         setIsSaveEnabled(isChanged);
-    }, [users, initialUsers]);
+    }, [tableData, initialData]);
+
     const handleStatusChange = (id: string, newStatus: string) => {
-        if (newStatus === 'delete') {
-            setSelectedUserId(id);
+        if (newStatus === "delete") {
+            setSelectedDataId(id);
             setOpenDialog(true);
         } else {
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === id ? { ...user, status: newStatus } : user
+            setTableData((prevData) =>
+                prevData.map((dataItem) =>
+                    dataItem.applicationid === id ? { ...dataItem, status: newStatus } : dataItem
                 )
             );
         }
     };
+
     const handleDeleteConfirm = () => {
-        setUsers((prevUsers) =>
-            prevUsers.map((user) =>
-                user.id === selectedUserId ? { ...user, status: 'delete' } : user
+        setTableData((prevData) =>
+            prevData.map((dataItem) =>
+                dataItem.applicationid === selectedDataId ? { ...dataItem, status: "delete" } : dataItem
             )
         );
         setOpenDialog(false);
-        setSelectedUserId(null);
+        setSelectedDataId(null);
     };
 
     const handleDeleteCancel = () => {
         setOpenDialog(false);
-        setSelectedUserId(null);
+        setSelectedDataId(null);
     };
 
     const handleFilterChange = (filters: any) => {
         setFilters(filters);
     };
-    const includeStatus = true;
-    const Columns = setColumns(baseColumns, includeStatus, handleStatusChange);
-    const filteredUsers = users.filter(user => user.status !== 'delete')
-        .filter(user => {
-            return Object.values(user).some(value =>
-                typeof value === 'string' && value.toLowerCase().includes(filters.searchText.toLowerCase())
-            );
-        })
-        .sort((a, b) => {
-            if (!filters.sortField || filters.sortField === 'None') return 0;
-            const aValue = a[filters.sortField];
-            const bValue = b[filters.sortField];
-            if (aValue < bValue) return filters.sortOrder === 'asc' ? -1 : 1;
-            if (aValue > bValue) return filters.sortOrder === 'asc' ? 1 : -1;
-            return 0;
-        });
+
+    
+    const columns = setColumns(baseColumns, includeStatus, handleStatusChange);
+
+    // const filteredData = tableData
+    //     .filter((dataItem) => !dataItem.isdeleted)
+    //     .filter((dataItem) => {
+    //         return Object.values(dataItem).some(
+    //             (value) =>
+    //                 typeof value === "string" &&
+    //                 value.toLowerCase().includes(filters.searchText.toLowerCase())
+    //         );
+    //     })
+    //     .sort((a, b) => {
+    //         if (!filters.sortField || filters.sortField === "None") return 0;
+    //         const aValue = a[filters.sortField];
+    //         const bValue = b[filters.sortField];
+    //         if (aValue < bValue) return filters.sortOrder === "asc" ? -1 : 1;
+    //         if (aValue > bValue) return filters.sortOrder === "asc" ? 1 : -1;
+    //         return 0;
+    //     });
 
     const handleSave = async () => {
         try {
-            // Send the updated data to the backend
-            console.log(users)
-            setInitialUsers(users);
+            const updatedData = tableData.map(dataItem => ({
+                ...dataItem,
+                isactive: dataItem.status === "active",
+                isdeleted: dataItem.status === "delete"
+            }));
+            console.log("updated data",updatedData)
+            setInitialData(tableData);
             setIsSaveEnabled(false);
-            alert('Data successfully updated');
+            alert("Data successfully updated");
         } catch (error) {
-            alert('Failed to update data');
+            alert("Failed to update data");
         }
     };
+    // const filteredData = tableData
+    //     .filter((dataItem) => dataItem.status !== "delete")
+    const filteredData = tableData
+        .filter((app: any) => app.status!=="delete")
     return (
         <>
             <Box padding={6}>
-                {loading && <p>Loading...</p>}
-                {error && <p>{error}</p>}
-                <Filter columns={includeStatus ? [...baseColumns, { accessorKey: 'status', header: 'Status' }] : baseColumns} onFilterChange={handleFilterChange} />
-                {filteredUsers && <Table data={filteredUsers} columns={Columns} />}
+                {/* <Filter
+                    columns={includeStatus ? [...baseColumns, { accessorKey: "status", header: "Status" }] : baseColumns}
+                    onFilterChange={handleFilterChange}
+                /> */}
+                {filteredData && <Table data={filteredData} columns={columns} />}
                 <span className={classes.save_button_span}>
-                    <Button variant="contained" color="success" size="small" onClick={handleSave} disabled={!isSaveEnabled}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={handleSave}
+                        disabled={!isSaveEnabled}
+                    >
                         Save Changes
                     </Button>
                 </span>
@@ -130,9 +128,8 @@ const TableConfig = () => {
                 onClose={handleDeleteCancel}
                 onConfirm={handleDeleteConfirm}
                 title="Confirm Deletion"
-                message="Are you sure you want to delete this user?"
+                message="Are you sure you want to delete this application?"
             />
-
         </>
     );
 };

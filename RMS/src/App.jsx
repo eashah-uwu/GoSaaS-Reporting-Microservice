@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom"
 
 import LoginPage from "./Pages/LoginPage.tsx"
 import ApplicationPage from "./Pages/ApplicationPage.tsx"
-import Dashboard from "./Pages/Dashboard.tsx"
+import DashboardPage from "./Pages/Dashboard.tsx"
 
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
       <div className="container">
       
         <Routes>
-          <Route path="/" element={<Dashboard/>}></Route>
+          <Route path="/" element={<DashboardPage/>}></Route>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/application" element={<ApplicationPage />}></Route>
         </Routes>

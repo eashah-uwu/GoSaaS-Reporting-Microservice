@@ -1,10 +1,6 @@
 const config = require("config");
 const knex = require("knex");
-console.log(
-  config.get("db.host"),
-  config.get("db.database"),
-  config.get("db.password")
-);
+
 const dbConfig = {
   client: "pg",
   connection: {

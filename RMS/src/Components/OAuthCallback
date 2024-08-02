@@ -1,0 +1,35 @@
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { setToken } from '../State/authSlice';
+
+const OAuthCallback = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('OAuthCallback mounted');
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    console.log('Token received:', token);
+
+    if (token) {
+      dispatch(setToken(token));
+      localStorage.setItem('token', token);
+      console.log('Token set:', token);
+      navigate('/');
+    } else {
+      console.log('No token received');
+      navigate('/login');
+    }
+
+    return () => {
+      console.log('OAuthCallback unmounted');
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+};
+
+export default OAuthCallback;

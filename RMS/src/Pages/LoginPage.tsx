@@ -3,8 +3,10 @@ import { useState } from "react";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
-// import { useDispatch } from "react-redux";
-// import { setLogin } from "../state";
+import { useDispatch } from 'react-redux';
+import { setToken } from '../State/authSlice'; 
+import axios from 'axios';
+
 import {
   Box,
   Button,
@@ -28,47 +30,34 @@ const initialValuesLogin = {
 };
 
 
+
 function LoginPage() {
   const [error, setError] = useState(null);
   const [flag, setFlag] = useState(false);
-  // const dispatch = useDispatch();
-  // const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const isNonMobile = useMediaQuery("(min-width:600px)");
-  // const login = async (values, onSubmitProps) => {
-  //     try {
-  //         const loggedInResponse = await fetch(
-  //             "http://localhost:3001/auth/login",
-  //             {
-  //                 method: "POST",
-  //                 headers: { "Content-Type": "application/json" },
-  //                 body: JSON.stringify(values),
-  //             }
-  //         );
 
-  //         if (!loggedInResponse.ok) {
-  //             throw new Error("Login failed. Please check your credentials.");
-  //         }
+  const login = async (values: { email: string; password: string }, onSubmitProps: any) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/login', values);
+      const token = response.data.token;
+      dispatch(setToken(token));
+      localStorage.setItem('token', token); 
+      navigate('/');
+    } catch (error) {
+      // setError('Login failed');
+    
+    }
+  };
 
-  //         const loggedIn = await loggedInResponse.json();
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:3000/api/auth/google';
+  };
 
-  //         onSubmitProps.resetForm();
-
-  //         dispatch(
-  //             setLogin({
-  //                 user: loggedIn.user,
-  //                 token: loggedIn.token,
-  //             })
-  //         );
-  //         navigate("/community");
-  //     } catch (error) {
-  //         console.error("Login error:", error.message);
-
-  //         setError(error.message);
-  //     }
-  // };
-
-  const handleFormSubmit = async () => {
-    // await login(values, onSubmitProps);
+  const handleFormSubmit = async (values: { email: string; password: string }, onSubmitProps: any) => {
+    await login(values, onSubmitProps);
   };
 
   return (
@@ -101,6 +90,7 @@ function LoginPage() {
         <Button
           fullWidth
           type="submit"
+          onClick={handleGoogleLogin}
           sx={{
             m: "1rem 0",
             mt: "3rem",

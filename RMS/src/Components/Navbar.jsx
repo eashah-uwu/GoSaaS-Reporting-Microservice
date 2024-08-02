@@ -2,12 +2,24 @@ import React, { useState } from 'react';
 import styles from './Navbar.module.css';
 import logo from '../Assets/logo.png';
 import Sidebar from './Sidebar'; // Import Sidebar component
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearToken } from '../State/authSlice';
+
 
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for toggling sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen); // Toggle sidebar state
+  };
+  const token = useSelector((state) => state.auth.token);
+   
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    dispatch(clearToken());
+    navigate('/login'); 
   };
 
     return (
@@ -28,8 +40,11 @@ const Navbar = () => {
       <Sidebar isOpen={isSidebarOpen} /> {/* Sidebar component */}
             <ul >
                 <li><Link className="li" to="/">Dashboard</Link></li>
-                <li><Link className="li" to="/login">Login</Link> </li>
+                {!token &&
+                <li><Link className="li" to="/login">Login</Link> </li>}
                 <li><Link className="li" to="/application">Application</Link> </li>
+                {token &&
+                <li><Link className="li" onClick={handleLogout}>Logout</Link></li>}
             </ul>
             </div>
 

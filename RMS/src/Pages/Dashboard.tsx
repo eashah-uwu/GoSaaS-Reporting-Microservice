@@ -6,8 +6,6 @@ function DashboardPage() {
   return (
     <>
       <Navbar />
-      <></>
-      <div>Dashboard</div>
       <Dashboard/>
     </>
   );

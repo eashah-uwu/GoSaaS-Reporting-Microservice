@@ -76,17 +76,6 @@ const Table: FC<TableProps> = ({ data, columns }) => {
                     </TableBody>
                 </MuiTable>
             </TableContainer>
-            <span className={classes.pagination_span}>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={data.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </span>
         </div>
     );
 };

@@ -19,10 +19,7 @@ class Application {
   }
 
   static async findAll() {
-    return knex("application").select("applicationid","name","isactive","isdeleted","createdat");
-  }
-  static async searchAll() {
-    return knex("application").select("*");
+    return knex("application").select("applicationid", "name", "isactive", "isdeleted", "createdat");
   }
 
   static async findById(id) {
@@ -51,6 +48,52 @@ class Application {
       .returning("*");
     return application;
   }
+  static async paginate({ offset, limit }) {
+    return knex("application")
+      .select("applicationid", 
+              "name", 
+              "isactive",
+              "isdeleted", 
+              knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
+      .where("isdeleted", false)
+      .offset(offset)
+      .limit(limit);
+  }
+
+  static async countAll() {
+    const [count] = await knex("application")
+      .count({ count: "*" })
+      .where("isdeleted", false);
+    return count.count;
+  }
+
+  static async search({ query, offset, limit }) {
+    const results = await knex("application")
+      .select("applicationid", "name", "isactive", "isdeleted", knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
+      .where("isdeleted", false)
+      .andWhere((builder) => {
+        builder
+          .where("name", "ilike", `%${query}%`)
+          .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
+      })
+      .offset(offset)
+      .limit(limit);
+    return results;
+  }
+
+  static async countSearchResults(query) {
+    const [count] = await knex("application")
+      .count({ count: "*" })
+      .where("isdeleted", false)
+      .andWhere((builder) => {
+        builder
+          .where("name", "ilike", `%${query}%`)
+          .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
+      });
+    return count.count;
+  }
+
+
 }
 
 module.exports = Application;

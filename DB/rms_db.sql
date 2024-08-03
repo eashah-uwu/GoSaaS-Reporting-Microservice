@@ -201,6 +201,7 @@ select * from application a
 
 select * from "connection" c 
 
+
 SELECT * FROM "application" WHERE isDeleted = FALSE;
 
 SELECT column_name, data_type

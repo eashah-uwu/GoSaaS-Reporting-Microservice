@@ -1,6 +1,5 @@
 const config = require("config");
 const knex = require("knex");
-
 const dbConfig = {
   client: "pg",
   connection: {

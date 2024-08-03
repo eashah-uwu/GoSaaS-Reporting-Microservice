@@ -39,6 +39,10 @@ CREATE TABLE Application (
     FOREIGN KEY (UserID) REFERENCES "User"(UserID)
 );
 
+ALTER TABLE Application
+ADD COLUMN isDeleted BOOLEAN DEFAULT FALSE;
+
+
 CREATE TABLE Connection (
     ConnectionID SERIAL PRIMARY KEY,
     Alias VARCHAR(255),
@@ -192,5 +196,16 @@ VALUES
 (NOW(), 'Update', 'Updated application details'),
 (NOW(), 'Delete', 'Deleted a connection');
 
+
+select * from application a 
+
+select * from "connection" c 
+
+
+SELECT * FROM "application" WHERE isDeleted = FALSE;
+
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'application';
 
 

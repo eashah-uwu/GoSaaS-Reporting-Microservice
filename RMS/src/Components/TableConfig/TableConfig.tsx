@@ -3,7 +3,6 @@ import { Box, Button } from "@mui/material";
 import Table from "../Table/Table";
 import { setColumns } from "../Table/Columns/CreateColumns";
 import Confirmation from "../ConfirmationDialogue/Confirmation";
-import Filter from "../Filter/Filter";
 import classes from "./TableConfig.module.css";
 
 interface TableConfigProps {
@@ -18,8 +17,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) 
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [selectedDataId, setSelectedDataId] = useState<string | null>(null);
     const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false);
-    const [filters, setFilters] = useState({ searchText: "", sortField: "", sortOrder: "asc" });
-
+ 
     useEffect(() => {
         console.log("data",data)
         setTableData(data);
@@ -58,32 +56,8 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) 
         setOpenDialog(false);
         setSelectedDataId(null);
     };
-
-    const handleFilterChange = (filters: any) => {
-        setFilters(filters);
-    };
-
     
     const columns = setColumns(baseColumns, includeStatus, handleStatusChange);
-
-    // const filteredData = tableData
-    //     .filter((dataItem) => !dataItem.isdeleted)
-    //     .filter((dataItem) => {
-    //         return Object.values(dataItem).some(
-    //             (value) =>
-    //                 typeof value === "string" &&
-    //                 value.toLowerCase().includes(filters.searchText.toLowerCase())
-    //         );
-    //     })
-    //     .sort((a, b) => {
-    //         if (!filters.sortField || filters.sortField === "None") return 0;
-    //         const aValue = a[filters.sortField];
-    //         const bValue = b[filters.sortField];
-    //         if (aValue < bValue) return filters.sortOrder === "asc" ? -1 : 1;
-    //         if (aValue > bValue) return filters.sortOrder === "asc" ? 1 : -1;
-    //         return 0;
-    //     });
-
     const handleSave = async () => {
         try {
             const updatedData = tableData.map(dataItem => ({
@@ -99,17 +73,11 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) 
             alert("Failed to update data");
         }
     };
-    // const filteredData = tableData
-    //     .filter((dataItem) => dataItem.status !== "delete")
     const filteredData = tableData
         .filter((app: any) => app.status!=="delete")
     return (
         <>
             <Box padding={6}>
-                {/* <Filter
-                    columns={includeStatus ? [...baseColumns, { accessorKey: "status", header: "Status" }] : baseColumns}
-                    onFilterChange={handleFilterChange}
-                /> */}
                 {filteredData && <Table data={filteredData} columns={columns} />}
                 <span className={classes.save_button_span}>
                     <Button

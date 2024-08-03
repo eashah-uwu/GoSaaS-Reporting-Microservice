@@ -94,26 +94,26 @@ const paginateApplications = asyncHandler(async (req, res) => {
 });
 
 const searchApplications = asyncHandler(async (req, res) => {
-  
-  const { query = "", page = 1, pageSize = 10 } = req.query;
+  const { query = "", page = 1, pageSize = 10, filters = {}, sortField = "", sortOrder = "asc" } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
   try {
-    const [applications, total] = await Promise.all([
-      Application.search({ query, offset, limit: parseInt(pageSize) }),
-      Application.countSearchResults(query)
-    ]);
-    logger.info("Searched applications retrieved", { applications });
-    res.status(StatusCodes.OK).json({
-      data: applications,
-      total,
-      page: parseInt(page),
-      pageSize: parseInt(pageSize)
-    });
+      const [applications, total] = await Promise.all([
+          Application.search({ query, offset, limit: parseInt(pageSize), filters, sortField, sortOrder }),
+          Application.countSearchResults(query, filters)
+      ]);
+      logger.info("Searched applications retrieved", { applications });
+      res.status(StatusCodes.OK).json({
+          data: applications,
+          total,
+          page: parseInt(page),
+          pageSize: parseInt(pageSize)
+      });
   } catch (error) {
-    logger.error("Error retrieving searched applications", { error });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
+      logger.error("Error retrieving searched applications", { error });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
   }
 });
+
 
 module.exports = {
   createApplication,

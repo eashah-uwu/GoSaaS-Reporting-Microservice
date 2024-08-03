@@ -10,6 +10,7 @@ const errorHandler = require("./middlewares/errorMiddleware"); // Your custom er
 // Import routes
 const indexRouter = require("./routes/index");
 const applicationRoutes = require("./routes/applicationRoutes");
+const connectionRoutes = require("./routes/connectionRoutes"); // Import connection routes
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(testMiddleware);
 // Routes
 app.use("/", indexRouter);
 app.use("/api", applicationRoutes);
+app.use("/api", connectionRoutes); // Use connection routes
 
 // Error handling middleware
 app.use(errorHandler);

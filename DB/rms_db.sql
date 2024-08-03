@@ -31,6 +31,7 @@ CREATE TABLE Application (
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
     isActive BOOLEAN DEFAULT TRUE,
+    IsDeleted BOOLEAN DEFAULT FALSE,
     UserID INT NOT NULL,
     CreatedAt TIMESTAMP NOT NULL,
     UpdatedAt TIMESTAMP,

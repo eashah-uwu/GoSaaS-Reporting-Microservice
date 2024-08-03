@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, MenuItem, Select, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { Box, MenuItem, Select, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
 
 interface FilterProps {
     columns: { accessorKey: string; header: string }[];
@@ -7,23 +7,23 @@ interface FilterProps {
 }
 
 const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
-    const [searchText, setSearchText] = useState('');
     const [sortField, setSortField] = useState('None');
     const [sortOrder, setSortOrder] = useState('asc');
-
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(event.target.value);
-        onFilterChange({ searchText: event.target.value, sortField, sortOrder });
-    };
+    const [status, setStatus] = useState('All');
 
     const handleSortFieldChange = (event: SelectChangeEvent<string>) => {
         setSortField(event.target.value);
-        onFilterChange({ searchText, sortField: event.target.value, sortOrder });
+        onFilterChange({sortField: event.target.value, sortOrder, status });
     };
 
     const handleSortOrderChange = (event: SelectChangeEvent<string>) => {
         setSortOrder(event.target.value);
-        onFilterChange({ searchText, sortField, sortOrder: event.target.value });
+        onFilterChange({sortField, sortOrder: event.target.value, status });
+    };
+
+    const handleStatusChange = (event: SelectChangeEvent<string>) => {
+        setStatus(event.target.value);
+        onFilterChange({sortField, sortOrder, status: event.target.value });
     };
 
     return (
@@ -53,17 +53,22 @@ const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
                     <MenuItem value="desc">Descending</MenuItem>
                 </Select>
             </FormControl>
-            
-            <TextField
-                label="Search"
-                variant="outlined"
-                value={searchText}
-                onChange={handleSearchChange}
-                size="small"
-                sx={{ ml: 2 }}
-            />
+
+            <FormControl variant="outlined" size="small" sx={{ ml: 2 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                    value={status}
+                    onChange={handleStatusChange}
+                    label="Status"
+                >
+                    <MenuItem value="All">All</MenuItem>
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     );
 };
+
 
 export default Filter;

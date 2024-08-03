@@ -3,7 +3,7 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import OAuthCallback from './Components/OAuthCallback';
 import LoginPage from "./Pages/LoginPage.tsx"
 import ApplicationPage from "./Pages/ApplicationPage.tsx"
-import Dashboard from "./Pages/Dashboard.tsx"
+import DashboardPage from "./Pages/Dashboard.tsx"
 
 
 function App() {

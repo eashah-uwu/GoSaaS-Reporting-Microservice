@@ -28,9 +28,7 @@ const getConnectionById = asyncHandler(async (req, res) => {
   const connection = await Connection.findById(id);
   if (!connection) {
     logger.warn("Connection not found", { id });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Connection not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Connection not found" });
   }
   logger.info("Retrieved connection by ID", { id, connection });
   res.status(StatusCodes.OK).json(connection);
@@ -43,9 +41,7 @@ const updateConnection = asyncHandler(async (req, res) => {
   const connection = await Connection.update(id, data);
   if (!connection) {
     logger.warn("Connection not found for update", { id });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Connection not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Connection not found" });
   }
   logger.info("Connection updated successfully", { id, connection });
   res.status(StatusCodes.OK).json({

@@ -9,13 +9,14 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 
 const testMiddleware = require("./middlewares/index");
-const errorHandler = require("./middlewares/errorMiddleware"); // Your custom error handler
+const errorHandler = require("./middlewares/errorMiddleware"); 
 
 // Import routes
 const indexRouter = require("./routes/index");
 const applicationRoutes = require("./routes/applicationRoutes");
 const authRoutes = require("./routes/auth");
 const connectionRoutes = require("./routes/connectionRoutes"); // Import connection routes
+const destinationRoutes = require("./routes/destinationRoutes"); // Import destination routes
 
 const app = express();
 
@@ -49,7 +50,9 @@ app.use(testMiddleware);
 // Routes
 app.use("/", indexRouter);
 app.use("/api", applicationRoutes);
+app.use("/auth", authRoutes);
 app.use("/api", connectionRoutes);
+app.use("/api", destinationRoutes); 
 
 // Error handling middleware
 app.use(errorHandler);

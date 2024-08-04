@@ -3,11 +3,11 @@ import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, Ta
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
-import classes from "./Table.module.css"
+import classes from "./Table.module.css";
+
 interface TableProps {
     data: any[];
     columns: ColumnDef<any>[];
-    
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -38,6 +38,7 @@ const Table: FC<TableProps> = ({ data, columns }) => {
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
+
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
     };
@@ -52,26 +53,21 @@ const Table: FC<TableProps> = ({ data, columns }) => {
             <TableContainer component={Paper}>
                 <MuiTable sx={{ minWidth: 700 }} aria-label="customized table">
                     <TableHead>
-                        {getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <StyledTableCell key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )}
+                        {getHeaderGroups().map((headerGroup,index) => (
+                            <TableRow key={index}>
+                                {headerGroup.headers.map((header,index) => (
+                                    <StyledTableCell key={index}>
+                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </StyledTableCell>
                                 ))}
                             </TableRow>
                         ))}
                     </TableHead>
                     <TableBody>
-                        {getRowModel().rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                            <StyledTableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
+                        {getRowModel().rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row,index) => (
+                            <StyledTableRow key={index}>
+                                {row.getVisibleCells().map((cell,index) => (
+                                    <TableCell key={index}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </TableCell>
                                 ))}
@@ -80,17 +76,6 @@ const Table: FC<TableProps> = ({ data, columns }) => {
                     </TableBody>
                 </MuiTable>
             </TableContainer>
-            <span className={classes.pagination_span} >
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={data.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </span>
         </div>
     );
 };

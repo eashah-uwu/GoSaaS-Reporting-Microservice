@@ -3,7 +3,7 @@ const errorHandler = require('../middlewares/errorMiddleware');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const { loginSchema } = require('../schema/authSchema');
+const { loginSchema } = require('../schemas/authSchema');
 
 const login = async (req, res, next) => {
 

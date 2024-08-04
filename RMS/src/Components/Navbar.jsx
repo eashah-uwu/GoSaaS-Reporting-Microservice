@@ -5,6 +5,7 @@ import Sidebar from './Sidebar'; // Import Sidebar component
 import { Link, useNavigate} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearToken } from '../State/authSlice';
+import { LogoutOutlined } from '@mui/icons-material';
 
 
 const Navbar = () => {
@@ -23,6 +24,7 @@ const Navbar = () => {
   };
 
     return (
+      <>
         <div className="nav">
             <nav className={styles.navbar}>
         <div className={styles.navbarLeft}>
@@ -32,22 +34,33 @@ const Navbar = () => {
           </button>
         </div>
         <div className={styles.navbarRight}>
-          <button className={styles.iconButton}>&#128276;</button> {/* Bell icon */}
-          <button className={styles.iconButton}>&#128100;</button> {/* User icon */}
-          <button className={styles.dropdownButton}>&#9660;</button> {/* Down arrow */}
+          {/* <button className={styles.iconButton}>&#128276;</button> {/* Bell icon */}
+          {/* <button className={styles.iconButton}>&#128100;</button> User icon
+          <button className={styles.dropdownButton}>&#9660; */} 
+         
+            {/* </button> Down arrow */}
+            {token &&
+          <LogoutOutlined
+          onClick={handleLogout}
+          sx={{
+            "&:hover": {
+              cursor: "pointer",
+            }
+          }}
+        />
+}
+        
         </div>
       </nav>
       <Sidebar isOpen={isSidebarOpen} /> {/* Sidebar component */}
             <ul >
-                <li><Link className="li" to="/">Dashboard</Link></li>
-                {!token &&
-                <li><Link className="li" to="/login">Login</Link> </li>}
-                <li><Link className="li" to="/application">Application</Link> </li>
-                {token &&
-                <li><Link className="li" onClick={handleLogout}>Logout</Link></li>}
+               
+            
+           
+                
             </ul>
             </div>
-
+            </>
   );
 };
 

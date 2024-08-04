@@ -210,3 +210,15 @@ FROM information_schema.columns
 WHERE table_name = 'application';
 
 
+ALTER TABLE "User"
+ADD CONSTRAINT email_unic UNIQUE (email);
+
+ALTER TABLE "User"
+ADD COLUMN name VARCHAR(255);
+
+select * from "User"  ;
+
+
+INSERT INTO "User" (email, password, name, createdat) 
+VALUES ('eashaheb11@gmail.com', 'password4', 'Eashah', NOW());
+

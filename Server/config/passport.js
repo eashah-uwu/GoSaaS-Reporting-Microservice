@@ -32,10 +32,9 @@ async (accessToken, refreshToken, profile, done) => {
 
 passport.serializeUser((user, done) => {
   try {
-    console.log("Serializing user:", user);
     logger.info('Serializing user:', user);
     done(null, user.userid); // Serialize the user ID into the session
-    console.log("Serialized user ID:", user.userid);
+   
   } catch (error) {
     logger.error('Error serializing user:', error);
     done(error, null);
@@ -43,18 +42,18 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-    console.log("Deserializing user ID:", id);
+   
     try {
       const user = await User.findById(id);
       if (!user) {
-        console.error("User not found:", id);
+        logger.warn('User not found for ID:', id);
         return done(new Error("User not found"), null);
       }
-      console.log("Deserialized user:", user);
+      logger.info('Deserializing user:', user);
       done(null, user);
 
     } catch (error) {
-      console.error("Deserialization error:", error);
+      logger.error('Error deserializing user:', error);
       done(error, null);
     }
   });

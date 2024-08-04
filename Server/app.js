@@ -35,10 +35,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log("Request Session:", req.session);
-  next();
-});
 
 app.use(passport.initialize());
 
@@ -50,6 +46,7 @@ app.use(testMiddleware);
 app.use("/", indexRouter);
 app.use("/api", applicationRoutes);
 app.use("/api", connectionRoutes);
+app.use("/api/auth", authRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

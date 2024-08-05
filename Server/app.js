@@ -1,7 +1,7 @@
 const express = require("express");
 const config = require("config");
 require("dotenv").config();
-require("express-async-errors");
+//require("express-async-errors");
 const checkDatabaseConnection = require("./startup/checkDatabaseConnection");
 
 const session = require("express-session");

@@ -2,6 +2,8 @@ const Application = require("../models/applicationModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const applicationSchema = require("../schemas/applicationSchemas");
+const config = require("config");
+require("dotenv").config();
 
 const createApplication = async (req, res) => {
   // Validate and parse request body using applicationSchema
@@ -22,15 +24,31 @@ const createApplication = async (req, res) => {
   logger.info("Application created successfully", { application });
   res.status(StatusCodes.CREATED).json({
     message: "Application created successfully!",
-    application,
-  });
+    application:{applicationid:application.applicationid,createdat:application.createdat,isactive:application.isactive,isdeleted:application.isdeleted,name:application.name,status:"active"}
+});
 };
 
-// Get all applications
-const getAllApplications = async (req, res) => {
-  const applications = await Application.findAll();
-  logger.info("Retrieved all applications", { applications });
-  res.status(StatusCodes.OK).json(applications);
+// Get applications
+const getApplications = async (req, res) => {
+  const { query = config.get("query"), page = config.get("page"), pageSize = config.get("pageSize"), filters = config.get("filters") } = req.query;
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [applications, total] = await Promise.all([
+    Application.find({
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Application.countSearchResults(query, filters),
+  ]);
+
+  logger.info("Searched applications retrieved", { applications });
+  res.status(StatusCodes.OK).json({
+    data: applications,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 // Get application by ID
@@ -84,43 +102,12 @@ const deleteApplication = async (req, res) => {
     .json({ message: "Application deleted successfully!" });
 };
 
-const getFilteredApplications = async (req, res) => {
-  const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
-  console.log(
-    "query",
-    query,
-    "page",
-    page,
-    "pageSize",
-    pageSize,
-    "filters",
-    filters
-  );
-  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
-  const [applications, total] = await Promise.all([
-    Application.filter({
-      query,
-      offset,
-      limit: parseInt(pageSize, 10),
-      filters,
-    }),
-    Application.countSearchResults(query, filters),
-  ]);
 
-  logger.info("Searched applications retrieved", { applications });
-  res.status(StatusCodes.OK).json({
-    data: applications,
-    total,
-    page: parseInt(page, 10),
-    pageSize: parseInt(pageSize, 10),
-  });
-};
 
 module.exports = {
   createApplication,
-  getAllApplications,
+  getApplications,
   getApplicationById,
   updateApplication,
   deleteApplication,
-  getFilteredApplications,
 };

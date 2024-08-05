@@ -18,7 +18,7 @@ const Dashboard = () => {
     const fetchApplications = async (page = 1, pageSize = 10, query = "", filters = {}) => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`http://localhost:3000/api/applications/filter`, {
+            const { data } = await axios.get(`http://localhost:3000/api/applications`, {
                 params: { page, pageSize, query, filters }
             });
             const processedData = data.data.map((app: any) => ({

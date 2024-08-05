@@ -5,12 +5,13 @@ class Application {
     const {
       name,
       description,
-      isactive,
+      isactive = true,
       userid,
-      createdby,
-      updatedby,
-      isdeleted,
+      createdby = userid,
+      updatedby = userid,
+      isdeleted = false,
     } = data;
+
     const [application] = await knex("application")
       .insert({
         name: name,
@@ -24,14 +25,25 @@ class Application {
         isdeleted: isdeleted,
       })
       .returning("*");
-    return application;
+
+    const [formattedApplication] = await knex("application")
+      .select(
+        'applicationid',
+        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`),
+        'isactive',
+        'isdeleted',
+        'name'
+      )
+      .where('applicationid', application.applicationid);
+
+    return formattedApplication;
   }
 
   static async findAll() {
     return knex("application").select("*").where({ isdeleted: false });
   }
   static async findByName(name) {
-    return db("application").where({ name }).first();
+    return knex("application").where({ name }).first();
   }
 
   static async findById(id) {
@@ -73,7 +85,7 @@ class Application {
     return count;
   }
 
-  static async filter({ query, offset, limit, filters = {} }) {
+  static async find({ query, offset, limit, filters = {} }) {
     let baseQuery = knex("application")
       .select(
         "applicationid",

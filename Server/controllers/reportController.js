@@ -1,10 +1,9 @@
 const Report = require("../models/reportModel");
 const { StatusCodes } = require("http-status-codes");
-const asyncHandler = require("express-async-handler");
 const logger = require("../logger");
 const { reportSchema } = require("../schemas/reportSchemas");
 
-const createReport = asyncHandler(async (req, res) => {
+const createReport = async (req, res) => {
   // Validate and parse request body using reportSchema
   const data = reportSchema.parse(req.body);
 
@@ -16,15 +15,15 @@ const createReport = asyncHandler(async (req, res) => {
     message: "Report created successfully!",
     report,
   });
-});
+};
 
-const getAllReports = asyncHandler(async (req, res) => {
+const getAllReports = async (req, res) => {
   const reports = await Report.findAll();
   logger.info("Retrieved all reports", { reports });
   res.status(StatusCodes.OK).json(reports);
-});
+};
 
-const getReportById = asyncHandler(async (req, res) => {
+const getReportById = async (req, res) => {
   const { id } = req.params;
   const reportId = parseInt(id, 10);
 
@@ -44,9 +43,9 @@ const getReportById = asyncHandler(async (req, res) => {
   }
   logger.info("Retrieved report by ID", { id, report });
   res.status(StatusCodes.OK).json(report);
-});
+};
 
-const updateReport = asyncHandler(async (req, res) => {
+const updateReport = async (req, res) => {
   const { id } = req.params;
   const reportId = parseInt(id, 10);
 
@@ -71,9 +70,9 @@ const updateReport = asyncHandler(async (req, res) => {
     message: "Report updated successfully!",
     report,
   });
-});
+};
 
-const deleteReport = asyncHandler(async (req, res) => {
+const deleteReport = async (req, res) => {
   const { id } = req.params;
   const reportId = parseInt(id, 10);
 
@@ -87,9 +86,9 @@ const deleteReport = asyncHandler(async (req, res) => {
   await Report.delete(reportId);
   logger.info("Report deleted successfully", { id });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
-});
+};
 
-const paginateReports = asyncHandler(async (req, res) => {
+const paginateReports = async (req, res) => {
   const { page = 1, pageSize = 10 } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
@@ -105,9 +104,9 @@ const paginateReports = asyncHandler(async (req, res) => {
     page: parseInt(page),
     pageSize: parseInt(pageSize),
   });
-});
+};
 
-const searchReports = asyncHandler(async (req, res) => {
+const searchReports = async (req, res) => {
   const {
     query = "",
     page = 1,
@@ -137,7 +136,7 @@ const searchReports = asyncHandler(async (req, res) => {
     page: parseInt(page),
     pageSize: parseInt(pageSize),
   });
-});
+};
 
 module.exports = {
   createReport,

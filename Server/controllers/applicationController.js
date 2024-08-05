@@ -1,11 +1,9 @@
 const Application = require("../models/applicationModel");
 const { StatusCodes } = require("http-status-codes");
-const asyncHandler = require("express-async-handler");
-//use express-async-errors instead of express-async-handler
 const logger = require("../logger");
 const applicationSchema = require("../schemas/applicationSchemas");
 
-const createApplication = asyncHandler(async (req, res) => {
+const createApplication = async (req, res) => {
   // Validate and parse request body using applicationSchema
   const data = applicationSchema.parse(req.body);
 
@@ -26,17 +24,17 @@ const createApplication = asyncHandler(async (req, res) => {
     message: "Application created successfully!",
     application,
   });
-});
+};
 
 // Get all applications
-const getAllApplications = asyncHandler(async (req, res) => {
+const getAllApplications = async (req, res) => {
   const applications = await Application.findAll();
   logger.info("Retrieved all applications", { applications });
   res.status(StatusCodes.OK).json(applications);
-});
+};
 
 // Get application by ID
-const getApplicationById = asyncHandler(async (req, res) => {
+const getApplicationById = async (req, res) => {
   const { id } = req.params;
   const application = await Application.findById(id);
   if (!application) {
@@ -47,10 +45,10 @@ const getApplicationById = asyncHandler(async (req, res) => {
   }
   logger.info("Retrieved application by ID", { id, application });
   res.status(StatusCodes.OK).json(application);
-});
+};
 
 // Update an application
-const updateApplication = asyncHandler(async (req, res) => {
+const updateApplication = async (req, res) => {
   const { id } = req.params;
   console.log(req.body);
   // Validate and parse the request body
@@ -68,10 +66,10 @@ const updateApplication = asyncHandler(async (req, res) => {
     message: "Application updated successfully!",
     application,
   });
-});
+};
 
 // Delete an application (soft delete)
-const deleteApplication = asyncHandler(async (req, res) => {
+const deleteApplication = async (req, res) => {
   const { id } = req.params;
   const application = await Application.delete(id);
   if (!application) {
@@ -84,9 +82,9 @@ const deleteApplication = asyncHandler(async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json({ message: "Application deleted successfully!" });
-});
+};
 
-const getFilteredApplications = asyncHandler(async (req, res) => {
+const getFilteredApplications = async (req, res) => {
   const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
   console.log(
     "query",
@@ -116,7 +114,7 @@ const getFilteredApplications = asyncHandler(async (req, res) => {
     page: parseInt(page, 10),
     pageSize: parseInt(pageSize, 10),
   });
-});
+};
 
 module.exports = {
   createApplication,

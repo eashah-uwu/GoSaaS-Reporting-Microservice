@@ -31,7 +31,7 @@ class Application {
     return knex("application").select("*").where({ isdeleted: false });
   }
   static async findByName(name) {
-    return db("applications").where({ name }).first();
+    return db("application").where({ name }).first();
   }
 
   static async findById(id) {

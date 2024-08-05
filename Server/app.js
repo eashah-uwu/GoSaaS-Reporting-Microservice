@@ -1,6 +1,8 @@
 const express = require("express");
 const config = require("config");
 require("dotenv").config();
+require("express-async-errors");
+
 const session = require("express-session");
 const passport = require("./config/passport");
 const path = require("path");
@@ -49,9 +51,8 @@ app.use("api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api", destinationRoutes);
-app.use("/api", reportRoutes);
-
+app.use("/api/destinations", destinationRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

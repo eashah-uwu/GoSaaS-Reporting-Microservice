@@ -6,17 +6,15 @@ const {
   getApplicationById,
   updateApplication,
   deleteApplication,
-  paginateApplications,
-  searchApplications
+  getFilteredApplications
 } = require("../controllers/applicationController");
 
-router.post("/applications", createApplication);
-router.get("/applications", getAllApplications);
-router.get("/applications/search", searchApplications);
-router.get("/applications/paginate", paginateApplications);
-router.get("/applications/:id", getApplicationById);
-router.put("/applications/:id", updateApplication);
-router.delete("/applications/:id", deleteApplication);
+router.post("/", createApplication);
+router.get("/", getAllApplications);
+router.get("/filter", getFilteredApplications);
+router.get("/:id", getApplicationById);
+router.put("/:id", updateApplication);
+router.delete("/:id", deleteApplication);
 
 
 module.exports = router;

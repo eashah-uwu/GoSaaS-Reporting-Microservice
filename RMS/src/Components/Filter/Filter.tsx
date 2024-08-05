@@ -13,17 +13,17 @@ const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
 
     const handleSortFieldChange = (event: SelectChangeEvent<string>) => {
         setSortField(event.target.value);
-        onFilterChange({sortField: event.target.value, sortOrder, status });
+        onFilterChange({ sortField: event.target.value, sortOrder, status });
     };
 
     const handleSortOrderChange = (event: SelectChangeEvent<string>) => {
         setSortOrder(event.target.value);
-        onFilterChange({sortField, sortOrder: event.target.value, status });
+        onFilterChange({ sortField, sortOrder: event.target.value, status });
     };
 
     const handleStatusChange = (event: SelectChangeEvent<string>) => {
         setStatus(event.target.value);
-        onFilterChange({sortField, sortOrder, status: event.target.value });
+        onFilterChange({ sortField, sortOrder, status: event.target.value });
     };
 
     return (
@@ -41,7 +41,7 @@ const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
                     ))}
                 </Select>
             </FormControl>
-            
+
             <FormControl variant="outlined" size="small" sx={{ ml: 2 }}>
                 <InputLabel>Order</InputLabel>
                 <Select
@@ -69,6 +69,5 @@ const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
         </Box>
     );
 };
-
 
 export default Filter;

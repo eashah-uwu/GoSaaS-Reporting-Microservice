@@ -13,9 +13,9 @@ function App() {
       <div className="container">
         <Routes>
         <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<DashboardPage/>} />
         <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<DashboardPage/>} />
               <Route path="/application" element={<ApplicationPage />} />
             </Route>
         </Routes>

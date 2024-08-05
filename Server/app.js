@@ -2,6 +2,7 @@ const express = require("express");
 const config = require("config");
 require("dotenv").config();
 require("express-async-errors");
+const checkDatabaseConnection = require("./startup/checkDatabaseConnection");
 
 const session = require("express-session");
 const passport = require("./config/passport");
@@ -56,5 +57,16 @@ app.use("/api/reports", reportRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
+
+const startServer = async () => {
+  const dbConnected = await checkDatabaseConnection();
+
+  if (!dbConnected) {
+    logger.error("Failed to connect to the database. Exiting...");
+    process.exit(1); // Exit the application with failure
+  }
+};
+
+startServer();
 
 module.exports = app;

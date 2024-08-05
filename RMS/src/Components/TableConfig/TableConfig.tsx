@@ -9,9 +9,10 @@ interface TableConfigProps {
     data: any[];
     includeStatus: boolean;
     baseColumns:any[];
+    pageSize:number;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -78,7 +79,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns }) 
     return (
         <>
             <Box padding={6}>
-                {filteredData && <Table data={filteredData} columns={columns} />}
+                {filteredData && <Table data={filteredData} columns={columns} pageSize={pageSize}/>}
                 <span className={classes.save_button_span}>
                     <Button
                         variant="contained"

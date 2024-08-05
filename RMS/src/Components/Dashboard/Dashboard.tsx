@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
-import { TextField, Button, Box, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { TextField, Button, Box, Pagination, FormControl } from '@mui/material';
 import classes from "./Dashboard.module.css"
 import Filter from "../Filter/Filter";
+
 const Dashboard = () => {
     const [applications, setApplications] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -12,13 +13,13 @@ const Dashboard = () => {
     const [pageSize, setPageSize] = useState<number>(10);
     const [total, setTotal] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState<string>("");
-    const [filters, setFilters] = useState<{ sortField?: string, sortOrder?: string }>({});
+    const [filters, setFilters] = useState<{ sortField?: string, sortOrder?: string, status?: string }>({});
 
-    const fetchApplications = async (page = 1, pageSize = 10, query = "", filters = {}, sortField = "", sortOrder = "asc") => {
+    const fetchApplications = async (page = 1, pageSize = 10, query = "", filters = {}) => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`http://localhost:3000/api/applications/search`, {
-                params: { page, pageSize, query, filters, sortField, sortOrder }
+            const { data } = await axios.get(`http://localhost:3000/api/applications/filter`, {
+                params: { page, pageSize, query, filters }
             });
             const processedData = data.data.map((app: any) => ({
                 ...app,
@@ -34,7 +35,7 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        fetchApplications(page, pageSize, searchQuery, filters, filters.sortField, filters.sortOrder);
+        fetchApplications(page, pageSize, searchQuery, filters);
     }, [page, pageSize, filters]);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +59,6 @@ const Dashboard = () => {
     const handleFilterChange = (newFilters: any) => {
         setFilters(newFilters);
         setPage(1);
-        fetchApplications(1, pageSize, searchQuery, newFilters, newFilters.sortField, newFilters.sortOrder);
     };
 
     const generateBaseColumns = (data: any[]) => {
@@ -78,8 +78,8 @@ const Dashboard = () => {
 
     return (
         <div className={classes.dashboard_main}>
-            <Box sx={{float:"left"}}>
-            <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+            <Box sx={{ float: "left" }}>
+                <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: 2 }}>
                 <TextField
@@ -96,14 +96,10 @@ const Dashboard = () => {
             </Box>
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
-            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} />}
+            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} />}
             {!loading && !error &&
-
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
-
                     <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />
-
-
                     <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
                         <TextField
                             label="Items per page"

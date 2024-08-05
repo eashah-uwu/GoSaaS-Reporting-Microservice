@@ -44,8 +44,8 @@ app.use(testMiddleware);
 
 // Routes
 app.use("/", indexRouter);
-app.use("/api", applicationRoutes);
-app.use("/api", connectionRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/connections", connectionRoutes);
 app.use("/api/auth", authRoutes);
 
 // Error handling middleware

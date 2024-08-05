@@ -46,7 +46,6 @@ const updateApplication = asyncHandler(async (req, res) => {
   console.log(req.body)
   // Validate and parse the request body
   const data = applicationSchema.partial().parse(req.body);
-
   // Update the application in the database
   const application = await Application.update(id, data);
   if (!application) {
@@ -95,6 +94,7 @@ const getFilteredApplications = asyncHandler(async (req, res) => {
     page: parseInt(page, 10),
     pageSize: parseInt(pageSize, 10),
   });
+
 });
 
 module.exports = {

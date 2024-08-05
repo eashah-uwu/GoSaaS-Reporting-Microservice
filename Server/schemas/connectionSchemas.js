@@ -6,12 +6,12 @@ const connectionSchema = z.object({
   port: z.number().int().optional(),
   database: z.string().max(255).optional(),
   type: z.string().max(50).optional(),
-  isActive: z.boolean().default(true),
-  isDeleted: z.boolean().default(false),
+  isactive: z.boolean().default(true),
+  isdeleted: z.boolean().default(false),
   password: z.string().max(255).optional(),
-  applicationID: z.number().int(),
-  createdBy: z.number().int().optional(),
-  updatedBy: z.number().int().optional(),
+  applicationid: z.number().int(),
+  createdby: z.number().int().optional(),
+  updatedby: z.number().int().optional(),
 });
 
 module.exports = connectionSchema;

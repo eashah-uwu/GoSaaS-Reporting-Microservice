@@ -2,27 +2,33 @@ const knex = require("../config/db/db");
 
 class Application {
   static async create(data) {
-    const { name, description, isActive, userID, createdBy, updatedBy, isDeleted } = data;
+    const {
+      name,
+      description,
+      isactive,
+      userid,
+      createdby,
+      updatedby,
+      isdeleted,
+    } = data;
     const [application] = await knex("application")
       .insert({
         name: name,
         description: description,
-        isactive: isActive,
-        userid: userID,
+        isactive: isactive,
+        userid: userid,
         createdat: new Date(),
         updatedat: new Date(),
-        createdby: createdBy,
-        updatedby: updatedBy,
-        isdeleted: isDeleted,
+        createdby: createdby,
+        updatedby: updatedby,
+        isdeleted: isdeleted,
       })
       .returning("*");
     return application;
   }
 
   static async findAll() {
-    return knex("application")
-      .select("*")
-      .where({ isdeleted: false });
+    return knex("application").select("*").where({ isdeleted: false });
   }
 
   static async findById(id) {
@@ -33,10 +39,8 @@ class Application {
 
   static async update(id, data) {
     const { name, isactive, isdeleted } = data;
-    console.log(name, isactive, isdeleted )
     const [prevApplication] = await knex("application")
       .where({ applicationid: id })
-
     const [application] = await knex("application")
       .where({ applicationid: id })
       .update({
@@ -57,7 +61,7 @@ class Application {
       .returning("*");
     return application;
   }
-  
+
   static async countAll() {
     const [{ count }] = await knex("application")
       .count({ count: "*" })
@@ -112,8 +116,6 @@ class Application {
     const [{ count }] = await baseQuery;
     return count;
   }
-
-
 }
 
 module.exports = Application;

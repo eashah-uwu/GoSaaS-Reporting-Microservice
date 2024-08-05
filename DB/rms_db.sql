@@ -208,6 +208,9 @@ SELECT * FROM "application" WHERE isDeleted = FALSE;
 SELECT column_name, data_type
 FROM information_schema.columns
 WHERE table_name = 'application';
+ 
+select * from "destination"
+
 
 
 ALTER TABLE "User"

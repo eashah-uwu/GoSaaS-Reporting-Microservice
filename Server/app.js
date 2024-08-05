@@ -45,11 +45,13 @@ app.use(testMiddleware);
 
 // Routes
 app.use("/", indexRouter);
-app.use("/api", applicationRoutes);
+
+app.use("/api/applications", applicationRoutes);
+app.use("/api/connections", connectionRoutes);
 app.use("/auth", authRoutes);
-app.use("/api", connectionRoutes);
 app.use("/api", destinationRoutes);
 app.use("/api", reportRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);

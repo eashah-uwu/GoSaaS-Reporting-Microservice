@@ -8,10 +8,10 @@ const {
   deleteConnection,
 } = require("../controllers/connectionController");
 
-router.post("/connections", createConnection);
-router.get("/connections", getAllConnections);
-router.get("/connections/:id", getConnectionById);
-router.put("/connections/:id", updateConnection);
-router.delete("/connections/:id", deleteConnection);
+router.post("/", createConnection);
+router.get("/", getAllConnections);
+router.get("/:id", getConnectionById);
+router.put("/:id", updateConnection);
+router.delete("/:id", deleteConnection);
 
 module.exports = router;

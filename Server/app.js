@@ -15,8 +15,9 @@ const errorHandler = require("./middlewares/errorMiddleware");
 const indexRouter = require("./routes/index");
 const applicationRoutes = require("./routes/applicationRoutes");
 const authRoutes = require("./routes/auth");
-const connectionRoutes = require("./routes/connectionRoutes"); // Import connection routes
-const destinationRoutes = require("./routes/destinationRoutes"); // Import destination routes
+const connectionRoutes = require("./routes/connectionRoutes");
+const destinationRoutes = require("./routes/destinationRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
 
@@ -32,7 +33,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "your_secret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === "production" }, // Ensure cookies are secure in production
+    cookie: { secure: process.env.NODE_ENV === "production" },
   })
 );
 
@@ -42,7 +43,6 @@ app.use((req, res, next) => {
 });
 
 app.use(passport.initialize());
-
 app.use(passport.session());
 
 app.use(testMiddleware);
@@ -52,7 +52,8 @@ app.use("/", indexRouter);
 app.use("/api", applicationRoutes);
 app.use("/auth", authRoutes);
 app.use("/api", connectionRoutes);
-app.use("/api", destinationRoutes); 
+app.use("/api", destinationRoutes);
+app.use("/api", reportRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

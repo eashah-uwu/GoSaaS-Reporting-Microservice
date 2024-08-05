@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your_secret",
+    secret: process.env.SESSION_SECRET || "your_secret", //custom env variable
     resave: false,
     saveUninitialized: false,
     cookie: { secure: process.env.NODE_ENV === "production" },

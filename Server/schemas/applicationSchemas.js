@@ -10,4 +10,5 @@ const applicationSchema = z.object({
   isdeleted: z.boolean().default(false),
 });
 
+//validate query parameters(optional)
 module.exports = applicationSchema;

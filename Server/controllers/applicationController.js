@@ -1,6 +1,7 @@
 const Application = require("../models/applicationModel");
 const { StatusCodes } = require("http-status-codes");
 const asyncHandler = require("express-async-handler");
+//use express-async-errors instead of express-async-handler  
 const logger = require("../logger");
 const applicationSchema = require("../schemas/applicationSchemas");
 

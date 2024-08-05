@@ -45,8 +45,7 @@ app.use(testMiddleware);
 // Routes
 app.use("/", indexRouter);
 
-app.use("/auth", authRoutes);
-
+app.use("api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/destinations", destinationRoutes);

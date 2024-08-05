@@ -2,20 +2,31 @@ const knex = require("../config/db/db");
 
 class Report {
   static async create(data) {
-    const { title, description, generationDate, parameters, sourceConnectionID, destinationID, applicationID, storedProcedureID, userID, createdBy } = data;
+    const {
+      title,
+      description,
+      generationdate,
+      parameters,
+      sourceconnectionid,
+      destinationid,
+      applicationid,
+      storedprocedureid,
+      userid,
+      createdby,
+    } = data;
     const [report] = await knex("report")
       .insert({
         title,
         description,
-        generationdate: new Date(generationDate),
+        generationdate: new Date(generationdate),
         parameters: JSON.stringify(parameters), // Ensure parameters are stored as JSON
-        sourceconnectionid: sourceConnectionID,
-        destinationid: destinationID,
-        applicationid: applicationID,
-        storedprocedureid: storedProcedureID,
-        userid: userID,
+        sourceconnectionid: sourceconnectionid,
+        destinationid: destinationid,
+        applicationid: applicationid,
+        storedprocedureid: storedprocedureid,
+        userid: userid,
         createdat: new Date(),
-        createdby: createdBy
+        createdby: createdby,
       })
       .returning("*");
     return report;
@@ -26,48 +37,51 @@ class Report {
   }
 
   static async findById(id) {
-    return knex("report")
-      .where({ reportid: id })
-      .first();
+    return knex("report").where({ reportid: id }).first();
   }
 
   static async update(id, data) {
-    const { title, description, generationDate, parameters, sourceConnectionID, destinationID, applicationID, storedProcedureID, userID } = data;
+    const {
+      title,
+      description,
+      generationdate,
+      parameters,
+      sourceconnectionid,
+      destinationid,
+      applicationid,
+      storedprocedureid,
+      userid,
+    } = data;
     const [report] = await knex("report")
       .where({ reportid: id })
       .update({
         title,
         description,
-        generationdate: new Date(generationDate),
+        generationdate: new Date(generationdate),
         parameters: parameters ? JSON.stringify(parameters) : null, // Ensure parameters are updated as JSON
-        sourceconnectionid: sourceConnectionID,
-        destinationid: destinationID,
-        applicationid: applicationID,
-        storedprocedureid: storedProcedureID,
-        userid: userID,
-        updatedat: new Date()
+        sourceconnectionid: sourceconnectionid,
+        destinationid: destinationid,
+        applicationid: applicationid,
+        storedprocedureid: storedprocedureid,
+        userid: userid,
+        updatedat: new Date(),
       })
       .returning("*");
     return report;
   }
 
   static async delete(id) {
-    return knex("report")
-      .where({ reportid: id })
-      .del();
+    return knex("report").where({ reportid: id }).del();
   }
 
   static async paginate({ offset, limit }) {
-    return knex("report")
-      .select("*")
-      .offset(offset)
-      .limit(limit);
+    return knex("report").select("*").offset(offset).limit(limit);
   }
 
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
       .select("*")
-      .where(builder => {
+      .where((builder) => {
         builder
           .where("title", "ilike", `%${query}%`)
           .orWhere("description", "ilike", `%${query}%`);
@@ -93,7 +107,7 @@ class Report {
   static async countSearchResults(query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
-      .where(builder => {
+      .where((builder) => {
         builder
           .where("title", "ilike", `%${query}%`)
           .orWhere("description", "ilike", `%${query}%`);

@@ -15,11 +15,13 @@ const createReport = asyncHandler(async (req, res) => {
     logger.info("Report created successfully", { report });
     res.status(StatusCodes.CREATED).json({
       message: "Report created successfully!",
-      report
+      report,
     });
   } catch (error) {
     logger.error("Error creating report", { error });
-    res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid data", error: error.message });
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid data", error: error.message });
   }
 });
 
@@ -75,11 +77,13 @@ const updateReport = asyncHandler(async (req, res) => {
     logger.info("Report updated successfully", { id, report });
     res.status(StatusCodes.OK).json({
       message: "Report updated successfully!",
-      report
+      report,
     });
   } catch (error) {
     logger.error("Error updating report", { error });
-    res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid data", error: error.message });
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid data", error: error.message });
   }
 });
 
@@ -105,7 +109,7 @@ const paginateReports = asyncHandler(async (req, res) => {
   try {
     const [reports, total] = await Promise.all([
       Report.paginate({ offset, limit: parseInt(pageSize) }),
-      Report.countAll()
+      Report.countAll(),
     ]);
 
     logger.info("Paginated reports retrieved", { reports });
@@ -113,21 +117,37 @@ const paginateReports = asyncHandler(async (req, res) => {
       data: reports,
       total,
       page: parseInt(page),
-      pageSize: parseInt(pageSize)
+      pageSize: parseInt(pageSize),
     });
   } catch (error) {
     logger.error("Error retrieving paginated reports", { error });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong!", error });
   }
 });
 
 const searchReports = asyncHandler(async (req, res) => {
-  const { query = "", page = 1, pageSize = 10, filters = {}, sortField = "None", sortOrder = "asc" } = req.query;
+  const {
+    query = "",
+    page = 1,
+    pageSize = 10,
+    filters = {},
+    sortField = "None",
+    sortOrder = "asc",
+  } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
   try {
     const [results, total] = await Promise.all([
-      Report.search({ query, offset, limit: parseInt(pageSize), filters, sortField, sortOrder }),
-      Report.countSearchResults(query, filters)
+      Report.search({
+        query,
+        offset,
+        limit: parseInt(pageSize),
+        filters,
+        sortField,
+        sortOrder,
+      }),
+      Report.countSearchResults(query, filters),
     ]);
 
     logger.info("Search results retrieved", { results });
@@ -135,11 +155,13 @@ const searchReports = asyncHandler(async (req, res) => {
       data: results,
       total,
       page: parseInt(page),
-      pageSize: parseInt(pageSize)
+      pageSize: parseInt(pageSize),
     });
   } catch (error) {
     logger.error("Error retrieving search results", { error });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong!", error });
   }
 });
 
@@ -150,5 +172,5 @@ module.exports = {
   updateReport,
   deleteReport,
   paginateReports,
-  searchReports
+  searchReports,
 };

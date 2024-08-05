@@ -81,13 +81,14 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         console.log(data);
         try {
             const response = await axios.post(`http://localhost:3000/api/applications`, data);
-
             if (response.status === 201) {
-               
+                const createdApplication = response.data.application; 
+                console.log(createdApplication)
+                setTableData(prevData => [...prevData, createdApplication]);
+                setInitialData(prevData => [...prevData, createdApplication]);
                 console.log('Data submitted successfully');
                 setOpen(false); 
             } else {
-                
                 console.error('Failed to submit data');
             }
         } catch (error) {

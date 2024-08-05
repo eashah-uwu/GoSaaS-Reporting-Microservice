@@ -2,6 +2,10 @@
   "port": 3000,
   "db": {
     "port": 5432
-  }
+  },
+  "page":1,
+  "pageSize":10,
+  "query":"",
+  "filters":{}
 }
 

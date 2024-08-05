@@ -98,10 +98,10 @@ const Dashboard = () => {
 
     return (
         <div className={classes.dashboard_main}>
-            <Box sx={{ float: "left" }}>
-                <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+            <Box sx={{float:"left", marginLeft:"7.5%"}}>
+            <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: 2, marginRight:"7.5rem" }}>
                 <TextField
                     label="Search"
                     value={searchQuery}
@@ -131,7 +131,10 @@ const Dashboard = () => {
                         />
                     </FormControl>
                 </Box>
+               
             }
+
+                
         </div>
     );
 }

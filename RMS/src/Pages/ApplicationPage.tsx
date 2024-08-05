@@ -9,6 +9,7 @@ const ApplicationPage = () => {
     <>
       <CssBaseline />
       <Navbar />
+   
     </>
   );
 };

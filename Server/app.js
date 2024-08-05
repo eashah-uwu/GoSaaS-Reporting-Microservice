@@ -48,8 +48,10 @@ app.use("/", indexRouter);
 app.use("api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
-app.use("/api/destinations", destinationRoutes);
-app.use("/api/reports", reportRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", destinationRoutes);
+app.use("/api", reportRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);

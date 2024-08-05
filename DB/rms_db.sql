@@ -40,10 +40,6 @@ CREATE TABLE Application (
     FOREIGN KEY (UserID) REFERENCES "User"(UserID)
 );
 
-ALTER TABLE Application
-ADD COLUMN isDeleted BOOLEAN DEFAULT FALSE;
-
-
 CREATE TABLE Connection (
     ConnectionID SERIAL PRIMARY KEY,
     Alias VARCHAR(255),
@@ -149,11 +145,15 @@ VALUES
 ('user3@example.com', 'password3', NOW(), NOW());
 
 -- Insert data into Application table
-INSERT INTO Application (Name, Description, isActive, UserID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
+INSERT INTO Application (Name, Description, isActive,IsDeleted, UserID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
 VALUES 
-('App1', 'Description for App1', TRUE, 1, NOW(), NOW(), 1, 1),
-('App2', 'Description for App2', TRUE, 2, NOW(), NOW(), 2, 2),
-('App3', 'Description for App3', FALSE, 3, NOW(), NOW(), 3, 3);
+('App1', 'Description for App1', TRUE,FALSE, 1, NOW(), NOW(), 1, 1),
+('App2', 'Description for App2', TRUE,FALSE, 2, NOW(), NOW(), 2, 2),
+('App3', 'Description for App3', FALSE,FALSE, 3, NOW(), NOW(), 3, 3),
+('App4', 'Description for App4', FALSE,FALSE, 3, NOW(), NOW(), 1, 1),
+('App5', 'Description for App5', FALSE,FALSE, 3, NOW(), NOW(), 2, 2),
+('App6', 'Description for App6', FALSE,FALSE, 3, NOW(), NOW(), 3, 3),
+('App7', 'Description for App7', FALSE,FALSE, 3, NOW(), NOW(), 3, 3);
 
 -- Insert data into Connection table
 INSERT INTO Connection (Alias, Host, Port, Database, Type, isActive, IsDeleted, Password, ApplicationID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)

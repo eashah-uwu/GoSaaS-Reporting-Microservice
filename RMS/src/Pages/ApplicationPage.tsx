@@ -12,7 +12,6 @@ const ApplicationPage = () => {
     <>
     <CssBaseline />
       <Navbar />
-      <TableConfig/>
     </>
   );
 

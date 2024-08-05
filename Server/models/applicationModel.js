@@ -56,85 +56,61 @@ class Application {
   }
   static async paginate({ offset, limit }) {
     return knex("application")
-      .select("applicationid", 
-              "name", 
-              "isactive",
-              "isdeleted", 
-              knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
+      .select("applicationid", "name", "isactive", "isdeleted", knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
       .where("isdeleted", false)
       .offset(offset)
       .limit(limit);
   }
-
+  
   static async countAll() {
-    const [count] = await knex("application")
+    const [{ count }] = await knex("application")
       .count({ count: "*" })
       .where("isdeleted", false);
-    return count.count;
+    return count;
   }
-
-  static async search({ query, offset, limit, filters, sortField, sortOrder }) {
+  
+  static async search({ query, offset, limit, filters = {}, sortField = "", sortOrder = "asc" }) {
     let baseQuery = knex("application")
-        .select("applicationid", "name", "isactive", "isdeleted", knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
-        .where("isdeleted", false)
-        .andWhere((builder) => {
-            builder
-                .where("name", "ilike", `%${query}%`)
-                .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
-        });
-
-    if (filters) {
-        if (filters.name) {
-            baseQuery = baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
-        }
-        if (filters.status) {
-            if (filters.status === 'active') {
-                baseQuery = baseQuery.andWhere("isactive", true);
-            } else if (filters.status === 'inactive') {
-                baseQuery = baseQuery.andWhere("isactive", false);
-            } else if (filters.status === 'delete') {
-                baseQuery = baseQuery.andWhere("isdeleted", true);
-            }
-        }
+      .select("applicationid", "name", "isactive", "isdeleted", knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`))
+      .where("isdeleted", false)
+      .andWhere((builder) => {
+        builder
+          .where("name", "ilike", `%${query}%`)
+          .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
+      });
+  
+    filters.name && baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
+    if (filters.status) {
+      filters.status === 'active' && baseQuery.andWhere("isactive", true);
+      filters.status === 'inactive' && baseQuery.andWhere("isactive", false);
+      filters.status === 'delete' && baseQuery.andWhere("isdeleted", true);
     }
-
-    if (sortField && sortField !== "None") {
-        baseQuery = baseQuery.orderBy(sortField, sortOrder);
-    }
-
-    const results = await baseQuery.offset(offset).limit(limit);
-    return results;
-}
-
-
-static async countSearchResults(query, filters) {
+  
+    sortField && sortField !== "None" && baseQuery.orderBy(sortField, sortOrder);
+  
+    return baseQuery.offset(offset).limit(limit);
+  }
+  
+  static async countSearchResults(query, filters = {}) {
     let baseQuery = knex("application")
-        .count({ count: "*" })
-        .where("isdeleted", false)
-        .andWhere((builder) => {
-            builder
-                .where("name", "ilike", `%${query}%`)
-                .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
-        });
-
-    if (filters) {
-        if (filters.name) {
-            baseQuery = baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
-        }
-        if (filters.status) {
-            if (filters.status === 'active') {
-                baseQuery = baseQuery.andWhere("isactive", true);
-            } else if (filters.status === 'inactive') {
-                baseQuery = baseQuery.andWhere("isactive", false);
-            } else if (filters.status === 'delete') {
-                baseQuery = baseQuery.andWhere("isdeleted", true);
-            }
-        }
+      .count({ count: "*" })
+      .where("isdeleted", false)
+      .andWhere((builder) => {
+        builder
+          .where("name", "ilike", `%${query}%`)
+          .orWhere(knex.raw(`CAST("createdat" AS TEXT)`), "ilike", `%${query}%`);
+      });
+  
+    filters.name && baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
+    if (filters.status) {
+      filters.status === 'active' && baseQuery.andWhere("isactive", true);
+      filters.status === 'inactive' && baseQuery.andWhere("isactive", false);
+      filters.status === 'delete' && baseQuery.andWhere("isdeleted", true);
     }
-
-    const [count] = await baseQuery;
-    return count.count;
-}
+  
+    const [{ count }] = await baseQuery;
+    return count;
+  }
 
 
 }

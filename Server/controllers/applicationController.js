@@ -77,47 +77,39 @@ const deleteApplication = asyncHandler(async (req, res) => {
     .json({ message: "Application deleted successfully!" });
 });
 
+//end point being used to do the pagination
 const paginateApplications = asyncHandler(async (req, res) => {
   const { page = 1, pageSize = 10 } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
-  try {
-    const [applications, total] = await Promise.all([
-      Application.paginate({ offset, limit: parseInt(pageSize) }),
-      Application.countAll()
-    ]);
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [applications, total] = await Promise.all([
+      Application.paginate({ offset, limit: parseInt(pageSize, 10) }),
+      Application.countAll(),
+  ]);
 
-    logger.info("Paginated applications retrieved", { applications });
-    res.status(StatusCodes.OK).json({
+  logger.info("Paginated applications retrieved", { applications });
+  res.status(StatusCodes.OK).json({
       data: applications,
       total,
-      page: parseInt(page),
-      pageSize: parseInt(pageSize)
-    });
-  } catch (error) {
-    logger.error("Error retrieving paginated applications", { error });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
-  }
+      page: parseInt(page, 10),
+      pageSize: parseInt(pageSize, 10),
+  });
 });
 
 const searchApplications = asyncHandler(async (req, res) => {
   const { query = "", page = 1, pageSize = 10, filters = {}, sortField = "", sortOrder = "asc" } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
-  try {
-      const [applications, total] = await Promise.all([
-          Application.search({ query, offset, limit: parseInt(pageSize), filters, sortField, sortOrder }),
-          Application.countSearchResults(query, filters)
-      ]);
-      logger.info("Searched applications retrieved", { applications });
-      res.status(StatusCodes.OK).json({
-          data: applications,
-          total,
-          page: parseInt(page),
-          pageSize: parseInt(pageSize)
-      });
-  } catch (error) {
-      logger.error("Error retrieving searched applications", { error });
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong!", error });
-  }
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [applications, total] = await Promise.all([
+      Application.search({ query, offset, limit: parseInt(pageSize, 10), filters, sortField, sortOrder }),
+      Application.countSearchResults(query, filters),
+  ]);
+
+  logger.info("Searched applications retrieved", { applications });
+  res.status(StatusCodes.OK).json({
+      data: applications,
+      total,
+      page: parseInt(page, 10),
+      pageSize: parseInt(pageSize, 10),
+  });
 });
 
 

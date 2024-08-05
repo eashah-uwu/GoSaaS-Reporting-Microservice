@@ -1,49 +1,48 @@
-/* src/components/Sidebar.module.css */
 .sidebar {
-    position: fixed;
-    top: 60px; /* Adjust this value to match the height of your navbar */
-    left: -250px;
-    width: 250px;
-    height: calc(100% - 60px); /* Adjust this value to match the height of your navbar */
-    background-color: white; /* Set background to white */
-    border: 1px solid black; /* Add black border */
-    color: black; /* Change text color to black */
-    transition: 0.3s;
-    padding: 0; /* Removed padding */
-    z-index: 1000;
-    font-family: 'Calibri', sans-serif; /* Set font to Calibri */
-  }
-  
-  .open {
-    left: 0;
-  }
-  
-  .ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0; /* Ensure no extra margin */
-  }
-  
-  .li {
-    padding: 8px 16px;
-    text-align: left;
-    border-bottom: 1px solid black; /* Add underline to list items */
-    margin: 0; /* Ensure no extra margin */
-  }
-  
-  .a {
-    color: black; /* Change link color to black */
-    text-decoration: none; /* Remove default underline */
-    display: block;
-    margin: 0; /* Ensure no extra margin */
-    padding: 0; /* Ensure no extra padding */
-  }
-  
-  .a:hover {
-    background-color: #f0f0f0; /* Change background on hover */
-  }
-  
-  .innerUl {
-    padding-left: 20px;
-  }
-  
+  position: fixed;
+  top: 60px;
+  left: -300px;
+  width: 250px;
+  height: calc(100% - 60px);
+  background-color: #ffffff;
+  border-right: 1px solid #ffffff;
+  color: #333333;
+  transition: left 0.3s ease;
+  padding: 0;
+  z-index: 1000;
+  font-family: 'Calibri', sans-serif;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  border-radius: 0 10px 10px 0;
+}
+
+.open {
+  left: 0;
+}
+
+.ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.li {
+  padding: 12px 20px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 0;
+  transition: background-color 0.2s ease;
+}
+
+.li a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.li:hover {
+  background-color: #f0f0f0;
+}
+
+.innerUl {
+  padding-left: 20px;
+}

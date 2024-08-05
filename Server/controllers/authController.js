@@ -3,7 +3,8 @@ const errorHandler = require('../middlewares/errorMiddleware');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const { loginSchema } = require('../schema/authSchema');
+const { loginSchema } = require('../schemas/authSchema');
+const passport = require('../config/passport');
 
 const login = async (req, res, next) => {
 
@@ -40,6 +41,18 @@ const login = async (req, res, next) => {
   }
 };
 
+
+const authenticate =  (req, res) => {
+  if (req.user) {
+    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.redirect(`http://localhost:5173/auth/callback?token=${token}`);
+    // res.redirect(my app component);
+  } else {
+    res.redirect('/login');
+  }
+};
+
 module.exports = {
   login,
+  authenticate,
 };

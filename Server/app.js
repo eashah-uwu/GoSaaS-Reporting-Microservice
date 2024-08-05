@@ -37,10 +37,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log("Request Session:", req.session);
-  next();
-});
 
 app.use(passport.initialize());
 app.use(passport.session());

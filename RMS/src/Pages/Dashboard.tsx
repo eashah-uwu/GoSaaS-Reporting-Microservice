@@ -24,15 +24,17 @@ function DashboardPage(){
           padding: "1rem",
           marginTop: "2rem",
           marginBottom: "2rem",
+          justifyContent:"center",
+          gap:"2rem"
         }}
       >
-        <WidgetWrapper customColor="#8B0000" sx={{ marginLeft: "14%", marginRight:"2rem" }}>
+        <WidgetWrapper customColor="#8B0000" >
           <Typography variant="body1" sx={{ color: "white" }}>Total Reports: </Typography>
         </WidgetWrapper>
-        <WidgetWrapper customColor="#8B0000" sx={{  marginRight:"2rem" }}>
+        <WidgetWrapper customColor="#8B0000">
           <Typography variant="body1" sx={{ color: "white" }}>Processing: </Typography>
         </WidgetWrapper>
-        <WidgetWrapper customColor="#8B0000" sx={{  marginRight:"2rem" }}>
+        <WidgetWrapper customColor="#8B0000">
           <Typography variant="body1" sx={{ color: "white" }}>Queued: </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000" >

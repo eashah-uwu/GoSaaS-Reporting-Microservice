@@ -128,6 +128,8 @@ const Dashboard = () => {
                             variant="standard"
                             type="number"
                             size="small"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{maxWidth: '6rem' , '& input': { textAlign: 'center' } }}
                         />
                     </FormControl>
                 </Box>

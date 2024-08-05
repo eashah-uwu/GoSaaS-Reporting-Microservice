@@ -2,7 +2,10 @@ const Destination = require("../models/destinationModel");
 const { StatusCodes } = require("http-status-codes");
 const asyncHandler = require("express-async-handler");
 const logger = require("../logger");
-const { createDestinationSchema, updateDestinationSchema } = require("../schemas/destinationSchemas");
+const {
+  createDestinationSchema,
+  updateDestinationSchema,
+} = require("../schemas/destinationSchemas");
 
 // Create a new destination
 const createDestination = asyncHandler(async (req, res) => {
@@ -28,7 +31,9 @@ const getDestinationById = asyncHandler(async (req, res) => {
   const destination = await Destination.findById(id);
   if (!destination) {
     logger.warn("Destination not found", { id });
-    return res.status(StatusCodes.NOT_FOUND).json({ message: "Destination not found" });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Destination not found" });
   }
   logger.info("Retrieved destination by ID", { id, destination });
   res.status(StatusCodes.OK).json(destination);
@@ -38,10 +43,13 @@ const getDestinationById = asyncHandler(async (req, res) => {
 const updateDestination = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const data = updateDestinationSchema.parse(req.body);
+
   const destination = await Destination.update(id, data);
   if (!destination) {
     logger.warn("Destination not found for update", { id });
-    return res.status(StatusCodes.NOT_FOUND).json({ message: "Destination not found" });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Destination not found" });
   }
   logger.info("Destination updated successfully", { id, destination });
   res.status(StatusCodes.OK).json({
@@ -56,7 +64,9 @@ const deleteDestination = asyncHandler(async (req, res) => {
   const destination = await Destination.delete(id);
   if (!destination) {
     logger.warn("Destination not found for deletion", { id });
-    return res.status(StatusCodes.NOT_FOUND).json({ message: "Destination not found" });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Destination not found" });
   }
   logger.info("Destination deleted successfully", { id });
   res.status(StatusCodes.OK).json({

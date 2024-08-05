@@ -114,7 +114,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
     return (
         <> 
             <Box padding={6} sx={{width:"90%", margin:"0 auto"}}>
-                {filteredData && <Table data={filteredData} columns={columns} />}
+                {filteredData && <Table data={filteredData} columns={columns} pageSize={pageSize}/>}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
             <span className={classes.save_button_span}>
                 <Button

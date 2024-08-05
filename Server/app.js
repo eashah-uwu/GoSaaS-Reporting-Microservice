@@ -48,7 +48,7 @@ app.use("/", indexRouter);
 
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api", destinationRoutes);
 app.use("/api", reportRoutes);
 

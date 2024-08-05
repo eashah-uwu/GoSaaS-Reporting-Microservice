@@ -2,7 +2,19 @@ const knex = require("../config/db/db");
 
 class Connection {
   static async create(data) {
-    const { alias, host, port, database, type, isActive, isDeleted, password, applicationID, createdBy, updatedBy } = data;
+    const {
+      alias,
+      host,
+      port,
+      database,
+      type,
+      isactive,
+      isdeleted,
+      password,
+      applicationid,
+      createdby,
+      updatedby,
+    } = data;
     const [connection] = await knex("connection")
       .insert({
         alias: alias,
@@ -10,14 +22,14 @@ class Connection {
         port: port,
         database: database,
         type: type,
-        isactive: isActive,
-        isdeleted: isDeleted,
+        isactive: isactive,
+        isdeleted: isdeleted,
         password: password,
-        applicationid: applicationID,
+        applicationid: applicationid,
         createdat: new Date(),
         updatedat: new Date(),
-        createdby: createdBy,
-        updatedby: updatedBy,
+        createdby: createdby,
+        updatedby: updatedby,
       })
       .returning("*");
     return connection;
@@ -28,11 +40,23 @@ class Connection {
   }
 
   static async findById(id) {
-    return knex("connection").where({ connectionid: id, isdeleted: false }).first();
+    return knex("connection")
+      .where({ connectionid: id, isdeleted: false })
+      .first();
   }
 
   static async update(id, data) {
-    const { alias, host, port, database, type, isActive, isDeleted, password, updatedBy } = data;
+    const {
+      alias,
+      host,
+      port,
+      database,
+      type,
+      isactive,
+      isdeleted,
+      password,
+      updatedby,
+    } = data;
     const [connection] = await knex("connection")
       .where({ connectionid: id })
       .update({
@@ -41,11 +65,11 @@ class Connection {
         port: port,
         database: database,
         type: type,
-        isactive: isActive,
-        isdeleted: isDeleted,
+        isactive: isactive,
+        isdeleted: isdeleted,
         password: password,
         updatedat: new Date(),
-        updatedby: updatedBy,
+        updatedby: updatedby,
       })
       .returning("*");
     return connection;

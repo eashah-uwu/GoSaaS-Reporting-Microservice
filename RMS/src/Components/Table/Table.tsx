@@ -8,6 +8,7 @@ import classes from "./Table.module.css";
 interface TableProps {
     data: any[];
     columns: ColumnDef<any>[];
+    pageSize:number;
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -32,24 +33,15 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-const Table: FC<TableProps> = ({ data, columns }) => {
+const Table: FC<TableProps> = ({ data, columns,pageSize }) => {
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(pageSize);
 
     const { getHeaderGroups, getRowModel } = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
-
-    const handleChangePage = (event: unknown, newPage: number) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
 
     return (
         <div className={classes.main_body}>

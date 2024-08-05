@@ -8,10 +8,10 @@ const {
   deleteDestination,
 } = require("../controllers/destinationController");
 
-router.post("/destinations", createDestination);
-router.get("/destinations", getAllDestinations);
-router.get("/destinations/:id", getDestinationById);
-router.put("/destinations/:id", updateDestination);
-router.delete("/destinations/:id", deleteDestination);
+router.post("/", createDestination);
+router.get("/", getAllDestinations);
+router.get("/:id", getDestinationById);
+router.put("/:id", updateDestination);
+router.delete("/:id", deleteDestination);
 
 module.exports = router;

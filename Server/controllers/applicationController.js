@@ -1,18 +1,26 @@
 const Application = require("../models/applicationModel");
 const { StatusCodes } = require("http-status-codes");
 const asyncHandler = require("express-async-handler");
-//use express-async-errors instead of express-async-handler  
+//use express-async-errors instead of express-async-handler
 const logger = require("../logger");
 const applicationSchema = require("../schemas/applicationSchemas");
 
 const createApplication = asyncHandler(async (req, res) => {
-  // Validate and parse the request body
+  // Validate and parse request body using applicationSchema
   const data = applicationSchema.parse(req.body);
 
-  // Create the application in the database
+  // Check if the name already exists
+  const existingApplication = await Application.findByName(data.name);
+  if (existingApplication) {
+    logger.warn("Application name must be unique", { name: data.name });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Application name must be unique",
+    });
+  }
+
+  // Create application in the database
   const application = await Application.create(data);
 
-  // Log success and send response
   logger.info("Application created successfully", { application });
   res.status(StatusCodes.CREATED).json({
     message: "Application created successfully!",
@@ -44,7 +52,7 @@ const getApplicationById = asyncHandler(async (req, res) => {
 // Update an application
 const updateApplication = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  console.log(req.body)
+  console.log(req.body);
   // Validate and parse the request body
   const data = applicationSchema.partial().parse(req.body);
   // Update the application in the database
@@ -78,13 +86,26 @@ const deleteApplication = asyncHandler(async (req, res) => {
     .json({ message: "Application deleted successfully!" });
 });
 
-
 const getFilteredApplications = asyncHandler(async (req, res) => {
   const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
-  console.log("query",query,"page",page,"pageSize",pageSize,"filters",filters)
+  console.log(
+    "query",
+    query,
+    "page",
+    page,
+    "pageSize",
+    pageSize,
+    "filters",
+    filters
+  );
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [applications, total] = await Promise.all([
-    Application.filter({ query, offset, limit: parseInt(pageSize, 10), filters }),
+    Application.filter({
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
     Application.countSearchResults(query, filters),
   ]);
 
@@ -95,7 +116,6 @@ const getFilteredApplications = asyncHandler(async (req, res) => {
     page: parseInt(page, 10),
     pageSize: parseInt(pageSize, 10),
   });
-
 });
 
 module.exports = {
@@ -104,5 +124,5 @@ module.exports = {
   getApplicationById,
   updateApplication,
   deleteApplication,
-  getFilteredApplications
+  getFilteredApplications,
 };

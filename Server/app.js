@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 
 const testMiddleware = require("./middlewares/index");
-const errorHandler = require("./middlewares/errorMiddleware"); 
+const errorHandler = require("./middlewares/errorMiddleware");
 
 // Import routes
 const indexRouter = require("./routes/index");
@@ -37,7 +37,6 @@ app.use(
   })
 );
 
-
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -46,12 +45,12 @@ app.use(testMiddleware);
 // Routes
 app.use("/", indexRouter);
 
+app.use("/auth", authRoutes);
+
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
-app.use("/auth", authRoutes);
-app.use("/api", destinationRoutes);
-app.use("/api", reportRoutes);
-
+app.use("/api/destinations", destinationRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

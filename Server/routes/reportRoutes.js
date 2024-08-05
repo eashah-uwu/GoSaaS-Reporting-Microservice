@@ -6,17 +6,17 @@ const {
   updateReport,
   deleteReport,
   paginateReports,
-  searchReports
+  searchReports,
 } = require("../controllers/reportController");
 
 const router = express.Router();
 
-router.post("/reports", createReport);
-router.get("/reports", getAllReports);
-router.get("/reports/:id", getReportById);
-router.put("/reports/:id", updateReport);
-router.delete("/reports/:id", deleteReport);
-router.get("/reports/paginate", paginateReports);
-router.get("/reports/search", searchReports);
+router.post("/", createReport);
+router.get("/", getAllReports);
+router.get("/:id", getReportById);
+router.put("/:id", updateReport);
+router.delete("/:id", deleteReport);
+router.get("/paginate", paginateReports);
+router.get("/search", searchReports);
 
 module.exports = router;

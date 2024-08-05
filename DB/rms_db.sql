@@ -219,6 +219,9 @@ ADD CONSTRAINT email_unic UNIQUE (email);
 ALTER TABLE "User"
 ADD COLUMN name VARCHAR(255);
 
+ALTER TABLE application
+ADD CONSTRAINT unique_name UNIQUE (name);
+
 select * from "User"  ;
 
 

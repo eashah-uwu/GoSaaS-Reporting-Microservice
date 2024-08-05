@@ -38,6 +38,26 @@ const Dashboard = () => {
         fetchApplications(page, pageSize, searchQuery, filters);
     }, [page, pageSize, filters]);
 
+    const handleSave = async (updatedItems: any[]) => {
+        try {
+            const requests = updatedItems.map(item => {
+                const { applicationid,name,createdat, isactive, isdeleted } = item;
+                return axios.put(`http://localhost:3000/api/applications/${applicationid}`, {
+                    applicationid,
+                    name,
+                    createdat,
+                    isactive,
+                    isdeleted
+                });
+            });
+           await Promise.all(requests);
+            console.log("updated Items",updatedItems)
+         //   fetchApplications(page, pageSize, searchQuery, filters);
+        } catch (error) {
+            alert("Failed to update data");
+        }
+    };
+
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
     };
@@ -96,7 +116,7 @@ const Dashboard = () => {
             </Box>
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
-            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} />}
+            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} />}
             {!loading && !error &&
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
                     <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />

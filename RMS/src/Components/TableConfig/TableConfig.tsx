@@ -10,9 +10,10 @@ interface TableConfigProps {
     includeStatus: boolean;
     baseColumns:any[];
     pageSize:number;
+    onSave: (updatedData: any[]) => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize,onSave }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -60,19 +61,18 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
     
     const columns = setColumns(baseColumns, includeStatus, handleStatusChange);
     const handleSave = async () => {
-        try {
-            const updatedData = tableData.map(dataItem => ({
-                ...dataItem,
-                isactive: dataItem.status === "active",
-                isdeleted: dataItem.status === "delete"
-            }));
-            console.log("updated data",updatedData)
-            setInitialData(tableData);
-            setIsSaveEnabled(false);
-            alert("Data successfully updated");
-        } catch (error) {
-            alert("Failed to update data");
-        }
+        const updatedData = tableData.map(dataItem => ({
+            ...dataItem,
+            isactive: dataItem.status === "active",
+            isdeleted: dataItem.status === "delete"
+        }));
+        const updatedItems = updatedData.filter((item, index) => {
+            return JSON.stringify(item) !== JSON.stringify(initialData[index]);
+        });
+        onSave(updatedItems); 
+        setTableData(updatedData)
+        setInitialData(updatedData);
+        setIsSaveEnabled(false);
     };
     const filteredData = tableData
         .filter((app: any) => app.status!=="delete")
@@ -104,3 +104,4 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
 };
 
 export default TableConfig;
+

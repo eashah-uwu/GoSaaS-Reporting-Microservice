@@ -32,16 +32,19 @@ class Application {
   }
 
   static async update(id, data) {
-    const { name, description, isActive, updatedBy, isDeleted } = data;
+    const { name, isactive, isdeleted } = data;
+    console.log(name, isactive, isdeleted )
+    const [prevApplication] = await knex("application")
+      .where({ applicationid: id })
+
     const [application] = await knex("application")
       .where({ applicationid: id })
       .update({
+        ...prevApplication,
         name: name,
-        description: description,
-        isactive: isActive,
+        isactive: isactive,
+        isdeleted: isdeleted,
         updatedat: new Date(),
-        updatedby: updatedBy,
-        isdeleted: isDeleted,
       })
       .returning("*");
     return application;

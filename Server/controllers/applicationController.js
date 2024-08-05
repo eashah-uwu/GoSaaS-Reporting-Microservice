@@ -43,6 +43,7 @@ const getApplicationById = asyncHandler(async (req, res) => {
 // Update an application
 const updateApplication = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  console.log(req.body)
   // Validate and parse the request body
   const data = applicationSchema.partial().parse(req.body);
 

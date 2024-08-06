@@ -1,0 +1,71 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modalContent {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 500px; /* Increased width for better layout */
+    position: relative;
+  }
+  
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .formContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px; /* Gap between form items */
+  }
+  
+  .formItem {
+    flex: 1;
+    min-width: 220px; /* Adjust width as needed */
+  }
+  
+  .formActions {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px; /* Gap between buttons */
+  }
+  
+  .testConnectionButton,
+  .connectSourceButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  .testConnectionButton {
+    background-color: #ccc;
+  }
+  
+  .connectSourceButton {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  

@@ -1,4 +1,4 @@
-import Navbar from "../Components/Navbar";
+import Navbar from "../Components/Navbar/Navbar";
 import { useState } from "react";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
   useTheme,
-  
   useMediaQuery,
 } from "@mui/material";
 import React from "react";
@@ -26,7 +25,6 @@ const initialValuesLogin = {
   email: "",
   password: "",
 };
-
 
 function LoginPage() {
   const [error, setError] = useState(null);
@@ -117,27 +115,27 @@ function LoginPage() {
           Sign in with Google
         </Button>
 
-       
-      <Typography variant="body1" color="error" sx={{ mx: 2 }}>
-        or
-      </Typography>
-      
+        <Typography variant="body1" color="error" sx={{ mx: 2 }}>
+          or
+        </Typography>
 
-        {!flag && (<Typography
-          variant="body1"
-          color="error"
-          sx={{
-            mt: "1rem",
-            mb: "3rem",
-            "&:hover": {
-              color: "#8B0000",
-              cursor: "pointer",
-            },
-          }}
-          onClick = {() => setFlag(!flag)}
-        >
-          Log in with Credentials
-        </Typography>)}
+        {!flag && (
+          <Typography
+            variant="body1"
+            color="error"
+            sx={{
+              mt: "1rem",
+              mb: "3rem",
+              "&:hover": {
+                color: "#8B0000",
+                cursor: "pointer",
+              },
+            }}
+            onClick={() => setFlag(!flag)}
+          >
+            Log in with Credentials
+          </Typography>
+        )}
 
         {flag && (
           <Formik
@@ -164,11 +162,11 @@ function LoginPage() {
                   justifyContent="center"
                   height="90vh"
                   sx={{
-                    height: flag ? 'auto' : 0,
+                    height: flag ? "auto" : 0,
                     opacity: flag ? 1 : 0,
-                    overflow: 'hidden',
-                    transition: 'all 0.5s ease-in-out',
-                    marginTop: '1em',
+                    overflow: "hidden",
+                    transition: "all 0.5s ease-in-out",
+                    marginTop: "1em",
                   }}
                 >
                   <Box

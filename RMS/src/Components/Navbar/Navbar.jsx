@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Navbar.module.css';
-import logo from '../Assets/logo.png';
-import Sidebar from './Sidebar'; // Import Sidebar component
+import logo from '../../Assets/logo.png';
+import Sidebar from '../Sidebar/Sidebar'; // Import Sidebar component
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {

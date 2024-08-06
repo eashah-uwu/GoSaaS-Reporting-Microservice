@@ -6,14 +6,13 @@ const {
   getApplicationById,
   updateApplication,
   deleteApplication,
-  getFilteredApplications
 } = require("../controllers/applicationController");
+const validateQuery = require("../middlewares/validateQuery");
 
 router.post("/", createApplication);
-router.get("/", getApplications); //get applications
+router.get("/", validateQuery, getApplications); // Validate query parameters
 router.get("/:id", getApplicationById);
 router.put("/:id", updateApplication);
 router.delete("/:id", deleteApplication);
-
 
 module.exports = router;

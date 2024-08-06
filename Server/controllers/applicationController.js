@@ -30,25 +30,30 @@ const createApplication = async (req, res) => {
 
 // Get applications
 const getApplications = async (req, res) => {
-  const { query = config.get("query"), page = config.get("page"), pageSize = config.get("pageSize"), filters = config.get("filters") } = req.query;
-  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
-  const [applications, total] = await Promise.all([
-    Application.find({
-      query,
-      offset,
-      limit: parseInt(pageSize, 10),
-      filters,
-    }),
-    Application.countSearchResults(query, filters),
-  ]);
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [applications, total] = await Promise.all([
+    Application.find({
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Application.countSearchResults(query, filters),
+  ]);
 
-  logger.info("Searched applications retrieved", { applications });
-  res.status(StatusCodes.OK).json({
-    data: applications,
-    total,
-    page: parseInt(page, 10),
-    pageSize: parseInt(pageSize, 10),
-  });
+  logger.info("Searched applications retrieved", { applications });
+  res.status(StatusCodes.OK).json({
+    data: applications,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 // Get application by ID

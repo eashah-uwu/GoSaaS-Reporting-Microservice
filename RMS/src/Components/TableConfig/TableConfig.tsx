@@ -109,13 +109,31 @@ const TableConfig: FC<TableConfigProps> = ({
         setInitialData((prevData) => [createdApplication, ...prevData]);
         console.log("Data submitted successfully");
         setOpen(false);
-      } else {
-        console.error("Failed to submit data");
-      }
-    } catch (error) {
-      console.error("Error submitting data:", error);
-    }
-  };
+
+    };
+    
+    const handleSubmit = async (event: { preventDefault: () => void; }) => {
+        event.preventDefault();
+        const userid = 4;
+        const data = { name, description, userid };
+        console.log(data);
+        try {
+            const response = await axios.post(`http://localhost:3000/api/applications`, data);
+            if (response.status === 201) {
+                const createdApplication = response.data.application; 
+                console.log(createdApplication)
+                setTableData(prevData => [createdApplication,...prevData]);
+                setInitialData(prevData => [createdApplication,...prevData]);
+                console.log('Data submitted successfully');
+                setOpen(false); 
+            } else {
+                console.error('Failed to submit data');
+            }
+        } catch (error) {
+            console.error('Error submitting data:', error);
+        }
+    };
+
 
   const columns = setColumns(baseColumns, includeStatus, handleStatusChange);
   const handleSave = async () => {

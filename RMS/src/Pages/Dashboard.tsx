@@ -30,11 +30,11 @@ function DashboardPage(){
   return (
     <>
       <Navbar />
-      <div>
+      {/* <div>
         <button onClick={openSourceModal}>Source</button>
         <button onClick={openDestinationModal}>Destination</button>
         <button onClick={openReportModal}>Report</button>
-      </div>
+      </div> */}
 
       <SourceConnection
         isOpen={isSourceModalOpen}

@@ -8,16 +8,17 @@ import DashboardPage from "./Pages/Dashboard.tsx"
 
 function App() {
   return (
-    
-      <>
+
+    <>
       <div className="container">
         <Routes>
-        <Route path="/login" element={<LoginPage />} />
-              <Route path="/" element={<DashboardPage/>} />
-        <Route path="/auth/callback" element={<OAuthCallback />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/application" element={<ApplicationPage />} />
-            </Route>
+          
+          <Route path="/application/:id" element={<ApplicationPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
+          <Route element={<ProtectedRoute />}>
+          </Route>
         </Routes>
       </div>
     </>

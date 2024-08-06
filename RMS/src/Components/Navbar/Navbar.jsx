@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Navbar.module.css';
 import logo from '../Assets/logo.png';
-import Sidebar from './Sidebar'; // Import Sidebar component
+import Sidebar from './Sidebar/Sidebar'; // Import Sidebar component
 import { Link, useNavigate} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearToken } from '../State/authSlice';

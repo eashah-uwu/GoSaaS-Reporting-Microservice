@@ -1,0 +1,44 @@
+/* Container for the form fields */
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Space between alias and description */
+  }
+  
+  /* Row container for the fields that should be next to each other */
+  .formRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px; /* Space between the fields in the row */
+  }
+  
+  /* Individual form item styling */
+  .formItem {
+    flex: 1;
+    min-width: 220px; /* Minimum width for form items */
+  }
+  
+  /* Container for the form actions (e.g., buttons) */
+  .formActions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Styling for the success message */
+  .successContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .successIcon {
+    font-size: 80px;
+    color: #4caf50;
+    margin-bottom: 20px;
+  }
+  
+  .successContent .MuiTypography-root {
+    margin-bottom: 20px;
+  }
+  

@@ -84,8 +84,8 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
             if (response.status === 201) {
                 const createdApplication = response.data.application; 
                 console.log(createdApplication)
-                setTableData(prevData => [...prevData, createdApplication]);
-                setInitialData(prevData => [...prevData, createdApplication]);
+                setTableData(prevData => [createdApplication,...prevData]);
+                setInitialData(prevData => [createdApplication,...prevData]);
                 console.log('Data submitted successfully');
                 setOpen(false); 
             } else {

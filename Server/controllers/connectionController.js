@@ -23,9 +23,15 @@ const getConnections = async (req, res) => {
     query = config.get("query"),
     page = config.get("page"),
     pageSize = config.get("pageSize"),
-    filters = config.get("filters"),
+    filters = {},
   } = req.query;
+
+  // Include sortField and sortOrder in filters if they are present in the query
+  if (req.query.sortField) filters.sortField = req.query.sortField;
+  if (req.query.sortOrder) filters.sortOrder = req.query.sortOrder;
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+
   const [connections, total] = await Promise.all([
     Connection.find({
       query,

@@ -103,7 +103,8 @@ class Connection {
           .orWhere("type", "ilike", `%${query}%`)
           .orWhere("host", "ilike", `%${query}%`);
       });
-
+  
+    // Apply additional filters if provided
     if (filters.alias) {
       baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
     }
@@ -121,12 +122,16 @@ class Connection {
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
       if (filters.status === "deleted") baseQuery.andWhere("isdeleted", true);
     }
+  
+    // Apply sorting if sortField is provided
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
     }
-
+  
     return baseQuery.offset(offset).limit(limit);
   }
+  
+  
 
   static async countSearchResults(query, filters = {}) {
     let baseQuery = knex("connection")

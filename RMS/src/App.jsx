@@ -12,7 +12,6 @@ function App() {
     <>
       <div className="container">
         <Routes>
-          
           <Route path="/application/:id" element={<ApplicationPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<DashboardPage />} />

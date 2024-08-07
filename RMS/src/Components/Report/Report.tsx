@@ -27,4 +27,6 @@ const Report = ({ applicationId }: { applicationId: string }) => {
   );
 };
 
+
 export default Report;
+

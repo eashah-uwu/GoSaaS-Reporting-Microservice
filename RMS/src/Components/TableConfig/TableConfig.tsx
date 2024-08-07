@@ -13,9 +13,10 @@ interface TableConfigProps {
     baseColumns:any[];
     pageSize:number;
     onSave: (updatedData: any[]) => void;
+    rowIdAccessor: string;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize,onSave }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize,onSave,rowIdAccessor }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -96,7 +97,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         }
     };
 
-    const columns = setColumns(baseColumns, includeStatus, handleStatusChange);
+    const columns = setColumns(baseColumns, includeStatus, handleStatusChange,rowIdAccessor);
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,

@@ -41,7 +41,8 @@ class Connection {
 
   static async findById(id) {
     return knex("connection")
-      .where({ connectionid: id, isdeleted: false })
+      .select("alias","applicationid","connectionid","database","type","host","port","isactive","isdeleted")
+      .where({ applicationid: id, isdeleted: false })
       .first();
   }
 

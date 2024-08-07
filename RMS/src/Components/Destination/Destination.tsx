@@ -27,4 +27,6 @@ const Destination = ({ applicationId }: { applicationId: string }) => {
   );
 };
 
+
 export default Destination;
+

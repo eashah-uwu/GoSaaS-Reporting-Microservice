@@ -9,6 +9,7 @@ const Dashboard = () => {
     const [applications, setApplications] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
     const [page, setPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(10);
     const [total, setTotal] = useState<number>(0);
@@ -116,7 +117,7 @@ const Dashboard = () => {
             </Box>
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
-            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} />}
+            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="applicationid"/>}
             {!loading && !error &&
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
                     <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />

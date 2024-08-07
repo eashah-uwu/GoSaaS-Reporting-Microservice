@@ -153,6 +153,22 @@ const searchReports = async (req, res) => {
     pageSize: parseInt(pageSize),
   });
 };
+const getReportsByApplicationId = async (req, res) => {
+  const { id: applicationid } = req.params;
+  const reports = await Report.findByApplicationId(applicationid);
+  if (!reports || reports.length === 0) {
+    logger.warn("Reports not found", {
+      context: { traceid: req.traceId, applicationid },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Reports not found" });
+  }
+  logger.info("Retrieved reports by application ID", {
+    context: { traceid: req.traceId, applicationid, reports },
+  });
+  res.status(StatusCodes.OK).json(reports);
+};
 
 module.exports = {
   createReport,
@@ -162,4 +178,5 @@ module.exports = {
   deleteReport,
   paginateReports,
   searchReports,
+  getReportsByApplicationId,
 };

@@ -125,6 +125,11 @@ class Report {
     const [count] = await baseQuery;
     return count.count;
   }
+  static async findByApplicationId(applicationid) {
+    return knex("report").where({
+      applicationid: applicationid,
+    });
+  }
 }
 
 module.exports = Report;

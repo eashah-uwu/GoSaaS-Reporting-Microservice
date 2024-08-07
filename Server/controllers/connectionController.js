@@ -112,6 +112,22 @@ const deleteConnection = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Connection deleted successfully!" });
 };
+const getConnectionsByApplicationId = async (req, res) => {
+  const { id: applicationId } = req.params;
+  const connections = await Connection.findByApplicationId(applicationId);
+  if (!connections || connections.length === 0) {
+    logger.warn("Connections not found", {
+      context: { traceid: req.traceId, applicationId },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Connections not found" });
+  }
+  logger.info("Retrieved connections by application ID", {
+    context: { traceid: req.traceId, applicationId, connections },
+  });
+  res.status(StatusCodes.OK).json(connections);
+};
 
 module.exports = {
   createConnection,
@@ -119,4 +135,5 @@ module.exports = {
   updateConnection,
   deleteConnection,
   getConnections,
+  getConnectionsByApplicationId,
 };

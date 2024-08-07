@@ -82,8 +82,6 @@ const getApplicationById = async (req, res) => {
 
 const updateApplication = async (req, res) => {
   const { id } = req.params;
-  console.log(req.body);
-
   const data = applicationSchema.partial().parse(req.body);
   const application = await Application.update(id, data);
   if (!application) {

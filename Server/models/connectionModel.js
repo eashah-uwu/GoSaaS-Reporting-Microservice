@@ -55,47 +55,23 @@ class Connection {
       .where({ applicationid: id, isdeleted: false })
       .first();
   }
-  static async findByApplicationId(applicationId) {
-    return knex("connection")
-      .select(
-        "alias",
-        "applicationid",
-        "connectionid",
-        "database",
-        "type",
-        "host",
-        "port",
-        "isactive",
-        "isdeleted"
-      )
-      .where({ applicationid: applicationId, isdeleted: false });
-  }
 
   static async update(id, data) {
-    const {
-      alias,
-      host,
-      port,
-      database,
-      type,
-      isactive,
-      isdeleted,
-      password,
-      updatedby,
-    } = data;
+    const { alias,host,port,database,type, isactive, isdeleted } = data;
+    const [prevConnection] = await knex("connection")
+    .where({ connectionid: id })
     const [connection] = await knex("connection")
-      .where({ connectionid: id })
+    .where({ connectionid: id })
       .update({
-        alias,
-        host,
-        port,
-        database,
-        type,
-        isactive,
-        isdeleted,
-        password,
+        ...prevConnection,
+        isactive: isactive,
+        isdeleted: isdeleted,
+        alias:alias,
+        host:host,
+        port:port,
+        database:database,
+        type:type,
         updatedat: new Date(),
-        updatedby,
       })
       .returning("*");
     return connection;
@@ -109,25 +85,27 @@ class Connection {
     return connection;
   }
 
-  static async find({ query, offset, limit, filters = {} }) {
+  static async findByApplicationId({applicationId, query, offset, limit, filters = {} }) {
     let baseQuery = knex("connection")
       .select(
-        "connectionid",
         "alias",
-        "host",
-        "port",
+        "applicationid",
+        "connectionid",
         "database",
         "type",
+        "host",
+        "port",
         "isactive",
-        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`)
+        "isdeleted"
       )
-      .where("isdeleted", false)
+      .where({ applicationid: applicationId, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
           .orWhere("database", "ilike", `%${query}%`)
           .orWhere("type", "ilike", `%${query}%`)
-          .orWhere("host", "ilike", `%${query}%`);
+          .orWhere("host", "ilike", `%${query}%`)
+          .orWhere(knex.raw("CAST(port AS TEXT)"), "ilike", `%${query}%`);
       });
 
     // Apply additional filters if provided
@@ -157,16 +135,17 @@ class Connection {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(query, filters = {}) {
+  static async countSearchResults(applicationId,query, filters = {}) {
     let baseQuery = knex("connection")
       .count({ count: "*" })
-      .where("isdeleted", false)
+      .where({ applicationid: applicationId, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
           .orWhere("database", "ilike", `%${query}%`)
           .orWhere("type", "ilike", `%${query}%`)
-          .orWhere("host", "ilike", `%${query}%`);
+          .orWhere("host", "ilike", `%${query}%`)
+          .orWhere(knex.raw("CAST(port AS TEXT)"), "ilike", `%${query}%`);
       });
 
     if (filters.alias) {

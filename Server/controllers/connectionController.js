@@ -113,20 +113,36 @@ const deleteConnection = async (req, res) => {
     .json({ message: "Connection deleted successfully!" });
 };
 const getConnectionsByApplicationId = async (req, res) => {
+  const {
+    query = "",
+    page = 1,
+    pageSize = 10,
+    filters = {},
+  } = req.query;
   const { id: applicationId } = req.params;
-  const connections = await Connection.findByApplicationId(applicationId);
-  if (!connections || connections.length === 0) {
-    logger.warn("Connections not found", {
-      context: { traceid: req.traceId, applicationId },
+
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+
+    const [connections, total] = await Promise.all([
+      Connection.findByApplicationId({
+        applicationId,
+        query,
+        offset,
+        limit: parseInt(pageSize, 10),
+        filters,
+      }),
+      Connection.countSearchResults(applicationId, query, filters),
+    ]);
+    logger.info("Retrieved connections by application ID", {
+      context: { traceid: req.traceId, applicationId, connections },
     });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Connections not found" });
-  }
-  logger.info("Retrieved connections by application ID", {
-    context: { traceid: req.traceId, applicationId, connections },
-  });
-  res.status(StatusCodes.OK).json(connections);
+
+    res.status(StatusCodes.OK).json({
+      data: connections,
+      total,
+      page: parseInt(page, 10),
+      pageSize: parseInt(pageSize, 10),
+    });
 };
 
 module.exports = {

@@ -119,7 +119,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
             </Box>
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
-            {!loading && !error && <TableConfig data={connections} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="connectionid"/>}
+            {!loading && !error && <TableConfig data={connections} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="connectionid"  onDelete={() => fetchConnections(page, pageSize, searchQuery, filters)}/>}
             {!loading && !error &&
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
                     <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />

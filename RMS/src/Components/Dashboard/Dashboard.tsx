@@ -42,7 +42,7 @@ const Dashboard = () => {
     const handleSave = async (updatedItems: any[]) => {
         try {
             const requests = updatedItems.map(item => {
-                const { applicationid,name,createdat, isactive, isdeleted } = item;
+                const { applicationid, name, createdat, isactive, isdeleted } = item;
                 return axios.put(`http://localhost:3000/api/applications/${applicationid}`, {
                     applicationid,
                     name,
@@ -51,9 +51,9 @@ const Dashboard = () => {
                     isdeleted
                 });
             });
-           await Promise.all(requests);
-            console.log("updated Items",updatedItems)
-         //   fetchApplications(page, pageSize, searchQuery, filters);
+            await Promise.all(requests);
+            console.log("updated Items", updatedItems)
+            //   fetchApplications(page, pageSize, searchQuery, filters);
         } catch (error) {
             alert("Failed to update data");
         }
@@ -99,10 +99,10 @@ const Dashboard = () => {
 
     return (
         <div className={classes.dashboard_main}>
-            <Box sx={{float:"left", marginLeft:"7.5%"}}>
-            <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+            <Box sx={{ float: "left", marginLeft: "7.5%" }}>
+                <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: 2, marginRight:"7.5rem" }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: 2, marginRight: "7.5rem" }}>
                 <TextField
                     label="Search"
                     value={searchQuery}
@@ -117,11 +117,19 @@ const Dashboard = () => {
             </Box>
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
-            {!loading && !error && <TableConfig data={applications} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="applicationid"/>}
+            {!loading && !error && 
+                <TableConfig data={applications} 
+                             includeStatus={true} 
+                             baseColumns={baseColumns} 
+                             pageSize={pageSize} 
+                             onSave={handleSave} 
+                             rowIdAccessor="applicationid" 
+                             onDelete={() => fetchApplications(page, pageSize, searchQuery, filters)}
+            />}
             {!loading && !error &&
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
                     <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />
-                    <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+                    <FormControl sx={{display:"flex",justifyContent:"space-evenly",alignItems:"end",flexDirection:"row",minWidth: 120}} variant="outlined" size="small" >
                         <TextField
                             label="Items per page"
                             value={pageSize}
@@ -130,14 +138,17 @@ const Dashboard = () => {
                             type="number"
                             size="small"
                             InputLabelProps={{ shrink: true }}
-                            sx={{maxWidth: '6rem' , '& input': { textAlign: 'center' } }}
+                            sx={{ maxWidth: '6rem', '& input': { textAlign: 'center' } }}
                         />
+                        <Box sx={{paddingBottom:"0.5rem",color:"black"}}>
+                         out of {total} items
+                        </Box>
                     </FormControl>
                 </Box>
-               
+
             }
 
-                
+
         </div>
     );
 }

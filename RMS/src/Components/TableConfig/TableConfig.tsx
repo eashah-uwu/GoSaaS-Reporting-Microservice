@@ -1,5 +1,5 @@
 import React, { useEffect, useState, FC } from "react";
-import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField  } from "@mui/material";
+import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import Table from "../Table/Table";
 import { setColumns } from "../Table/Columns/CreateColumns";
 import Confirmation from "../ConfirmationDialogue/Confirmation";
@@ -10,13 +10,14 @@ import axios from "axios";
 interface TableConfigProps {
     data: any[];
     includeStatus: boolean;
-    baseColumns:any[];
-    pageSize:number;
+    baseColumns: any[];
+    pageSize: number;
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
+    onDelete: () => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pageSize,onSave,rowIdAccessor }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -26,14 +27,14 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
-   
- 
+
+
     useEffect(() => {
-        console.log("data",data)
+        console.log("data", data)
         setTableData(data);
         setInitialData(data);
     }, [data]);
-    
+
     useEffect(() => {
         const isChanged = JSON.stringify(initialData) !== JSON.stringify(tableData);
         setIsSaveEnabled(isChanged);
@@ -52,14 +53,16 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         }
     };
 
-    const handleDeleteConfirm = () => {
-        setTableData((prevData) =>
-            prevData.map((dataItem) =>
-                dataItem.applicationid === selectedDataId ? { ...dataItem, status: "delete" } : dataItem
-            )
-        );
-        setOpenDialog(false);
-        setSelectedDataId(null);
+    const handleDeleteConfirm = async () => {
+
+        try {
+            await axios.delete(`http://localhost:3000/api/applications/${selectedDataId}`);
+            onDelete(); 
+            setOpenDialog(false);
+            setSelectedDataId(null);
+        } catch (error) {
+            alert("Failed to delete data");
+        }
     };
 
     const handleDeleteCancel = () => {
@@ -74,7 +77,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
     const handleClose = () => {
         setOpen(false);
     };
-    
+
     const handleSubmit = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
         const userid = 4;
@@ -83,12 +86,12 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         try {
             const response = await axios.post(`http://localhost:3000/api/applications`, data);
             if (response.status === 201) {
-                const createdApplication = response.data.application; 
+                const createdApplication = response.data.application;
                 console.log(createdApplication)
-                setTableData(prevData => [createdApplication,...prevData]);
-                setInitialData(prevData => [createdApplication,...prevData]);
+                setTableData(prevData => [createdApplication, ...prevData]);
+                setInitialData(prevData => [createdApplication, ...prevData]);
                 console.log('Data submitted successfully');
-                setOpen(false); 
+                setOpen(false);
             } else {
                 console.error('Failed to submit data');
             }
@@ -97,7 +100,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         }
     };
 
-    const columns = setColumns(baseColumns, includeStatus, handleStatusChange,rowIdAccessor);
+    const columns = setColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor);
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,
@@ -107,33 +110,33 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
         const updatedItems = updatedData.filter((item, index) => {
             return JSON.stringify(item) !== JSON.stringify(initialData[index]);
         });
-        onSave(updatedItems); 
+        onSave(updatedItems);
         setTableData(updatedData)
         setInitialData(updatedData);
         setIsSaveEnabled(false);
     };
     const filteredData = tableData
-        .filter((app: any) => app.status!=="delete")
+        .filter((app: any) => app.status !== "delete")
     return (
-        <> 
-            <Box padding={6} sx={{width:"90%", margin:"0 auto"}}>
-                {filteredData && <Table data={filteredData} columns={columns} pageSize={pageSize}/>}
+        <>
+            <Box padding={6} sx={{ width: "90%", margin: "0 auto" }}>
+                {filteredData && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-            <span className={classes.save_button_span}>
-                <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    onClick={handleSave}
-                    disabled={!isSaveEnabled}
-                >
-                    Save Changes
-                </Button>
-            </span>
-            <IconButton onClick={handleAdd} sx={{ ml: 2, width: "auto", height: "auto" }}>
-                <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
-            </IconButton>
-        </Box>
+                    <span className={classes.save_button_span}>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            size="small"
+                            onClick={handleSave}
+                            disabled={!isSaveEnabled}
+                        >
+                            Save Changes
+                        </Button>
+                    </span>
+                    <IconButton onClick={handleAdd} sx={{ ml: 2, width: "auto", height: "auto" }}>
+                        <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
+                    </IconButton>
+                </Box>
             </Box>
             <Confirmation
                 open={openDialog}
@@ -143,7 +146,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus,baseColumns,pag
                 message="Are you sure you want to delete this application?"
             />
 
-<Dialog open={open} onClose={handleClose}>
+            <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Add Application</DialogTitle>
                 <form onSubmit={handleSubmit}>
                     <DialogContent>

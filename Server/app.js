@@ -12,7 +12,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 
 const testMiddleware = require("./middlewares/index");
-const errorHandler = require("./middlewares/errorMiddleware");
+//const errorHandler = require("./middlewares/errorMiddleware");
 
 // Import routes
 const indexRouter = require("./routes/index");
@@ -56,7 +56,7 @@ app.use("/api/destinations", destinationRoutes);
 app.use("/api/reports", reportRoutes);
 
 // Error handling middleware
-app.use(errorHandler);
+//app.use(errorHandler);
 
 const startServer = async () => {
   const dbConnected = await checkDatabaseConnection();

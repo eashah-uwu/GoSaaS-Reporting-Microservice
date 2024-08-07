@@ -53,7 +53,7 @@ const Dashboard = () => {
             });
             await Promise.all(requests);
             console.log("updated Items", updatedItems)
-            //   fetchApplications(page, pageSize, searchQuery, filters);
+          
         } catch (error) {
             alert("Failed to update data");
         }
@@ -81,7 +81,15 @@ const Dashboard = () => {
         setFilters(newFilters);
         setPage(1);
     };
-
+    const handleApplicationDelete=async(applicationid:string|null)=>{
+        try{
+            await axios.delete(`http://localhost:3000/api/applications/${applicationid}`);
+            fetchApplications(page, pageSize, searchQuery, filters)
+        }
+        catch(e){
+            console.log(e)
+        }
+    }
     const generateBaseColumns = (data: any[]) => {
         if (data.length === 0) return [];
         const sample = data[0];
@@ -124,7 +132,7 @@ const Dashboard = () => {
                              pageSize={pageSize} 
                              onSave={handleSave} 
                              rowIdAccessor="applicationid" 
-                             onDelete={() => fetchApplications(page, pageSize, searchQuery, filters)}
+                             onDelete={handleApplicationDelete}
             />}
             {!loading && !error &&
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
@@ -132,7 +140,7 @@ const Dashboard = () => {
                     <FormControl sx={{display:"flex",justifyContent:"space-evenly",alignItems:"end",flexDirection:"row",minWidth: 120}} variant="outlined" size="small" >
                         <TextField
                             label="Items per page"
-                            value={pageSize}
+                            value={pageSize<total?pageSize:total}
                             onChange={handlePageSizeChange}
                             variant="standard"
                             type="number"

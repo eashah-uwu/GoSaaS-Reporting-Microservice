@@ -14,7 +14,7 @@ interface TableConfigProps {
     pageSize: number;
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
-    onDelete: () => void;
+    onDelete: (selectedDataId:string | null) => void;
 }
 
 const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete }) => {
@@ -30,7 +30,6 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
 
 
     useEffect(() => {
-        console.log("data", data)
         setTableData(data);
         setInitialData(data);
     }, [data]);
@@ -47,22 +46,16 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         } else {
             setTableData((prevData) =>
                 prevData.map((dataItem) =>
-                    dataItem.applicationid === id ? { ...dataItem, status: newStatus } : dataItem
+                    dataItem[rowIdAccessor] === id ? { ...dataItem, status: newStatus } : dataItem
                 )
             );
         }
     };
 
-    const handleDeleteConfirm = async () => {
-
-        try {
-            await axios.delete(`http://localhost:3000/api/applications/${selectedDataId}`);
-            onDelete(); 
+    const handleDeleteConfirm =  () => {
+            onDelete(selectedDataId); 
             setOpenDialog(false);
             setSelectedDataId(null);
-        } catch (error) {
-            alert("Failed to delete data");
-        }
     };
 
     const handleDeleteCancel = () => {

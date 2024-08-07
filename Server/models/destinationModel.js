@@ -47,20 +47,21 @@ class Destination {
 
   // Update an existing destination
   static async update(id, data) {
-    const { alias, url, apikey, isactive, isdeleted, updatedby } = data;
+    const { alias, url, apikey, isactive, isdeleted } = data;
+    const [prevDestination] = await knex("destination")
+    .where({ destinationid: id })
     const [destination] = await knex("destination")
-      .where({ destinationid: id })
+    .where({ destinationid: id })
       .update({
-        alias: alias,
-        url: url,
-        apikey: apikey, // Note the exact column name
-        isactive: isactive, // Note the exact column name
-        isdeleted: isdeleted, // Note the exact column name
-        updatedat: new Date(), // Note the exact column name
-        updatedby: updatedby, // Note the exact column name
+        ...prevDestination,
+        isactive: isactive,
+        isdeleted: isdeleted,
+        alias:alias,
+        url:url,
+        apikey:apikey,
+        updatedat: new Date(),
       })
       .returning("*");
-
     return destination;
   }
 
@@ -73,22 +74,84 @@ class Destination {
 
     return destination;
   }
-  static async findByApplicationId(applicationid) {
-    return knex("destination")
+  
+  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+    let baseQuery = knex("destination")
       .select(
         "alias",
         "applicationid",
+        "destinationid",
         "url",
         "apikey",
         "isactive",
-        "createdby",
-        "updatedby"
+        "isdeleted"
       )
-      .where({
-        applicationid: applicationid,
-        isdeleted: false,
+      .where({ applicationid: applicationId, isdeleted: false })
+      .andWhere((builder) => {
+        builder
+          .where("alias", "ilike", `%${query}%`)
+          .orWhere("url", "ilike", `%${query}%`)
+          .orWhere("apikey", "ilike", `%${query}%`);
       });
+
+    // Apply additional filters if provided
+    if (filters.alias) {
+      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
+    }
+    if (filters.url) {
+      baseQuery.andWhere("url", "ilike", `%${filters.url}%`);
+    }
+    if (filters.apikey) {
+      baseQuery.andWhere("apikey", "ilike", `%${filters.apikey}%`);
+    }
+    if (filters.status) {
+      if (filters.status === "active") baseQuery.andWhere("isactive", true);
+      if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
+      if (filters.status === "deleted") baseQuery.andWhere("isdeleted", true);
+    }
+
+    // Apply sorting if sortField is provided
+    if (filters.sortField && filters.sortField !== "None") {
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }
+
+    return baseQuery.offset(offset).limit(limit);
   }
+
+  static async countSearchResults(applicationId, query, filters = {}) {
+    let baseQuery = knex("destination")
+      .count({ count: "*" })
+      .where({ applicationid: applicationId, isdeleted: false })
+      .andWhere((builder) => {
+        builder
+          .where("alias", "ilike", `%${query}%`)
+          .orWhere("url", "ilike", `%${query}%`)
+          .orWhere("apikey", "ilike", `%${query}%`);
+      });
+
+    if (filters.alias) {
+      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
+    }
+    if (filters.url) {
+      baseQuery.andWhere("url", "ilike", `%${filters.url}%`);
+    }
+    if (filters.apikey) {
+      baseQuery.andWhere("apikey", "ilike", `%${filters.apikey}%`);
+    }
+    if (filters.status) {
+      if (filters.status === "active") baseQuery.andWhere("isactive", true);
+      if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
+      if (filters.status === "deleted") baseQuery.andWhere("isdeleted", true);
+    }
+
+    const [{ count }] = await baseQuery;
+    return count;
+  }
+
+
+
+
+
 }
 
 module.exports = Destination;

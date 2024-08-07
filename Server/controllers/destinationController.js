@@ -89,21 +89,40 @@ const deleteDestination = async (req, res) => {
 };
 // Get destinations by application ID
 const getDestinationsByApplicationId = async (req, res) => {
-  const { id: applicationid } = req.params;
-  const destinations = await Destination.findByApplicationId(applicationid);
-  if (destinations.length === 0) {
-    logger.warn("Destinations not found", {
-      context: { traceid: req.traceId, applicationid },
+  const {
+    query = "",
+    page = 1,
+    pageSize = 10,
+    filters = {},
+  } = req.query;
+  const { id: applicationId } = req.params;
+
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+
+    const [destinations, total] = await Promise.all([
+      Destination.findByApplicationId({
+        applicationId,
+        query,
+        offset,
+        limit: parseInt(pageSize, 10),
+        filters,
+      }),
+      Destination.countSearchResults(applicationId, query, filters),
+    ]);
+    logger.info("Retrieved Destinations by application ID", {
+      context: { traceid: req.traceId, applicationId, destinations },
     });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Destinations not found" });
-  }
-  logger.info("Retrieved destinations by application ID", {
-    context: { traceid: req.traceId, applicationid, destinations },
-  });
-  res.status(StatusCodes.OK).json(destinations);
+
+    res.status(StatusCodes.OK).json({
+      data: destinations,
+      total,
+      page: parseInt(page, 10),
+      pageSize: parseInt(pageSize, 10),
+    });
 };
+
+
+
 module.exports = {
   createDestination,
   getAllDestinations,

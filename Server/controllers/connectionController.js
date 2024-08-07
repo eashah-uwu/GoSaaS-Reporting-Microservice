@@ -2,6 +2,7 @@ const Connection = require("../models/connectionModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const connectionSchema = require("../schemas/connectionSchemas");
+const config = require("config");
 
 // Create a new connection
 const createConnection = async (req, res) => {
@@ -14,11 +15,34 @@ const createConnection = async (req, res) => {
   });
 };
 
-// Get all connections
-const getAllConnections = async (req, res) => {
-  const connections = await Connection.findAll();
-  logger.info("Retrieved all connections", { connections });
-  res.status(StatusCodes.OK).json(connections);
+
+
+// Get connections
+const getConnections = async (req, res) => {
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [connections, total] = await Promise.all([
+    Connection.find({
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Connection.countSearchResults(query, filters),
+  ]);
+
+  logger.info("Searched connections retrieved", { connections });
+  res.status(StatusCodes.OK).json({
+    data: connections,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 // Get connection by ID
@@ -69,10 +93,12 @@ const deleteConnection = async (req, res) => {
     .json({ message: "Connection deleted successfully!" });
 };
 
+
+
 module.exports = {
   createConnection,
-  getAllConnections,
   getConnectionById,
   updateConnection,
   deleteConnection,
+  getConnections,
 };

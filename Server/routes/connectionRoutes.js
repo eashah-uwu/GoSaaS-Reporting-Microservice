@@ -2,14 +2,16 @@ const express = require("express");
 const router = express.Router();
 const {
   createConnection,
-  getAllConnections,
   getConnectionById,
   updateConnection,
   deleteConnection,
+  getConnections,
 } = require("../controllers/connectionController");
+const validateQuery = require("../middlewares/validateQuery");
 
+// Define routes
 router.post("/", createConnection);
-router.get("/", getAllConnections);
+router.get("/", validateQuery, getConnections); // Validate query parameters
 router.get("/:id", getConnectionById);
 router.put("/:id", updateConnection);
 router.delete("/:id", deleteConnection);

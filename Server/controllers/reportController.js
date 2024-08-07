@@ -10,7 +10,9 @@ const createReport = async (req, res) => {
   // Create report in the database
   const report = await Report.create(data);
 
-  logger.info("Report created successfully", { report });
+  logger.info("Report created successfully", {
+    context: { traceid: req.traceId, report },
+  });
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
     report,
@@ -19,7 +21,9 @@ const createReport = async (req, res) => {
 
 const getAllReports = async (req, res) => {
   const reports = await Report.findAll();
-  logger.info("Retrieved all reports", { reports });
+  logger.info("Retrieved all reports", {
+    context: { traceid: req.traceId, reports },
+  });
   res.status(StatusCodes.OK).json(reports);
 };
 
@@ -28,7 +32,7 @@ const getReportById = async (req, res) => {
   const reportId = parseInt(id, 10);
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { id });
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
@@ -36,12 +40,14 @@ const getReportById = async (req, res) => {
 
   const report = await Report.findById(reportId);
   if (!report) {
-    logger.warn("Report not found", { id });
+    logger.warn("Report not found", { context: { traceid: req.traceId, id } });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
-  logger.info("Retrieved report by ID", { id, report });
+  logger.info("Retrieved report by ID", {
+    context: { traceid: req.traceId, id, report },
+  });
   res.status(StatusCodes.OK).json(report);
 };
 
@@ -50,7 +56,7 @@ const updateReport = async (req, res) => {
   const reportId = parseInt(id, 10);
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { id });
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
@@ -60,12 +66,16 @@ const updateReport = async (req, res) => {
 
   const report = await Report.update(reportId, data);
   if (!report) {
-    logger.warn("Report not found for update", { id });
+    logger.warn("Report not found for update", {
+      context: { traceid: req.traceId, id },
+    });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
-  logger.info("Report updated successfully", { id, report });
+  logger.info("Report updated successfully", {
+    context: { traceid: req.traceId, id, report },
+  });
   res.status(StatusCodes.OK).json({
     message: "Report updated successfully!",
     report,
@@ -77,14 +87,16 @@ const deleteReport = async (req, res) => {
   const reportId = parseInt(id, 10);
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { id });
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
   }
 
   await Report.delete(reportId);
-  logger.info("Report deleted successfully", { id });
+  logger.info("Report deleted successfully", {
+    context: { traceid: req.traceId, id },
+  });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
 };
 
@@ -97,7 +109,9 @@ const paginateReports = async (req, res) => {
     Report.countAll(),
   ]);
 
-  logger.info("Paginated reports retrieved", { reports });
+  logger.info("Paginated reports retrieved", {
+    context: { traceid: req.traceId, reports },
+  });
   res.status(StatusCodes.OK).json({
     data: reports,
     total,
@@ -129,7 +143,9 @@ const searchReports = async (req, res) => {
     Report.countSearchResults(query, filters),
   ]);
 
-  logger.info("Search results retrieved", { results });
+  logger.info("Search results retrieved", {
+    context: { traceid: req.traceId, results },
+  });
   res.status(StatusCodes.OK).json({
     data: results,
     total,

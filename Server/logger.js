@@ -3,8 +3,8 @@ const { combine, timestamp, printf } = format;
 
 // Define the log format based on the provided template
 const logFormat = printf(({ timestamp, level, message, context }) => {
-  const traceId = context ? context.traceid : "N/A"; // Default to "N/A" if traceid is not provided
-  return `[${timestamp}] [${level.toUpperCase()}] [${traceId}]${message}`;
+  const traceId = context && context.traceid ? context.traceid : "N/A"; // Default to "N/A" if traceid is not provided
+  return `[${timestamp}] [${level.toUpperCase()}] [${traceId}] ${message}`;
 });
 
 const logger = createLogger({

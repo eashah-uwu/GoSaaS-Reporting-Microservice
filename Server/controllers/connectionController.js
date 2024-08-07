@@ -8,14 +8,14 @@ const config = require("config");
 const createConnection = async (req, res) => {
   const data = connectionSchema.parse(req.body);
   const connection = await Connection.create(data);
-  logger.info("Connection created successfully", { connection });
+  logger.info("Connection created successfully", {
+    context: { traceid: req.traceId, connection },
+  });
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
     connection,
   });
 };
-
-
 
 // Get connections
 const getConnections = async (req, res) => {
@@ -42,7 +42,9 @@ const getConnections = async (req, res) => {
     Connection.countSearchResults(query, filters),
   ]);
 
-  logger.info("Searched connections retrieved", { connections });
+  logger.info("Searched connections retrieved", {
+    context: { traceid: req.traceId, connections },
+  });
   res.status(StatusCodes.OK).json({
     data: connections,
     total,
@@ -56,12 +58,16 @@ const getConnectionById = async (req, res) => {
   const { id } = req.params;
   const connection = await Connection.findById(id);
   if (!connection) {
-    logger.warn("Connection not found", { id });
+    logger.warn("Connection not found", {
+      context: { traceid: req.traceId, id },
+    });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
   }
-  logger.info("Retrieved connection by ID", { id, connection });
+  logger.info("Retrieved connection by ID", {
+    context: { traceid: req.traceId, id, connection },
+  });
   res.status(StatusCodes.OK).json(connection);
 };
 
@@ -71,12 +77,16 @@ const updateConnection = async (req, res) => {
   const data = connectionSchema.partial().parse(req.body);
   const connection = await Connection.update(id, data);
   if (!connection) {
-    logger.warn("Connection not found for update", { id });
+    logger.warn("Connection not found for update", {
+      context: { traceid: req.traceId, id },
+    });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
   }
-  logger.info("Connection updated successfully", { id, connection });
+  logger.info("Connection updated successfully", {
+    context: { traceid: req.traceId, id, connection },
+  });
   res.status(StatusCodes.OK).json({
     message: "Connection updated successfully!",
     connection,
@@ -88,18 +98,20 @@ const deleteConnection = async (req, res) => {
   const { id } = req.params;
   const connection = await Connection.delete(id);
   if (!connection) {
-    logger.warn("Connection not found for deletion", { id });
+    logger.warn("Connection not found for deletion", {
+      context: { traceid: req.traceId, id },
+    });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
   }
-  logger.info("Connection deleted successfully", { id });
+  logger.info("Connection deleted successfully", {
+    context: { traceid: req.traceId, id },
+  });
   res
     .status(StatusCodes.OK)
     .json({ message: "Connection deleted successfully!" });
 };
-
-
 
 module.exports = {
   createConnection,

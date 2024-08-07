@@ -87,11 +87,28 @@ const deleteDestination = async (req, res) => {
     message: "Destination deleted successfully!",
   });
 };
-
+// Get destinations by application ID
+const getDestinationsByApplicationId = async (req, res) => {
+  const { id: applicationid } = req.params;
+  const destinations = await Destination.findByApplicationId(applicationid);
+  if (destinations.length === 0) {
+    logger.warn("Destinations not found", {
+      context: { traceid: req.traceId, applicationid },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Destinations not found" });
+  }
+  logger.info("Retrieved destinations by application ID", {
+    context: { traceid: req.traceId, applicationid, destinations },
+  });
+  res.status(StatusCodes.OK).json(destinations);
+};
 module.exports = {
   createDestination,
   getAllDestinations,
   getDestinationById,
   updateDestination,
   deleteDestination,
+  getDestinationsByApplicationId,
 };

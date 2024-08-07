@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createDestination,
   getAllDestinations,
+  getDestinationsByApplicationId,
   getDestinationById,
   updateDestination,
   deleteDestination,
@@ -10,7 +11,7 @@ const {
 
 router.post("/", createDestination);
 router.get("/", getAllDestinations);
-router.get("/:id", getDestinationById);
+router.get("/:id", getDestinationsByApplicationId);
 router.put("/:id", updateDestination);
 router.delete("/:id", deleteDestination);
 

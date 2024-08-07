@@ -73,6 +73,22 @@ class Destination {
 
     return destination;
   }
+  static async findByApplicationId(applicationid) {
+    return knex("destination")
+      .select(
+        "alias",
+        "applicationid",
+        "url",
+        "apikey",
+        "isactive",
+        "createdby",
+        "updatedby"
+      )
+      .where({
+        applicationid: applicationid,
+        isdeleted: false,
+      });
+  }
 }
 
 module.exports = Destination;

@@ -68,6 +68,7 @@ const ApplicationPage = () => {
                 color: activeButton !== "destination" ? "#7d0e0e" : "white",
                 backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
                 border: "1px solid #7d0e0e",
+                marginLeft:"0.3rem",
                 ":hover": {
                   backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
                   color: activeButton !== "destination" ? "#7d0e0e" : "white",
@@ -82,6 +83,7 @@ const ApplicationPage = () => {
               sx={{
                 color: activeButton !== "reports" ? "#7d0e0e" : "white",
                 backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
+                marginLeft:"0.3rem",
                 border: "1px solid #7d0e0e",
                 ":hover": {
                   backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",

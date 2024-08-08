@@ -111,10 +111,12 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     const filteredData = tableData
         .filter((app: any) => app.status !== "delete")
     return (
-        <>
+        <>  
             <Box padding={6} sx={{ width: "90%", margin: "0 auto" }}>
-                {filteredData && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
+            {data.length==0 && <p>No Data Found. Add using + Icon</p>}
+                {filteredData && data.length>0 && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                    {data.length>0 &&
                     <span className={classes.save_button_span}>
                         <Button
                             variant="contained"
@@ -126,11 +128,13 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                             Save Changes
                         </Button>
                     </span>
+                    }
                     <IconButton onClick={handleAdd} sx={{ ml: 2, width: "auto", height: "auto" }}>
                         <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
                     </IconButton>
                 </Box>
             </Box>
+           
             <Confirmation
                 open={openDialog}
                 onClose={handleDeleteCancel}

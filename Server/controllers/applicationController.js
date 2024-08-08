@@ -42,7 +42,10 @@ const getApplications = async (req, res) => {
     page = config.get("page"),
     pageSize = config.get("pageSize"),
     filters = config.get("filters"),
+    sortField,
+    sortOrder
   } = req.query;
+  
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [applications, total] = await Promise.all([
     Application.find({
@@ -50,6 +53,8 @@ const getApplications = async (req, res) => {
       offset,
       limit: parseInt(pageSize, 10),
       filters,
+      sortField,
+      sortOrder
     }),
     Application.countSearchResults(query, filters),
   ]);

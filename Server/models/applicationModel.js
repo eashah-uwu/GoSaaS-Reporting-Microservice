@@ -104,7 +104,7 @@ class Application {
             `%${query}%`
           );
       });
-
+  
     if (filters.name) {
       baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
     }
@@ -113,12 +113,14 @@ class Application {
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
       if (filters.status === "delete") baseQuery.andWhere("isdeleted", true);
     }
-    if (filters.sortField && filters.sortField !== "None") {
-      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    if (filters.sortField) {
+      const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
+      baseQuery.orderBy(filters.sortField, sortOrder);
     }
-
+  
     return baseQuery.offset(offset).limit(limit);
   }
+  
 
   static async countSearchResults(query, filters = {}) {
     let baseQuery = knex("application")

@@ -6,5 +6,6 @@
     "password": "PGPASSWORD",
     "database": "PGDATABASE"
   },
-  "port": "PORT" 
+  "port": "PORT" ,
+  "encryptionKey": "ENCRYPTION_KEY"
 }

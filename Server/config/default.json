@@ -6,6 +6,7 @@
   "page":1,
   "pageSize":10,
   "query":"",
-  "filters":{}
+  "filters":{},
+  "encryptionKey": "3c92a4d34f92c8d751b934a7e083f0d6b9d3e9fa7f9836b4d8b9d5d37357d8b4"
 }
 

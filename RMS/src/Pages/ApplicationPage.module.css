@@ -1,3 +1,13 @@
 .main_content{
     text-align: center;
 }
+.buttonDiv{
+    margin: 3rem;
+}
+.appName{
+    font-size: 2rem;
+}
+.appDes{
+    font-size: 1rem;
+    margin-top: 2rem;
+}

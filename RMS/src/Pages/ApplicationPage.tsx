@@ -39,34 +39,57 @@ const ApplicationPage = () => {
   return (
     <>
       <Navbar />
-      <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
-        {applicationData && applicationData.name}
-      </Typography>
       <main className={classes.main_content}>
-        <div>{applicationData && applicationData.description}</div>
+        <Typography variant="h4" sx={{ paddingLeft :"12rem",paddingRight :"12rem",marginTop: "3rem",textAlign:"left" }}>
+          {applicationData && <div className={classes.appName}>{applicationData.name}</div>}
+          {applicationData && <div className={classes.appDes}>{applicationData.description}</div>}
+        </Typography>
         {applicationData && (
-          <div>
+          <div className={classes.buttonDiv}>
             <Button
-              variant={activeButton !== "source"?"outlined":"contained"}
-              color="primary"
               size="small"
               onClick={() => handleButtonClick("source")}
+              sx={{
+                color: activeButton !== "source" ? "#7d0e0e" : "white",
+                backgroundColor: activeButton !== "source" ? "white" : "#7d0e0e",
+                border: "1px solid #7d0e0e",
+                ":hover": {
+                  backgroundColor: activeButton !== "source" ? "white" : "#7d0e0e",
+                  color: activeButton !== "source" ? "#7d0e0e" : "white",
+                },
+              }}
             >
-              Source 
+              Source
             </Button>
             <Button
-              variant={activeButton !== "destination"?"outlined":"contained"}
-              color="primary"
               size="small"
               onClick={() => handleButtonClick("destination")}
+              sx={{
+                color: activeButton !== "destination" ? "#7d0e0e" : "white",
+                backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
+                border: "1px solid #7d0e0e",
+                marginLeft:"0.3rem",
+                ":hover": {
+                  backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
+                  color: activeButton !== "destination" ? "#7d0e0e" : "white",
+                },
+              }}
             >
               Destination
             </Button>
             <Button
-              variant={activeButton !== "reports"?"outlined":"contained"}
-              color="primary"
               size="small"
               onClick={() => handleButtonClick("reports")}
+              sx={{
+                color: activeButton !== "reports" ? "#7d0e0e" : "white",
+                backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
+                marginLeft:"0.3rem",
+                border: "1px solid #7d0e0e",
+                ":hover": {
+                  backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
+                  color: activeButton !== "reports" ? "#7d0e0e" : "white",
+                },
+              }}
             >
               Reports
             </Button>

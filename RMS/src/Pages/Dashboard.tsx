@@ -9,8 +9,7 @@ import SourceConnection from "../Components/SourceConnection/SourceConnection.js
 import DestinationConnection from "../Components/DestinationConnection/DestinationConnection.jsx"; // Ensure correct import path
 import ConfigureReport from "../Components/ConfigureReport/ConfigureReport.jsx"; // Ensure correct import path
 
-function DashboardPage(){
-
+function DashboardPage() {
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [isDestinationModalOpen, setIsDestinationModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -24,9 +23,7 @@ function DashboardPage(){
   const openReportModal = () => setIsReportModalOpen(true);
   const closeReportModal = () => setIsReportModalOpen(false);
 
-  const handleAdd = () => {
-
-  }
+  const handleAdd = () => {};
   return (
     <>
       <Navbar />
@@ -49,8 +46,7 @@ function DashboardPage(){
         closeForm={closeReportModal}
       />
 
-      
-      <Typography variant="h4" sx={{  marginTop: "2rem", marginLeft:"10%" }}>
+      <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
         Dashboard
       </Typography>
       <Box
@@ -61,28 +57,62 @@ function DashboardPage(){
           padding: "1rem",
           marginTop: "2rem",
           marginBottom: "2rem",
-          justifyContent:"center",
-          gap:"2rem"
+          justifyContent: "center",
+          gap: "0.6rem", // Reduced gap to make the boxes closer to each other
         }}
       >
-        <WidgetWrapper customColor="#8B0000" >
-          <Typography variant="body1" sx={{ color: "white" }}>Total Reports: </Typography>
+        <WidgetWrapper customColor="#8B0000">
+          <Typography
+            variant="overline" // Changed to a smaller variant
+            sx={{
+              color: "white",
+              textAlign: "center",
+              padding: "0.1rem 0.1rem", // Reduced padding to make the boxes smaller
+              borderRadius: "0.35rm",
+            }}
+          >
+            Total Reports:
+          </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
-          <Typography variant="body1" sx={{ color: "white" }}>Processing: </Typography>
+          <Typography
+            variant="overline"
+            sx={{
+              color: "white",
+              textAlign: "center",
+              padding: "0.1rem 0.1rem",
+            }}
+          >
+            Processing:
+          </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
-          <Typography variant="body1" sx={{ color: "white" }}>Queued: </Typography>
+          <Typography
+            variant="overline"
+            sx={{
+              color: "white",
+              textAlign: "center",
+              padding: "0.1rem 0.1rem",
+            }}
+          >
+            Queued:
+          </Typography>
         </WidgetWrapper>
-        <WidgetWrapper customColor="#8B0000" >
-          <Typography variant="body1" sx={{ color: "white" }}>Failed: </Typography>
+        <WidgetWrapper customColor="#8B0000">
+          <Typography
+            variant="overline"
+            sx={{
+              color: "white",
+              textAlign: "center",
+              padding: "0.1rem 0.1rem",
+            }}
+          >
+            Failed:
+          </Typography>
         </WidgetWrapper>
       </Box>
-    
+
       <Dashboard />
-     
-     
-      
     </>
   );
 }

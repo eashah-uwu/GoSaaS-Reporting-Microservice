@@ -1,6 +1,6 @@
-import classes from "./Report.module.css"
+import classes from "./Report.module.css";
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 
 const Report = ({ applicationId }: { applicationId: string }) => {
   const [data, setData] = useState<any[]>([]);
@@ -8,10 +8,11 @@ const Report = ({ applicationId }: { applicationId: string }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/reports/${applicationId}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reports/${applicationId}`
+        );
         setData(response.data);
-        console.log(response.data)
-
+        console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch source data", error);
       }
@@ -27,6 +28,4 @@ const Report = ({ applicationId }: { applicationId: string }) => {
   );
 };
 
-
 export default Report;
-

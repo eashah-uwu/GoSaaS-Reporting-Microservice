@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
-import { useDispatch } from 'react-redux';
-import { setToken } from '../State/authSlice'; 
-import axios from 'axios';
+import { useDispatch } from "react-redux";
+import { setToken } from "../State/authSlice";
+import axios from "axios";
 
 import {
   Box,
@@ -36,24 +36,34 @@ function LoginPage() {
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const login = async (values: { email: string; password: string }, onSubmitProps: any) => {
+  const login = async (
+    values: { email: string; password: string },
+    onSubmitProps: any
+  ) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', values);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
+        values
+      );
       const token = response.data.token;
       dispatch(setToken(token));
-      localStorage.setItem('token', token); 
-      navigate('/');
+      localStorage.setItem("token", token);
+      navigate("/");
     } catch (error) {
       // setError('Login failed');
-    
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${
+      import.meta.env.VITE_BACKEND_URL
+    }/api/auth/google`;
   };
 
-  const handleFormSubmit = async (values: { email: string; password: string }, onSubmitProps: any) => {
+  const handleFormSubmit = async (
+    values: { email: string; password: string },
+    onSubmitProps: any
+  ) => {
     await login(values, onSubmitProps);
   };
 

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, redirect } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 import Navbar from "../Components/Navbar/Navbar";
 import { Typography, Button } from "@mui/material";
 import classes from "./ApplicationPage.module.css";
 import Source from "../Components/Source/Source";
 import Destination from "../Components/Destination/Destination";
 import Report from "../Components/Report/Report";
-
 
 const ApplicationPage = () => {
   const { id } = useParams();
@@ -17,7 +16,10 @@ const ApplicationPage = () => {
   useEffect(() => {
     const fetchApplicationData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/applications/${id}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${id}`
+        );
+
         setApplicationData(response.data);
         console.log(response.data);
       } catch (error) {
@@ -40,9 +42,21 @@ const ApplicationPage = () => {
     <>
       <Navbar />
       <main className={classes.main_content}>
-        <Typography variant="h4" sx={{ paddingLeft :"12rem",paddingRight :"12rem",marginTop: "3rem",textAlign:"left" }}>
-          {applicationData && <div className={classes.appName}>{applicationData.name}</div>}
-          {applicationData && <div className={classes.appDes}>{applicationData.description}</div>}
+        <Typography
+          variant="h4"
+          sx={{
+            paddingLeft: "12rem",
+            paddingRight: "12rem",
+            marginTop: "3rem",
+            textAlign: "left",
+          }}
+        >
+          {applicationData && (
+            <div className={classes.appName}>{applicationData.name}</div>
+          )}
+          {applicationData && (
+            <div className={classes.appDes}>{applicationData.description}</div>
+          )}
         </Typography>
         {applicationData && (
           <div className={classes.buttonDiv}>
@@ -51,10 +65,12 @@ const ApplicationPage = () => {
               onClick={() => handleButtonClick("source")}
               sx={{
                 color: activeButton !== "source" ? "#7d0e0e" : "white",
-                backgroundColor: activeButton !== "source" ? "white" : "#7d0e0e",
+                backgroundColor:
+                  activeButton !== "source" ? "white" : "#7d0e0e",
                 border: "1px solid #7d0e0e",
                 ":hover": {
-                  backgroundColor: activeButton !== "source" ? "white" : "#7d0e0e",
+                  backgroundColor:
+                    activeButton !== "source" ? "white" : "#7d0e0e",
                   color: activeButton !== "source" ? "#7d0e0e" : "white",
                 },
               }}
@@ -66,11 +82,13 @@ const ApplicationPage = () => {
               onClick={() => handleButtonClick("destination")}
               sx={{
                 color: activeButton !== "destination" ? "#7d0e0e" : "white",
-                backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
+                backgroundColor:
+                  activeButton !== "destination" ? "white" : "#7d0e0e",
                 border: "1px solid #7d0e0e",
-                marginLeft:"0.3rem",
+                marginLeft: "0.3rem",
                 ":hover": {
-                  backgroundColor: activeButton !== "destination" ? "white" : "#7d0e0e",
+                  backgroundColor:
+                    activeButton !== "destination" ? "white" : "#7d0e0e",
                   color: activeButton !== "destination" ? "#7d0e0e" : "white",
                 },
               }}
@@ -82,11 +100,13 @@ const ApplicationPage = () => {
               onClick={() => handleButtonClick("reports")}
               sx={{
                 color: activeButton !== "reports" ? "#7d0e0e" : "white",
-                backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
-                marginLeft:"0.3rem",
+                backgroundColor:
+                  activeButton !== "reports" ? "white" : "#7d0e0e",
+                marginLeft: "0.3rem",
                 border: "1px solid #7d0e0e",
                 ":hover": {
-                  backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
+                  backgroundColor:
+                    activeButton !== "reports" ? "white" : "#7d0e0e",
                   color: activeButton !== "reports" ? "#7d0e0e" : "white",
                 },
               }}

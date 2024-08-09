@@ -115,11 +115,7 @@ class Report {
     }
 
     const [count] = await baseQuery;
-<<<<<<< Updated upstream
-    return count.count;
-=======
     return parseInt(count.count, 10);
->>>>>>> Stashed changes
   }
   static async findByApplicationId(applicationid) {
     return knex("report").where({

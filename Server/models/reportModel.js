@@ -32,10 +32,6 @@ class Report {
     return report;
   }
 
-  static async findAll() {
-    return knex("report").select("*");
-  }
-
   static async findById(id) {
     return knex("report").where({ reportid: id }).first();
   }
@@ -74,10 +70,6 @@ class Report {
     return knex("report").where({ reportid: id }).del();
   }
 
-  static async paginate({ offset, limit }) {
-    return knex("report").select("*").offset(offset).limit(limit);
-  }
-
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
       .select("*")
@@ -86,7 +78,7 @@ class Report {
           .where("title", "ilike", `%${query}%`)
           .orWhere("description", "ilike", `%${query}%`);
       });
-
+  
     if (filters) {
       if (filters.title) {
         baseQuery = baseQuery.andWhere("title", "ilike", `%${filters.title}%`);
@@ -95,14 +87,14 @@ class Report {
         baseQuery = baseQuery.andWhere("generationdate", "=", filters.date);
       }
     }
-
-    if (sortField && sortField !== "None") {
+  
+    if (sortField) {
       baseQuery = baseQuery.orderBy(sortField, sortOrder);
     }
-
-    const results = await baseQuery.offset(offset).limit(limit);
-    return results;
+  
+    return baseQuery.offset(offset).limit(limit);
   }
+  
 
   static async countSearchResults(query, filters) {
     let baseQuery = knex("report")
@@ -123,7 +115,11 @@ class Report {
     }
 
     const [count] = await baseQuery;
+<<<<<<< Updated upstream
     return count.count;
+=======
+    return parseInt(count.count, 10);
+>>>>>>> Stashed changes
   }
   static async findByApplicationId(applicationid) {
     return knex("report").where({

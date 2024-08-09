@@ -1,25 +1,46 @@
 const Report = require("../models/reportModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
-const { reportSchema } = require("../schemas/reportSchemas");
+const reportSchema = require("../schemas/reportSchemas");
+const config = require("config");
+require("dotenv").config();
 
-const createReport = async (req, res) => {
+const createReport = asyncHandler(async (req, res) => {
   // Validate and parse request body using reportSchema
+
   const data = reportSchema.parse(req.body);
 
-  // Create report in the database
+  const existingReport = await Report.findByName(data.name);
+  if (existingReport) {
+    logger.warn("Report name must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Report name must be unique",
+    });
+  }
+
   const report = await Report.create(data);
 
+
   logger.info("Report created successfully", {
-    context: { traceid: req.traceId, report },
+    context: { traceid: req.traceId,report },
   });
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
-    report,
+    report: {
+      reportid: report.reportid,
+      createdat: report.createdat,
+      isactive: report.isactive,
+      isdeleted: report.isdeleted,
+      name: report.name,
+      status: "active",
+    },
   });
 };
 
-const getAllReports = async (req, res) => {
+<<<<<<< Updated upstream
+const getAllReports = asyncHandler(async (req, res) => {
   const reports = await Report.findAll();
   logger.info("Retrieved all reports", {
     context: { traceid: req.traceId, reports },
@@ -40,19 +61,66 @@ const getReportById = async (req, res) => {
 
   const report = await Report.findById(reportId);
   if (!report) {
-    logger.warn("Report not found", { context: { traceid: req.traceId, id } });
+    logger.warn("Report not found", { id });
+=======
+const getReports = async (req, res) => {
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+    sortField,
+    sortOrder,
+  } = req.query;
+  
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [reports, total] = await Promise.all([
+    Report.search({
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters: filters ? JSON.parse(filters) : {},  // Ensure filters are parsed correctly
+      sortField,
+      sortOrder,
+    }),
+    Report.countSearchResults(query, filters ? JSON.parse(filters) : {}),
+  ]);
+
+  logger.info("Searched reports retrieved", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({
+    data: reports,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
+};
+
+
+const getReportById = async (req, res) => {
+  const { id } = req.params;
+  const report = await Report.findById(id);
+  if (!report) {
+    logger.warn("Report not found", { context: { traceid: req.traceId } });
+>>>>>>> Stashed changes
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
+<<<<<<< Updated upstream
+  logger.info("Retrieved report by ID", { id, report });
+=======
   logger.info("Retrieved report by ID", {
-    context: { traceid: req.traceId, id, report },
+    context: { traceid: req.traceId, report },
   });
+>>>>>>> Stashed changes
   res.status(StatusCodes.OK).json(report);
 };
 
 const updateReport = async (req, res) => {
   const { id } = req.params;
+<<<<<<< Updated upstream
   const reportId = parseInt(id, 10);
 
   if (isNaN(reportId)) {
@@ -62,20 +130,29 @@ const updateReport = async (req, res) => {
       .json({ message: "Invalid report ID" });
   }
 
+=======
+>>>>>>> Stashed changes
   const data = reportSchema.partial().parse(req.body);
-
-  const report = await Report.update(reportId, data);
+  const report = await Report.update(id, data);
   if (!report) {
+<<<<<<< Updated upstream
+    logger.warn("Report not found for update", { id });
+=======
     logger.warn("Report not found for update", {
-      context: { traceid: req.traceId, id },
+      context: { traceid: req.traceId },
     });
+>>>>>>> Stashed changes
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
+<<<<<<< Updated upstream
+  logger.info("Report updated successfully", { id, report });
+=======
   logger.info("Report updated successfully", {
-    context: { traceid: req.traceId, id, report },
+    context: { traceid: req.traceId, report },
   });
+>>>>>>> Stashed changes
   res.status(StatusCodes.OK).json({
     message: "Report updated successfully!",
     report,
@@ -84,6 +161,7 @@ const updateReport = async (req, res) => {
 
 const deleteReport = async (req, res) => {
   const { id } = req.params;
+<<<<<<< Updated upstream
   const reportId = parseInt(id, 10);
 
   if (isNaN(reportId)) {
@@ -169,14 +247,31 @@ const getReportsByApplicationId = async (req, res) => {
   });
   res.status(StatusCodes.OK).json(reports);
 };
+=======
+  const report = await Report.delete(id);
+  if (!report) {
+    logger.warn("Report not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report not found" });
+  }
+  logger.info("Report deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Report deleted successfully!" });
+};
+>>>>>>> Stashed changes
 
 module.exports = {
   createReport,
-  getAllReports,
+  getReports,
   getReportById,
   updateReport,
   deleteReport,
-  paginateReports,
   searchReports,
   getReportsByApplicationId,
 };

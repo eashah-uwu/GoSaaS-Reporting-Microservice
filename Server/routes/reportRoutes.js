@@ -1,23 +1,19 @@
 const express = require("express");
+const router = express.Router();
 const {
   createReport,
-  getAllReports,
+  getReports,
   getReportById,
   updateReport,
   deleteReport,
-  paginateReports,
-  getReportsByApplicationId,
-  searchReports,
 } = require("../controllers/reportController");
-
-const router = express.Router();
+const validateQuery = require("../middlewares/validateQuery");
 
 router.post("/", createReport);
 router.get("/", getAllReports);
-router.get("/:id", getReportsByApplicationId);
+router.get("/", validateQuery, getReports); // Validate query parameters using querySchema
+router.get("/:id", getReportById);
 router.put("/:id", updateReport);
 router.delete("/:id", deleteReport);
-router.get("/paginate", paginateReports);
-router.get("/search", searchReports);
 
 module.exports = router;

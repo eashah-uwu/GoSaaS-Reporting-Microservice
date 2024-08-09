@@ -122,30 +122,6 @@ class Connection {
   }
 
   static async update(id, data) {
-<<<<<<< Updated upstream
-    const {
-      alias,
-      host,
-      port,
-      database,
-      type,
-      isactive,
-      isdeleted,
-      password,
-      updatedby,
-    } = data;
-    const [connection] = await knex("connection")
-      .where({ connectionid: id })
-      .update({
-        alias,
-        host,
-        port,
-        database,
-        type,
-        isactive,
-        isdeleted,
-        password,
-=======
     const { alias, host, port, database, type, isactive, isdeleted, password } = data;
 
     const [prevConnection] = await knex("connection").where({
@@ -166,7 +142,6 @@ class Connection {
         database: database,
         type: type,
         password: encryptedPassword, // Update with the encrypted password
->>>>>>> Stashed changes
         updatedat: new Date(),
       })
       .returning("*");

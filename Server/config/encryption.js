@@ -8,7 +8,6 @@ const IV_LENGTH = 16; // For AES, this is always 16
 
 // Function to encrypt text
 function encrypt(text) {
-    console.log(ENCRYPTION_KEY.length)
   if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
     throw new Error("Invalid ENCRYPTION_KEY length. Must be 64 hex characters.");
   }

@@ -1,4 +1,5 @@
 const knex = require("../config/db/db");
+const { encrypt, decrypt } = require("../config/encryption");
 
 class Connection {
   static async create(data) {
@@ -15,6 +16,10 @@ class Connection {
       createdby,
       updatedby,
     } = data;
+
+    // Encrypt the password before saving it to the database
+    const encryptedPassword = encrypt(password);
+
     const [connection] = await knex("connection")
       .insert({
         alias,
@@ -24,7 +29,7 @@ class Connection {
         type,
         isactive,
         isdeleted,
-        password,
+        password: encryptedPassword, // Save the encrypted password
         applicationid,
         createdat: new Date(),
         updatedat: new Date(),
@@ -34,6 +39,7 @@ class Connection {
       .returning("*");
     return connection;
   }
+
 
   static async findAll() {
     return knex("connection").select("*").where({ isdeleted: false });
@@ -46,6 +52,7 @@ class Connection {
   }
 
   static async update(id, data) {
+<<<<<<< Updated upstream
     const {
       alias,
       host,
@@ -68,12 +75,35 @@ class Connection {
         isactive,
         isdeleted,
         password,
+=======
+    const { alias, host, port, database, type, isactive, isdeleted, password } = data;
+
+    const [prevConnection] = await knex("connection").where({
+      connectionid: id,
+    });
+
+    const encryptedPassword = password ? encrypt(password) : prevConnection.password;
+
+    const [connection] = await knex("connection")
+      .where({ connectionid: id })
+      .update({
+        ...prevConnection,
+        isactive: isactive,
+        isdeleted: isdeleted,
+        alias: alias,
+        host: host,
+        port: port,
+        database: database,
+        type: type,
+        password: encryptedPassword, // Update with the encrypted password
+>>>>>>> Stashed changes
         updatedat: new Date(),
         updatedby,
       })
       .returning("*");
     return connection;
   }
+
 
   static async delete(id) {
     const [connection] = await knex("connection")

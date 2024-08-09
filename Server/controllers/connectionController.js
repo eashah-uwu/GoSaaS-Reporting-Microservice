@@ -98,6 +98,14 @@ const deleteConnection = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Connection deleted successfully!" });
 };
+<<<<<<< Updated upstream
+=======
+
+// Get connections by Application ID
+const getConnectionsByApplicationId = async (req, res) => {
+  const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
+  const { id: applicationId } = req.params;
+>>>>>>> Stashed changes
 
 
 

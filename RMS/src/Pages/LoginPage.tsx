@@ -72,7 +72,6 @@ function LoginPage() {
 
   return (
     <>
-      <Navbar />
       <div className={styles.parentContainer}>
         <Box
           display="flex"

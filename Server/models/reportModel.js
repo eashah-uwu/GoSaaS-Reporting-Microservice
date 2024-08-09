@@ -69,6 +69,9 @@ class Report {
   static async delete(id) {
     return knex("report").where({ reportid: id }).del();
   }
+  static async findByitle(title) {
+    return knex("report").select("*").where({ title }).first();
+  }
 
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
@@ -78,7 +81,7 @@ class Report {
           .where("title", "ilike", `%${query}%`)
           .orWhere("description", "ilike", `%${query}%`);
       });
-  
+
     if (filters) {
       if (filters.title) {
         baseQuery = baseQuery.andWhere("title", "ilike", `%${filters.title}%`);
@@ -87,14 +90,13 @@ class Report {
         baseQuery = baseQuery.andWhere("generationdate", "=", filters.date);
       }
     }
-  
+
     if (sortField) {
       baseQuery = baseQuery.orderBy(sortField, sortOrder);
     }
-  
+
     return baseQuery.offset(offset).limit(limit);
   }
-  
 
   static async countSearchResults(query, filters) {
     let baseQuery = knex("report")

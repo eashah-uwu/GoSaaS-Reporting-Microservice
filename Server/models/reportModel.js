@@ -69,7 +69,7 @@ class Report {
   static async delete(id) {
     return knex("report").where({ reportid: id }).del();
   }
-  static async findByitle(title) {
+  static async findByTitle(title) {
     return knex("report").select("*").where({ title }).first();
   }
 

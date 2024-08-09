@@ -5,7 +5,7 @@ const { combine, timestamp, printf, errors } = format;
 const logFormat = printf(({ timestamp, level, message, stack, context }) => {
   const traceId = context && context.traceid ? context.traceid : "N/A";
   const errorDetails = stack
-    ? `at ${stack.split("\n")[1].split(":").slice(1, 3).join(":")}`
+    ? `at ${stack.split("\n")[1].split("Server").slice(1, 3).join(":")}`
     : "";
   const internalServerError =
     level === "error" ? "Internal server error: " : "";

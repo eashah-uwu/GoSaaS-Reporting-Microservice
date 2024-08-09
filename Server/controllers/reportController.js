@@ -2,29 +2,26 @@ const Report = require("../models/reportModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
-const config = require("config");
 require("dotenv").config();
 
-const createReport = async(async (req, res) => {
+const createReport = async (req, res) => {
   // Validate and parse request body using reportSchema
-
   const data = reportSchema.parse(req.body);
 
-  const existingReport = await Report.findByName(data.name);
+  const existingReport = await Report.findByTitle(data.title);
   if (existingReport) {
-    logger.warn("Report name must be unique", {
+    logger.warn("Report title must be unique", {
       context: { traceid: req.traceId },
     });
     return res.status(StatusCodes.CONFLICT).json({
-      message: "Report name must be unique",
+      message: "Report title must be unique",
     });
   }
 
   const report = await Report.create(data);
 
-
   logger.info("Report created successfully", {
-    context: { traceid: req.traceId,report },
+    context: { traceid: req.traceId, report },
   });
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
@@ -37,15 +34,14 @@ const createReport = async(async (req, res) => {
       status: "active",
     },
   });
-});
-
-const getReports = async(async (req, res) => {
+};
+const getReports = async (req, res) => {
   const reports = await Report.findAll();
   logger.info("Retrieved all reports", {
     context: { traceid: req.traceId, reports },
   });
   res.status(StatusCodes.OK).json(reports);
-});
+};
 
 const getReportById = async (req, res) => {
   const { id } = req.params;

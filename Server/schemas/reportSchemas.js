@@ -16,4 +16,4 @@ const reportSchema = z.object({
   createdby: z.number().int(),
 });
 
-module.exports = { reportSchema };
+module.exports = reportSchema;

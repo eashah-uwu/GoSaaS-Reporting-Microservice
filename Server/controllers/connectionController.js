@@ -39,7 +39,7 @@ const getConnections = async (req, res) => {
       limit: parseInt(pageSize, 10),
       filters,
     }),
-    Connection.countSearchResults(query, filters),
+    // Connection.countSearchResults(query, filters),
   ]);
 
   logger.info("Searched connections retrieved", {
@@ -113,36 +113,31 @@ const deleteConnection = async (req, res) => {
     .json({ message: "Connection deleted successfully!" });
 };
 const getConnectionsByApplicationId = async (req, res) => {
-  const {
-    query = "",
-    page = 1,
-    pageSize = 10,
-    filters = {},
-  } = req.query;
+  const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
   const { id: applicationId } = req.params;
 
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
 
-    const [connections, total] = await Promise.all([
-      Connection.findByApplicationId({
-        applicationId,
-        query,
-        offset,
-        limit: parseInt(pageSize, 10),
-        filters,
-      }),
-      Connection.countSearchResults(applicationId, query, filters),
-    ]);
-    logger.info("Retrieved connections by application ID", {
-      context: { traceid: req.traceId, applicationId, connections },
-    });
+  const [connections, total] = await Promise.all([
+    Connection.findByApplicationId({
+      applicationId,
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Connection.countSearchResults(applicationId, query, filters),
+  ]);
+  logger.info("Retrieved connections by application ID", {
+    context: { traceid: req.traceId, applicationId, connections },
+  });
 
-    res.status(StatusCodes.OK).json({
-      data: connections,
-      total,
-      page: parseInt(page, 10),
-      pageSize: parseInt(pageSize, 10),
-    });
+  res.status(StatusCodes.OK).json({
+    data: connections,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 module.exports = {

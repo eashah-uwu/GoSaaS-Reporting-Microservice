@@ -7,6 +7,7 @@ const Sidebar = ({ isOpen }) => {
     <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <ul className={styles.ul}>
         <li className={styles.li}><Link to="/">Dashboard</Link></li>
+        {/* <li className={styles.li}><Link to="/login">Login</Link></li> */}
         <li className={styles.li}><Link to="/audittrails">Audit Trails</Link></li>
         <li className={styles.li}><Link to="/reports">Reports</Link></li>
       </ul>

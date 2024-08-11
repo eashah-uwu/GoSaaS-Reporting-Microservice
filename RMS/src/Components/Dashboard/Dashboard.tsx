@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import TableConfig from "../TableConfig/TableConfig";
 import {  Pagination, FormControl } from '@mui/material';
 import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
@@ -23,66 +24,79 @@ const Dashboard = () => {
     const [description, setDescription] = useState('');
     
 
-    const fetchApplications = async (page = 1, pageSize = 10, query = "", filters = {}) => {
-        try {
-            setLoading(true);
-            const { data } = await axios.get(`http://localhost:3000/api/applications`, {
-                params: { page, pageSize, query, filters }
-            });
-            const processedData = data.data.map((app: any) => ({
-                ...app,
-                status: app.isdeleted ? "delete" : (app.isactive ? "active" : "inactive")
-            }));
-            setApplications(processedData);
-            setTotal(data.total);
-        } catch (err) {
-            setError('Failed to fetch data');
-        } finally {
-            setLoading(false);
+  const fetchApplications = async (
+    page = 1,
+    pageSize = 10,
+    query = "",
+    filters = {}
+  ) => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(
+        `http://localhost:3000/api/applications`,
+        {
+          params: { page, pageSize, query, filters },
         }
-    };
+      );
+      const processedData = data.data.map((app: any) => ({
+        ...app,
+        status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
+      }));
+      setApplications(processedData);
+      setTotal(data.total);
+    } catch (err) {
+      setError("Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchApplications(page, pageSize, searchQuery, filters);
-    }, [page, pageSize, filters]);
+  useEffect(() => {
+    fetchApplications(page, pageSize, searchQuery, filters);
+  }, [page, pageSize, filters]);
 
-    const handleSave = async (updatedItems: any[]) => {
-        try {
-            const requests = updatedItems.map(item => {
-                const { applicationid, name, createdat, isactive, isdeleted } = item;
-                return axios.put(`http://localhost:3000/api/applications/${applicationid}`, {
-                    applicationid,
-                    name,
-                    createdat,
-                    isactive,
-                    isdeleted
-                });
-            });
-            await Promise.all(requests);
-            console.log("updated Items", updatedItems)
-          
-        } catch (error) {
-            alert("Failed to update data");
-        }
-    };
+  const handleSave = async (updatedItems: any[]) => {
+    try {
+      const requests = updatedItems.map((item) => {
+        const { applicationid, name, createdat, isactive, isdeleted } = item;
+        return axios.put(
+          `http://localhost:3000/api/applications/${applicationid}`,
+          {
+            applicationid,
+            name,
+            createdat,
+            isactive,
+            isdeleted,
+          }
+        );
+      });
+      await Promise.all(requests);
+      console.log("updated Items", updatedItems);
+    } catch (error) {
+      alert("Failed to update data");
+    }
+  };
 
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    };
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
 
-    const handleSearchSubmit = () => {
-        setPage(1);
-        fetchApplications(1, pageSize, searchQuery, filters);
-    };
+  const handleSearchSubmit = () => {
+    setPage(1);
+    fetchApplications(1, pageSize, searchQuery, filters);
+  };
 
-    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-        setPage(value);
-    };
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
 
-    const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setPageSize(Number(event.target.value));
-        setPage(1);
-    };
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPageSize(Number(event.target.value));
+    setPage(1);
+  };
 
     const handleFilterChange = (newFilters: any) => {
         setFilters(newFilters);
@@ -150,7 +164,7 @@ const Dashboard = () => {
         }
     };
 
-    const baseColumns = generateBaseColumns(applications);
+  const baseColumns = generateBaseColumns(applications);
 
     return (
         <div className={classes.dashboard_main}>

@@ -8,7 +8,6 @@ import DashboardPage from "./Pages/Dashboard.tsx"
 
 function App() {
   return (
-
     <>
       <div className="container">
         <Routes>

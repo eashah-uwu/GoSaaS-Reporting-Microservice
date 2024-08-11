@@ -4,7 +4,8 @@ import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl, IconButton } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+
+import SourceConnection from "Components/SourceConnection/SourceConnection";
 interface SourceProps {
   applicationId: string;
 }
@@ -13,7 +14,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [open,setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -104,9 +105,17 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(connections);
 
-  const handleAdd = () => {
+  const onOpen=()=>{
+    setOpen(true);
+  }
 
-  };
+  const onClose=()=>{
+    setOpen(false);
+  }
+
+  // const handleAdd = () => {
+
+  // };
 
 
 
@@ -151,10 +160,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           </FormControl>
         </Box>
       }
-        <IconButton onClick={handleAdd} sx={{ ml: 2, width: "auto", height: "auto" }}>
+        {/* <IconButton  sx={{ ml: 2, width: "auto", height: "auto" }}>
                         <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
-                    </IconButton>
-
+                    </IconButton> */}
+                    {/* {open && <SourceConnection closeForm={onClose} />} */}
 
     </div>
   );

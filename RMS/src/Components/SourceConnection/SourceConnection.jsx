@@ -138,8 +138,7 @@ const SourceConnection = ({ isOpen, closeForm }) => {
   );
 };
 
-SourceConnection.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
+SourceConnection.propTypes = { 
   closeForm: PropTypes.func.isRequired,
 };
 

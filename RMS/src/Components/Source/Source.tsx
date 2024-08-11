@@ -3,7 +3,8 @@ import classes from "./Source.module.css"
 import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
-import { TextField, Button, Box, Pagination, FormControl } from '@mui/material';
+import { TextField, Button, Box, Pagination, FormControl, IconButton } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 interface SourceProps {
   applicationId: string;
 }
@@ -103,6 +104,11 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(connections);
 
+  const handleAdd = () => {
+
+  };
+
+
 
   return (
     <div className={classes.main}>
@@ -145,7 +151,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           </FormControl>
         </Box>
       }
-
+        <IconButton onClick={handleAdd} sx={{ ml: 2, width: "auto", height: "auto" }}>
+                        <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
+                    </IconButton>
 
 
     </div>

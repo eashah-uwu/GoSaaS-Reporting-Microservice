@@ -144,7 +144,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
             </Box>
           </FormControl>
         </Box>
-
       }
 
 

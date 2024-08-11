@@ -135,8 +135,18 @@ const Dashboard = () => {
             } else {
                 console.error('Failed to submit data');
             }
-        } catch (error) {
-            console.error('Error submitting data:', error);
+        }  catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response && error.response.status === 409) {
+                    alert('Application name already exists. Please choose another name.');
+                } else {
+                    console.error("Failed to create application:", error);
+                    alert('An error occurred. Please try again later.');
+                }
+            } else {
+                console.error("An unexpected error occurred:", error);
+                alert('An unexpected error occurred. Please try again later.');
+            }
         }
     };
 

@@ -5,7 +5,7 @@ interface WidgetWrapperProps {
     }
 const WidgetWrapper = styled(Box)<WidgetWrapperProps>(({ customColor })  => ({
   padding: "1.5rem 1.5rem 0.75rem 1.5rem",
-  borderRadius: "1.5rem",
+  borderRadius: "0.35rem",
   backgroundColor: customColor || "#0bb2a2",
    width: "15rem",
     display: "flex",

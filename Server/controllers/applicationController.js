@@ -84,11 +84,23 @@ const getApplicationById = async (req, res) => {
   });
   res.status(StatusCodes.OK).json(application);
 };
-
 const updateApplication = async (req, res) => {
   const { id } = req.params;
   const data = applicationSchema.partial().parse(req.body);
+
+
+  const existingApplication = await Application.findByName(data.name);
+  if (existingApplication && existingApplication.id !== id) {
+    logger.warn("Application name must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Application name must be unique",
+    });
+  }
+
   const application = await Application.update(id, data);
+  
   if (!application) {
     logger.warn("Application not found for update", {
       context: { traceid: req.traceId },
@@ -97,6 +109,7 @@ const updateApplication = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Application not found" });
   }
+
   logger.info("Application updated successfully", {
     context: { traceid: req.traceId, application },
   });
@@ -105,6 +118,7 @@ const updateApplication = async (req, res) => {
     application,
   });
 };
+
 
 const deleteApplication = async (req, res) => {
   const { id } = req.params;

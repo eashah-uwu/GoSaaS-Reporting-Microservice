@@ -20,34 +20,56 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
         port: '',
         alias: ''
     });
+    const [valid, setValid] = useState(false);
 
     const handleChange = (e:any) => {
         const { name, value } = e.target;
+
         setFormData({ ...formData, [name]: value });
     };
 
 
     const handleSubmit = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
-        const userid = 4;
         const data = { ...formData};
         console.log(data)
-        // try {
-        //     const response = await axios.post(`http://localhost:3000/api/applications`, data);
-        //     if (response.status === 201) {
-        //         const createdApplication = response.data.application;
-        //         const { applicationid, name, createdat, isactive, isdeleted, status } = createdApplication;
-        //         onAdd({
-        //             applicationid, name, createdat, isactive, isdeleted, status
-        //         });
-        //         onClose();
-        //     } else {
-        //         console.error('Failed to submit data');
-        //     }
-        // } catch (error) {
-        //     console.error('Error submitting data:', error);
-        // }
+        if (!valid) {
+            alert("Please test the connection before saving!");
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:3000/api/connections", data);
+            console.log(response.data);
+            if (response.data.success) {
+                alert("Connection added successfully!");
+                onAdd(response.data.data);
+                onClose();
+            } else {
+                alert("Failed to add connection: " + response.data.message);
+            }
+        } catch (error: any) {
+            console.error("Error adding connection:", error);
+            alert("Failed to add connection: " + error.message);
+        }
     };
+
+    const onTest = async () => {
+        console.log("Testing connection...");
+        console.log("formDATA", formData);
+        try {
+            const response = await axios.post("http://localhost:3000/api/connections/test-connection", formData);
+            if (response.data.success) {
+                alert("Connection successful!");
+                setValid(true);
+            } else {
+                alert("Connection failed: " + response.data.message);
+            }
+        } catch (error: any) {
+            console.error("Error testing connection:", error);
+            alert("Connection failed: " + error.message);
+        }
+    };
+
     return (
         <>
             <Dialog open={open} onClose={onClose}>
@@ -105,8 +127,8 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
                                     onChange={handleChange}
                                 >
                                     <MenuItem value="">Select Type</MenuItem>
-                                    <MenuItem value="type1">Type 1</MenuItem>
-                                    <MenuItem value="type2">Type 2</MenuItem>
+                                    <MenuItem value="Oracle">Oracle</MenuItem>
+                                    <MenuItem value="PostgreSQL">PostgreSQL</MenuItem>
                                 </TextField>
                             </div>
                         </div>
@@ -151,8 +173,8 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
                             </div>
                         </div>
                         <DialogActions>
-                        <Button onClick={onClose} color="primary">
-                            Cancel
+                        <Button onClick={onTest} color="primary">
+                            Test
                         </Button>
                         <Button type="submit" color="primary">
                             Save

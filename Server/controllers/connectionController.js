@@ -3,6 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
+const ConnectionFactory = require('../config/db/connectionFactory');
 
 // Create a new connection
 const createConnection = async (req, res) => {
@@ -15,6 +16,30 @@ const createConnection = async (req, res) => {
     message: "Connection created successfully!",
     connection,
   });
+};
+
+//test connection
+const testConnection = async (req,res) => {
+   const {type, ...config} = req.body;
+   try {
+    const connection = ConnectionFactory.createConnection(type, config);
+    const result = await connection.testConnection();
+    logger.info("Connection test successful", {
+      context: { traceid: req.traceId, type, config, result },
+    });
+    res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+
+    logger.error("Error testing connection", {
+      context: { traceid: req.traceId, type, config, error: error.message },
+    });
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "An error occurred while testing the connection",
+      error: error.message
+    });
+  }
 };
 
 // Get connections
@@ -149,4 +174,5 @@ module.exports = {
   deleteConnection,
   getConnections,
   getConnectionsByApplicationId,
+  testConnection,
 };

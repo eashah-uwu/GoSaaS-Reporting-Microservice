@@ -119,13 +119,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(connections);
 
-  const onOpen = () => {
-    setOpen(true);
-  }
 
-  const onClose = () => {
-    setOpen(false);
-  }
 
   return (
     <>

@@ -12,7 +12,6 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 
 const testMiddleware = require("./middlewares/index");
-//const errorHandler = require("./middlewares/errorMiddleware");
 
 // Import routes
 const indexRouter = require("./routes/index");

@@ -119,7 +119,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setOpenAddDestination(false);
   };
   const handleAddDestination = (newDestination: any) => {
-    setDestinations((prevData) => [newDestination, ...prevData]);
+    setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
   };
 
   const handleConnectionDelete = async (destinationId: string | null) => {
@@ -244,6 +244,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         )}
       </div>
       <AddDestination
+        applicationId={applicationId}
         open={openAddDestination}
         onClose={handleAddDestinationClose}
         onAdd={handleAddDestination}

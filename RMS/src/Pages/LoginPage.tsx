@@ -75,6 +75,7 @@ function LoginPage() {
 
   return (
     <>
+      <Navbar />
       <div className={styles.parentContainer}>
         <Box
           display="flex"
@@ -104,7 +105,7 @@ function LoginPage() {
           />
           <Button
             fullWidth
-            type="submit"
+            type="button"
             onClick={handleGoogleLogin}
             sx={{
               m: "1rem 0",
@@ -123,14 +124,14 @@ function LoginPage() {
             Sign in with Google
           </Button>
 
-          <Typography variant="body1" color="error" sx={{ mx: 2 }}>
+          <Typography variant="body1" color="textSecondary" sx={{ mx: 2 }}>
             or
           </Typography>
 
           {!flag && (
             <Typography
               variant="body1"
-              color="error"
+              color="primary"
               sx={{
                 mt: "1rem",
                 mb: "3rem",
@@ -192,10 +193,16 @@ function LoginPage() {
                         name="email"
                         error={Boolean(touched.email) && Boolean(errors.email)}
                         helperText={touched.email && errors.email}
+                        fullWidth
                         sx={{
                           gridColumn: "span 4",
                           width: "100%",
                           pt: "0.5rem",
+                          maxWidth: "80%", // Set to match the Google button
+                        }}
+                        style={{
+                          marginLeft: "10%",
+                          width: "600px",
                         }}
                       />
                       <TextField
@@ -209,10 +216,16 @@ function LoginPage() {
                           Boolean(touched.password) && Boolean(errors.password)
                         }
                         helperText={touched.password && errors.password}
+                        fullWidth
                         sx={{
                           gridColumn: "span 4",
                           width: "100%",
                           pt: "0.5rem",
+                          maxWidth: "80%", // Set to match the Google button
+                        }}
+                        style={{
+                          marginLeft: "10%",
+                          width: "600px",
                         }}
                       />
                     </Box>

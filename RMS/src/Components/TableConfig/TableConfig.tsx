@@ -1,10 +1,10 @@
 import React, { useEffect, useState, FC } from "react";
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import Table from "../Table/Table";
 import { setColumns } from "../Table/Columns/CreateColumns";
 import Confirmation from "../ConfirmationDialogue/Confirmation";
 import classes from "./TableConfig.module.css";
-
+import AddButton from "../AddButton/AddButton";
 
 interface TableConfigProps {
     data: any[];
@@ -14,15 +14,15 @@ interface TableConfigProps {
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
     onDelete: (selectedDataId:string | null) => void;
+    onAddData: () => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete,onAddData }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [selectedDataId, setSelectedDataId] = useState<string | null>(null);
     const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false);
-
 
     useEffect(() => {
         setTableData(data);
@@ -96,7 +96,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                         </Button>
                     </span>
                     }
-                    
+                    <AddButton onClick={onAddData} />
                 </Box>
             </Box>
            
@@ -108,7 +108,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                 message="Are you sure you want to delete this application?"
             />
 
-            
+           
         </>
     );
 };

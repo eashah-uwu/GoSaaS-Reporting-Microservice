@@ -3,10 +3,8 @@ import classes from "./Source.module.css"
 import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
-import { TextField, Button, Box, Pagination, FormControl, IconButton } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import SourceConnection from "../SourceConnection/SourceConnection";
-
+import { TextField, Button, Box, Pagination, FormControl } from '@mui/material';
+import AddSource from "../AddSource/AddSource";
 interface SourceProps {
   applicationId: string;
 }
@@ -15,7 +13,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState<boolean>(false);
+
+  const [openAddSource, setOpenAddSource] = useState<boolean>(false);
+
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -84,13 +84,24 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setFilters(newFilters);
     setPage(1);
   };
-  
-  const handleConnectionDelete = async (connectionId: string | null) => {
-    try {
-      await axios.delete(`http://localhost:3000/api/connections/${connectionId}`);
-      fetchConnections(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      console.log(e);
+  const handleAddSourceOpen = () => {
+    setOpenAddSource(true);
+  };
+
+  const handleAddApplicationClose = () => {
+    setOpenAddSource(false);
+  };
+  const handleAddSource = (newSource: any) => {
+    setConnections(prevData => [newSource, ...prevData]);
+  };
+
+  const handleConnectionDelete=async(connectionId:string|null)=>{
+    try{
+        await axios.delete(`http://localhost:3000/api/connections/${connectionId}`);
+        fetchConnections(page, pageSize, searchQuery, filters)
+    }
+    catch(e){
+        console.log(e)
     }
   }
 
@@ -117,6 +128,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   }
 
   return (
+    <>
     <div className={classes.main}>
       <Box sx={{ float: "left", marginLeft: "7.5%" }}>
         <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
@@ -136,7 +148,8 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       </Box>
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
-      {!loading && !error && <TableConfig data={connections} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="connectionid" onDelete={handleConnectionDelete} />}
+      {!loading && !error && <TableConfig data={connections} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="connectionid" onDelete={handleConnectionDelete} 
+          onAddData={handleAddSourceOpen}/>}
       {!loading && !error &&
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
           <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />
@@ -164,6 +177,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
       <SourceConnection open={open} closeForm={onClose} />
     </div>
+    <AddSource
+                open={openAddSource}
+                onClose={handleAddApplicationClose}
+                onAdd={handleAddSource}
+            />
+    </>
   );
 };
 

@@ -7,18 +7,20 @@ const {
   updateDestinationSchema,
 } = require("../schemas/destinationSchemas");
 
-// Create a new destination
 const createDestination = async (req, res) => {
-  const data = createDestinationSchema.parse(req.body);
-  const destination = await Destination.create(data);
+  const {destination,alias,url,apiKey,applicationId,userId } = req.body;
+  console.log(destination,alias,url,apiKey,applicationId,userId)
+  await connectToDestination(destination, url, apiKey);
+  const newDestination = await Destination.create(alias,url,apiKey,applicationId,userId);
   logger.info("Destination created successfully", {
     context: { traceid: req.traceId, destination },
   });
-  res.status(StatusCodes.CREATED).json({
-    message: "Destination created successfully!",
-    destination,
-  });
+    res.status(201).json({
+      message: "Destination created successfully!",
+      destination: newDestination,
+    });
 };
+
 
 // Get all destinations
 const getAllDestinations = async (req, res) => {
@@ -100,49 +102,47 @@ const getDestinationsByApplicationId = async (req, res) => {
 
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
 
-    const [destinations, total] = await Promise.all([
-      Destination.findByApplicationId({
-        applicationId,
-        query,
-        offset,
-        limit: parseInt(pageSize, 10),
-        filters,
-      }),
-      Destination.countSearchResults(applicationId, query, filters),
-    ]);
-    logger.info("Retrieved Destinations by application ID", {
-      context: { traceid: req.traceId, applicationId, destinations },
-    });
+  const [destinations, total] = await Promise.all([
+    Destination.findByApplicationId({
+      applicationId,
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Destination.countSearchResults(applicationId, query, filters),
+  ]);
+  logger.info("Retrieved Destinations by application ID", {
+    context: { traceid: req.traceId, applicationId, destinations },
+  });
 
-    res.status(StatusCodes.OK).json({
-      data: destinations,
-      total,
-      page: parseInt(page, 10),
-      pageSize: parseInt(pageSize, 10),
-    });
+  res.status(StatusCodes.OK).json({
+    data: destinations,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
-const connectStorageDestination=async(req, res)=>{
-
-  const { destination, url, apiKey,alias } = req.body;
-  console.log(destination,url,apiKey,alias)
+const connectStorageDestination = async (req, res) => {
+  const { destination, url, apiKey, alias } = req.body;
   const result = await connectToDestination(destination, url, apiKey);
-   if (result.success) {
-      res.status(200).json({ message: result.message });
-  } else {
-      res.status(500).json({ error: result.message });
-  }
+  logger.info("Destination connected successfully", {
+    context: { traceid: req.traceId, result },
+  });
+  res.status(200).json({ message: result.message });
 }
-const addFileToDestination=async(req, res)=>{
-  const { destination, url, apiKey,alias, bucketName } = req.body;
-    const file = req.file;
 
-    const result = await uploadFile(destination, url, apiKey,file, bucketName);
-    if (result.success) {
-        res.status(200).json({ message: result.message, url: result.url });
-    } else {
-        res.status(500).json({ error: result.message });
-    }
+const addFileToDestination = async (req, res) => {
+  const { destination, url, apiKey, alias, bucketName } = req.body;
+  const file = req.file;
+
+  const result = await uploadFile(destination, url, apiKey, file, bucketName);
+  if (result.success) {
+    res.status(200).json({ message: result.message, url: result.url });
+  } else {
+    res.status(500).json({ error: result.message });
+  }
 }
 
 module.exports = {

@@ -2,35 +2,24 @@ const knex = require("../config/db/db");
 
 class Destination {
   // Create a new destination
-  static async create(data) {
-    const {
-      alias,
-      url,
-      apikey,
-      isactive,
-      isdeleted,
-      applicationid,
-      createdby,
-      updatedby,
-    } = data;
-
+  static async create(alias_p,url_p,apikey_p,applicationId_p,userId_p) {
     // Insert data into the database
     const [destination] = await knex("destination")
       .insert({
-        alias: alias,
-        url: url,
-        apikey: apikey, // Note the exact column name
-        isactive: isactive, // Note the exact column name
-        isdeleted: isdeleted, // Note the exact column name
-        applicationid: applicationid, // Note the exact column name
+        alias: alias_p,
+        url: url_p,
+        apikey: apikey_p, // Note the exact column name
+        isactive: true, // Note the exact column name
+        isdeleted: false, // Note the exact column name
+        applicationid: applicationId_p, // Note the exact column name
         createdat: new Date(), // Note the exact column name
         updatedat: new Date(), // Note the exact column name
-        createdby: createdby, // Note the exact column name
-        updatedby: updatedby, // Note the exact column name
+        createdby: userId_p, // Note the exact column name
+        updatedby: userId_p, // Note the exact column name
       })
       .returning("*");
-
-    return destination;
+      const {alias,applicationid,destinationid,url,apikey,isactive,isdeleted}=destination
+    return {alias,applicationid,destinationid,url,apikey,isactive,isdeleted};
   }
 
   // Retrieve all destinations

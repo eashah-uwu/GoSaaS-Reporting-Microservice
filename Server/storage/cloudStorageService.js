@@ -3,7 +3,6 @@ const AWS = require('aws-sdk');
 // const { BlobServiceClient } = require('@azure/storage-blob');
 
 const connectToDestination = async (destination, url, apiKey) => {
-    try {
         if (destination === 'aws') {
             AWS.config.update({
                 accessKeyId: url,
@@ -25,13 +24,9 @@ const connectToDestination = async (destination, url, apiKey) => {
         } else {
             return { success: false, message: 'Invalid destination' };
         }
-    } catch (error) {
-        return { success: false, message: `Failed to connect to ${destination}: ${error.message}` };
-    }
 };
 
 const uploadFile = async (destination, url, apiKey,file, bucketName) => {
-    try {
         if (destination === 'aws') {
             const s3 = new AWS.S3({
                 accessKeyId: url,
@@ -61,9 +56,6 @@ const uploadFile = async (destination, url, apiKey,file, bucketName) => {
         } else {
             return { success: false, message: 'Invalid destination' };
         }
-    } catch (error) {
-        return { success: false, message: `Failed to upload file to ${destination}: ${error.message}` };
-    }
 };
 
 module.exports = {

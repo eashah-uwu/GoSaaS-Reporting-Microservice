@@ -4,7 +4,8 @@ import OAuthCallback from './Components/OAuthCallback';
 import LoginPage from "./Pages/LoginPage.tsx"
 import ApplicationPage from "./Pages/ApplicationPage.tsx"
 import DashboardPage from "./Pages/Dashboard.tsx"
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
           </Route>
         </Routes>
       </div>
+      <ToastContainer/>
+  
     </>
   )
 }

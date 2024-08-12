@@ -4,6 +4,9 @@ import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl } from '@mui/material';
+import AddDestination from "../AddDestination/AddDestination"
+
+
 interface SourceProps {
   applicationId: string;
 }
@@ -12,6 +15,8 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [openAddDestination, setOpenAddDestination] = useState<boolean>(false);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -80,6 +85,18 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setFilters(newFilters);
     setPage(1);
   };
+
+  const handleAddDestinationOpen = () => {
+    setOpenAddDestination(true);
+  };
+
+  const handleAddDestinationClose = () => {
+    setOpenAddDestination(false);
+  };
+  const handleAddDestination = (newDestination: any) => {
+    setDestinations(prevData => [newDestination, ...prevData]);
+  };
+
   const handleConnectionDelete=async(destinationId:string|null)=>{
     try{
         await axios.delete(`http://localhost:3000/api/destinations/${destinationId}`);
@@ -105,6 +122,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
 
   return (
+    <>
     <div className={classes.main}>
       <Box sx={{ float: "left", marginLeft: "7.5%" }}>
         <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
@@ -124,7 +142,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       </Box>
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
-      {!loading && !error && <TableConfig data={destinations} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="destinationid" onDelete={handleConnectionDelete} />}
+      {!loading && !error && <TableConfig data={destinations} includeStatus={true} baseColumns={baseColumns} pageSize={pageSize} onSave={handleSave} rowIdAccessor="destinationid" onDelete={handleConnectionDelete} onAddData={handleAddDestinationOpen}/>}
       {!loading && !error &&
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", gap: 2, marginBottom: 2 }}>
           <Pagination sx={{ marginTop: "0.8rem" }} count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />
@@ -147,6 +165,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
       }
     </div>
+    <AddDestination
+                open={openAddDestination}
+                onClose={handleAddDestinationClose}
+                onAdd={handleAddDestination}
+            />
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 const Destination = require("../models/destinationModel");
 const { StatusCodes } = require("http-status-codes");
+const { connectToDestination, uploadFile } = require('../storage/cloudStorageService.js');
 const logger = require("../logger");
 const {
   createDestinationSchema,
@@ -121,7 +122,28 @@ const getDestinationsByApplicationId = async (req, res) => {
     });
 };
 
+const connectStorageDestination=async(req, res)=>{
 
+  const { destination, url, apiKey,alias } = req.body;
+  console.log(destination,url,apiKey,alias)
+  const result = await connectToDestination(destination, url, apiKey);
+   if (result.success) {
+      res.status(200).json({ message: result.message });
+  } else {
+      res.status(500).json({ error: result.message });
+  }
+}
+const addFileToDestination=async(req, res)=>{
+  const { destination, url, apiKey,alias, bucketName } = req.body;
+    const file = req.file;
+
+    const result = await uploadFile(destination, url, apiKey,file, bucketName);
+    if (result.success) {
+        res.status(200).json({ message: result.message, url: result.url });
+    } else {
+        res.status(500).json({ error: result.message });
+    }
+}
 
 module.exports = {
   createDestination,
@@ -130,4 +152,6 @@ module.exports = {
   updateDestination,
   deleteDestination,
   getDestinationsByApplicationId,
+  connectStorageDestination,
+  addFileToDestination
 };

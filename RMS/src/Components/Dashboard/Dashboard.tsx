@@ -4,11 +4,13 @@ import TableConfig from "../TableConfig/TableConfig";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import classes from "./Dashboard.module.css";
 import Filter from "../Filter/Filter";
-
+import AddApplication from "../AddApplication/AddApplication";
 const Dashboard = () => {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [openAddApplication, setOpenAddApplication] = useState<boolean>(false);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -98,6 +100,19 @@ const Dashboard = () => {
     setFilters(newFilters);
     setPage(1);
   };
+
+
+  const handleAddApplicationOpen = () => {
+    setOpenAddApplication(true);
+  };
+
+  const handleAddApplicationClose = () => {
+    setOpenAddApplication(false);
+  };
+  const handleAddApplication = (newApplication: any) => {
+    setApplications(prevData => [newApplication, ...prevData]);
+  };
+
   const handleApplicationDelete = async (applicationid: string | null) => {
     try {
       await axios.delete(
@@ -123,9 +138,9 @@ const Dashboard = () => {
         key === "createdat"
           ? { accessorKey: key, header: "Date Registered" }
           : {
-              accessorKey: key,
-              header: key.charAt(0).toUpperCase() + key.slice(1),
-            }
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+          }
       );
   };
 
@@ -173,6 +188,7 @@ const Dashboard = () => {
           onSave={handleSave}
           rowIdAccessor="applicationid"
           onDelete={handleApplicationDelete}
+          onAddData={handleAddApplicationOpen}
         />
       )}
       {!loading && !error && (
@@ -216,6 +232,11 @@ const Dashboard = () => {
               out of {total} items
             </Box>
           </FormControl>
+          <AddApplication
+                open={openAddApplication}
+                onClose={handleAddApplicationClose}
+                onAdd={handleAddApplication}
+            />
         </Box>
       )}
     </div>

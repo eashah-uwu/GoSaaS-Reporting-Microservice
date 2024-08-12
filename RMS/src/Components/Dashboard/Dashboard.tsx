@@ -31,7 +31,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:3000/api/applications`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications`,
         {
           params: { page, pageSize, query, filters },
         }
@@ -58,7 +58,9 @@ const Dashboard = () => {
       const requests = updatedItems.map((item) => {
         const { applicationid, name, createdat, isactive, isdeleted } = item;
         return axios.put(
-          `http://localhost:3000/api/applications/${applicationid}`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/api/applications/${applicationid}`,
           {
             applicationid,
             name,
@@ -101,7 +103,6 @@ const Dashboard = () => {
     setPage(1);
   };
 
-
   const handleAddApplicationOpen = () => {
     setOpenAddApplication(true);
   };
@@ -110,14 +111,15 @@ const Dashboard = () => {
     setOpenAddApplication(false);
   };
   const handleAddApplication = (newApplication: any) => {
-    setApplications(prevData => [newApplication, ...prevData]);
+    setApplications((prevData) => [newApplication, ...prevData]);
   };
 
   const handleApplicationDelete = async (applicationid: string | null) => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/applications/${applicationid}`
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`
       );
+
       fetchApplications(page, pageSize, searchQuery, filters);
     } catch (e) {
       console.log(e);
@@ -138,9 +140,9 @@ const Dashboard = () => {
         key === "createdat"
           ? { accessorKey: key, header: "Date Registered" }
           : {
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-          }
+              accessorKey: key,
+              header: key.charAt(0).toUpperCase() + key.slice(1),
+            }
       );
   };
 
@@ -233,10 +235,10 @@ const Dashboard = () => {
             </Box>
           </FormControl>
           <AddApplication
-                open={openAddApplication}
-                onClose={handleAddApplicationClose}
-                onAdd={handleAddApplication}
-            />
+            open={openAddApplication}
+            onClose={handleAddApplicationClose}
+            onAdd={handleAddApplication}
+          />
         </Box>
       )}
     </div>

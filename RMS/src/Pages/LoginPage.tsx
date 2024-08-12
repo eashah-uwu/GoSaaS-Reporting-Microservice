@@ -47,9 +47,10 @@ function LoginPage() {
   ) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
         values
       );
+
       const token = response.data.token;
       dispatch(setToken(token));
       localStorage.setItem("token", token);
@@ -60,7 +61,9 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    window.location.href = `${
+      import.meta.env.VITE_BACKEND_URL
+    }/api/auth/google`;
   };
 
   const handleFormSubmit = async (

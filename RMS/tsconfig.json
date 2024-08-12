@@ -4,6 +4,7 @@
       "useDefineForClassFields": true,
       "lib": ["dom", "dom.iterable", "esnext"],
       "allowJs": true,
+      "types": ["vite/client"],
       "skipLibCheck": true,
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,

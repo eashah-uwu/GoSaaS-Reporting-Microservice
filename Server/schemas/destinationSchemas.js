@@ -15,7 +15,7 @@ const createDestinationSchema = z.object({
 // Schema for updating an existing destination
 const updateDestinationSchema = z.object({
   alias: z.string().max(255).optional(),
-  url: z.string().url("Invalid URL format").optional(),
+  url: z.string().optional(),
   apikey: z.string().max(255).optional(),
   isactive: z.boolean().optional(),
   isdeleted: z.boolean().optional(),

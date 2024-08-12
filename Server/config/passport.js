@@ -1,7 +1,7 @@
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/userModel');
-const logger = require('../logger');
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const User = require("../models/userModel");
+const logger = require("../logger");
 
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -41,10 +41,10 @@ async (accessToken, refreshToken, profile, done) => {
 
 passport.serializeUser((user, done) => {
   try {
-    logger.info('Serializing user:', user);
+    logger.info("Serializing user:", user);
     done(null, user.userid); // Serialize the user ID into the session
   } catch (error) {
-    logger.error('Error serializing user:', error);
+    logger.error("Error serializing user:", error);
     done(error, null);
   }
 });

@@ -4,9 +4,11 @@ import { setToken } from './State/authSlice';
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './Components/ProtectedRoute';
 import OAuthCallback from './Components/OAuthCallback';
-import LoginPage from './Pages/LoginPage';
-import ApplicationPage from './Pages/ApplicationPage';
-import DashboardPage from './Pages/Dashboard';
+import LoginPage from "./Pages/LoginPage.tsx"
+import ApplicationPage from "./Pages/ApplicationPage.tsx"
+import DashboardPage from "./Pages/Dashboard.tsx"
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const dispatch = useDispatch();
@@ -25,11 +27,15 @@ function App() {
         <Route path="/auth/callback" element={<OAuthCallback />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/application/:id" element={<ApplicationPage />} />
-        </Route>
-      </Routes>
-    </div>
-  );
+          <Route path="/auth/callback" element={<OAuthCallback />} />
+          <Route element={<ProtectedRoute />}>
+          </Route>
+        </Routes>
+      </div>
+      <ToastContainer/>
+  
+    </>
+  )
 }
 
 export default App;

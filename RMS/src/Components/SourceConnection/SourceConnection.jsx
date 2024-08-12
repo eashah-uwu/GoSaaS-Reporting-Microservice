@@ -1,9 +1,4 @@
-import React, { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem } from "@mui/material";
-import PropTypes from "prop-types";
-import styles from "./SourceConnection.module.css";
-
-const SourceConnection = ({ isOpen, closeForm }) => {
+const SourceConnection = ({ open, closeForm }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -21,10 +16,11 @@ const SourceConnection = ({ isOpen, closeForm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Handle form submission here
   };
 
   return (
-    <Dialog open={isOpen} onClose={closeForm}>
+    <Dialog open={open} onClose={closeForm}>
       <DialogTitle>Source Connection</DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit}>
@@ -138,7 +134,8 @@ const SourceConnection = ({ isOpen, closeForm }) => {
   );
 };
 
-SourceConnection.propTypes = { 
+SourceConnection.propTypes = {
+  open: PropTypes.bool.isRequired,
   closeForm: PropTypes.func.isRequired,
 };
 

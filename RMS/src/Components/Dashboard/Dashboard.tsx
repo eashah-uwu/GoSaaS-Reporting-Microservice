@@ -6,7 +6,6 @@ import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTi
 import classes from "./Dashboard.module.css"
 import Filter from "../Filter/Filter";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import axios from "axios";
 
 const Dashboard = () => {
     const [applications, setApplications] = useState<any[]>([]);

@@ -29,7 +29,7 @@ const ApplicationPage = () => {
     };
 
     fetchApplicationData();
-  }, [id,name]);
+  }, [id]);
 
   if (!applicationData) return <div>Loading...</div>;
 
@@ -93,8 +93,8 @@ const ApplicationPage = () => {
       <main className={classes.main_content}>
         <Box display="flex">
           <Typography variant="h4" sx={{ paddingLeft: "12rem", paddingRight: "12rem", marginTop: "3rem", textAlign: "left" }}>
-            {applicationData && <div className={classes.appName}>{name}</div>}
-            {applicationData && <div className={classes.appDes}>{description}</div>}
+            {applicationData && <div className={classes.appName}>{name || applicationData.name}</div>}
+            {applicationData && <div className={classes.appDes}>{description || applicationData.description}</div>}
           </Typography>
           <Button
             fullWidth

@@ -4,8 +4,9 @@ import axios from 'axios';
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl, IconButton } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import SourceConnection from "../SourceConnection/SourceConnection";
 
-import SourceConnection from "Components/SourceConnection/SourceConnection";
 interface SourceProps {
   applicationId: string;
 }
@@ -14,7 +15,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [open,setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -60,6 +61,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       alert("Failed to update data");
     }
   };
+  
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
@@ -82,20 +84,21 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setFilters(newFilters);
     setPage(1);
   };
-  const handleConnectionDelete=async(connectionId:string|null)=>{
-    try{
-        await axios.delete(`http://localhost:3000/api/connections/${connectionId}`);
-        fetchConnections(page, pageSize, searchQuery, filters)
+  
+  const handleConnectionDelete = async (connectionId: string | null) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/connections/${connectionId}`);
+      fetchConnections(page, pageSize, searchQuery, filters);
+    } catch (e) {
+      console.log(e);
     }
-    catch(e){
-        console.log(e)
-    }
-}
+  }
+
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
-      .filter(key => key !== 'connectionid'&&key !== 'applicationid' && key !== "isactive" && key !== "isdeleted" && key !== "status")
+      .filter(key => key !== 'connectionid' && key !== 'applicationid' && key !== "isactive" && key !== "isdeleted" && key !== "status")
       .map((key) => (
         {
           accessorKey: key,
@@ -105,19 +108,13 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(connections);
 
-  const onOpen=()=>{
+  const onOpen = () => {
     setOpen(true);
   }
 
-  const onClose=()=>{
+  const onClose = () => {
     setOpen(false);
   }
-
-  // const handleAdd = () => {
-
-  // };
-
-
 
   return (
     <div className={classes.main}>
@@ -133,7 +130,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           size="small"
           sx={{ mr: 1 }}
         />
-        <Button onClick={handleSearchSubmit} size="medium" sx={{ ml: 1,color:"white",backgroundColor:"#7d0e0e" }}>
+        <Button onClick={handleSearchSubmit} size="medium" sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}>
           Search
         </Button>
       </Box>
@@ -146,7 +143,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           <FormControl sx={{ display: "flex", justifyContent: "space-evenly", alignItems: "end", flexDirection: "row", minWidth: 120 }} variant="outlined" size="small" >
             <TextField
               label="Items per page"
-              value={pageSize<total?pageSize:total}
+              value={pageSize < total ? pageSize : total}
               onChange={handlePageSizeChange}
               variant="standard"
               type="number"
@@ -160,11 +157,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           </FormControl>
         </Box>
       }
-        {/* <IconButton  sx={{ ml: 2, width: "auto", height: "auto" }}>
-                        <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
-                    </IconButton> */}
-                    {/* {open && <SourceConnection closeForm={onClose} />} */}
 
+      <IconButton onClick={onOpen} sx={{ ml: 2, width: "auto", height: "auto" }}>
+        <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
+      </IconButton>
+
+      <SourceConnection open={open} closeForm={onClose} />
     </div>
   );
 };

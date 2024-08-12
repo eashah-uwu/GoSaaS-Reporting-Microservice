@@ -48,7 +48,7 @@ const authenticate =  (req, res) => {
     res.redirect(`http://localhost:5173/auth/callback?token=${token}`);
     // res.redirect(my app component);
   } else {
-    res.redirect('/login');
+    res.redirect('http://localhost:5173/login');
   }
 };
 

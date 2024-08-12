@@ -6,6 +6,7 @@ import { Link, useNavigate} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearToken } from '../../State/authSlice';
 import { LogoutOutlined } from '@mui/icons-material';
+import { persistor } from '../../State/store';
 
 
 const Navbar = () => {
@@ -20,6 +21,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     dispatch(clearToken());
+    persistor.purge(); 
     navigate('/login'); 
   };
 

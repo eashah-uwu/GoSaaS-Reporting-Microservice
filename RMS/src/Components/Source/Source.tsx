@@ -171,11 +171,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         </Box>
       }
 
-      <IconButton onClick={onOpen} sx={{ ml: 2, width: "auto", height: "auto" }}>
-        <AddCircleIcon sx={{ fontSize: '3rem', color: '#8B0000' }} />
-      </IconButton>
 
-      <SourceConnection open={open} closeForm={onClose} />
     </div>
     <AddSource
                 open={openAddSource}

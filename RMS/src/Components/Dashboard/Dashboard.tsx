@@ -173,9 +173,8 @@ const Dashboard = () => {
         />
         <Button
           onClick={handleSearchSubmit}
-          variant="contained"
           size="medium"
-          sx={{ ml: 1 }}
+          sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
         >
           Search
         </Button>

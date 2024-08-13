@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setToken } from './State/authSlice'; 
+import { setToken } from './State/authSlice';
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './Components/ProtectedRoute';
 import OAuthCallback from './Components/OAuthCallback';
@@ -22,19 +22,19 @@ function App() {
 
   return (
     <>
-    <div className="container">
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/auth/callback" element={<OAuthCallback />} />
-        <Route element={<ProtectedRoute />} />
-          <Route path="/" element={<DashboardPage />} />
+      <div className="container">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/application/:id" element={<ApplicationPage />} />
           </Route>
+          <Route path="/auth/callback" element={<OAuthCallback />} />
         </Routes>
       </div>
-      <ToastContainer/>
-  
+      <ToastContainer />
+
     </>
   )
 }

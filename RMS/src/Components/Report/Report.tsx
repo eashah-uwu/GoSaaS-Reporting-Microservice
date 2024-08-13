@@ -36,14 +36,14 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-         `${import.meta.env.VITE_BACKEND_URL}/api/reports/${applicationId}`,
-         {
-           params: { page, pageSize, query, filters },
-         }
-       );
-       console.log(data)
-       setReports(data.data);
-       setTotal(data.total);
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports/${applicationId}`,
+        {
+          params: { page, pageSize, query, filters },
+        }
+      );
+      console.log(data)
+      setReports(data.data);
+      setTotal(data.total);
     } catch (err) {
       setError("Failed to fetch data");
     } finally {
@@ -172,9 +172,11 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           />
           <Button
             onClick={handleSearchSubmit}
-            variant="contained"
             size="medium"
-            sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
+            sx={{
+              backgroundColor: "#7d0e0e", color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" }
+            }}
           >
             Search
           </Button>

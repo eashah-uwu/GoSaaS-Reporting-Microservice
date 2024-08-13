@@ -178,9 +178,10 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
           />
           <Button
             onClick={handleSearchSubmit}
-            variant="contained"
             size="medium"
-            sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
+            sx={{backgroundColor: "#7d0e0e",color: "white",
+              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            }}
           >
             Search
           </Button>

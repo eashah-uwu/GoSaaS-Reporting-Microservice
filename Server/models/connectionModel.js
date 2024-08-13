@@ -77,19 +77,6 @@ class Connection {
         }
       });
 
-    // Apply additional filters if provided
-    if (filters.alias) {
-      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.database) {
-      baseQuery.andWhere("database", "ilike", `%${filters.database}%`);
-    }
-    if (filters.type) {
-      baseQuery.andWhere("type", "ilike", `%${filters.type}%`);
-    }
-    if (filters.host) {
-      baseQuery.andWhere("host", "ilike", `%${filters.host}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
@@ -186,19 +173,6 @@ class Connection {
           .orWhere(knex.raw("CAST(port AS TEXT)"), "ilike", `%${query}%`);
       });
 
-    // Apply additional filters if provided
-    if (filters.alias) {
-      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.database) {
-      baseQuery.andWhere("database", "ilike", `%${filters.database}%`);
-    }
-    if (filters.type) {
-      baseQuery.andWhere("type", "ilike", `%${filters.type}%`);
-    }
-    if (filters.host) {
-      baseQuery.andWhere("host", "ilike", `%${filters.host}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
@@ -226,18 +200,6 @@ class Connection {
           .orWhere(knex.raw("CAST(port AS TEXT)"), "ilike", `%${query}%`);
       });
 
-    if (filters.alias) {
-      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.database) {
-      baseQuery.andWhere("database", "ilike", `%${filters.database}%`);
-    }
-    if (filters.type) {
-      baseQuery.andWhere("type", "ilike", `%${filters.type}%`);
-    }
-    if (filters.host) {
-      baseQuery.andWhere("host", "ilike", `%${filters.host}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);

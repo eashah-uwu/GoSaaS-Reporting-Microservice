@@ -98,23 +98,26 @@ class Report {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(query, filters) {
+  static async countSearchResults(applicationId, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
+      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
+      .where({ "report.applicationid": applicationId })
       .where((builder) => {
         builder
-          .where("title", "ilike", `%${query}%`)
-          .orWhere("description", "ilike", `%${query}%`);
+          .where("report.title", "ilike", `%${query}%`)
+          .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("sc.alias", "ilike", `%${query}%`)
+          .orWhere("d.alias", "ilike", `%${query}%`)
+          .orWhere("sp.name", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
       });
-
-    if (filters) {
-      if (filters.title) {
-        baseQuery = baseQuery.andWhere("title", "ilike", `%${filters.title}%`);
-      }
-      if (filters.date) {
-        baseQuery = baseQuery.andWhere("generationdate", "=", filters.date);
-      }
-    }
 
     const [count] = await baseQuery;
     return parseInt(count.count, 10);
@@ -142,16 +145,16 @@ class Report {
         builder
           .where("report.title", "ilike", `%${query}%`)
           .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("sc.alias", "ilike", `%${query}%`)
+          .orWhere("d.alias", "ilike", `%${query}%`)
+          .orWhere("sp.name", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
       });
 
-    // Apply additional filters if provided
-    if (filters.alias) {
-      baseQuery.andWhere("report.title", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.url) {
-      baseQuery.andWhere("report.description", "ilike", `%${filters.url}%`);
-    }
-    // Apply sorting if sortField is provided
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
     }

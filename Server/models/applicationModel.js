@@ -105,9 +105,6 @@ class Application {
           );
       });
   
-    if (filters.name) {
-      baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
@@ -136,9 +133,6 @@ class Application {
           );
       });
 
-    if (filters.name) {
-      baseQuery.andWhere("name", "ilike", `%${filters.name}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);

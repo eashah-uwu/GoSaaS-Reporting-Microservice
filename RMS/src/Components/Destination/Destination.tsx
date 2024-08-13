@@ -6,11 +6,11 @@ import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import AddDestination from "../AddDestination/AddDestination";
 
-interface SourceProps {
+interface DestinationProps {
   applicationId: string;
 }
 
-const Source: React.FC<SourceProps> = ({ applicationId }) => {
+const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +157,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true}/>
         </Box>
         <Box
           sx={{
@@ -178,9 +178,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           />
           <Button
             onClick={handleSearchSubmit}
-            variant="contained"
             size="medium"
-            sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
+            sx={{backgroundColor: "#7d0e0e",color: "white",
+              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            }}
           >
             Search
           </Button>
@@ -253,4 +254,4 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   );
 };
 
-export default Source;
+export default Destination;

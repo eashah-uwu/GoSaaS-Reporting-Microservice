@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import TableConfig from "../TableConfig/TableConfig";
-import {  Pagination, FormControl } from '@mui/material';
+import { Pagination, FormControl } from '@mui/material';
 import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import classes from "./Dashboard.module.css"
 import Filter from "../Filter/Filter";
@@ -59,8 +59,7 @@ const Dashboard = () => {
       const requests = updatedItems.map((item) => {
         const { applicationid, name, createdat, isactive, isdeleted } = item;
         return axios.put(
-          `${
-            import.meta.env.VITE_BACKEND_URL
+          `${import.meta.env.VITE_BACKEND_URL
           }/api/applications/${applicationid}`,
           {
             applicationid,
@@ -141,9 +140,9 @@ const Dashboard = () => {
         key === "createdat"
           ? { accessorKey: key, header: "Date Registered" }
           : {
-              accessorKey: key,
-              header: key.charAt(0).toUpperCase() + key.slice(1),
-            }
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+          }
       );
   };
 
@@ -152,7 +151,7 @@ const Dashboard = () => {
   return (
     <div className={classes.dashboard_main}>
       <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-        <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+        <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true} />
       </Box>
       <Box
         sx={{
@@ -174,7 +173,10 @@ const Dashboard = () => {
         <Button
           onClick={handleSearchSubmit}
           size="medium"
-          sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
+          sx={{
+            backgroundColor: "#7d0e0e", color: "white",
+            ":hover": { backgroundColor: "#7d0e0e", color: "white" }
+          }}
         >
           Search
         </Button>

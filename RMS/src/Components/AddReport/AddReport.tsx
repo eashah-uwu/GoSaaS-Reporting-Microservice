@@ -1,10 +1,27 @@
 import React, { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Typography } from "@mui/material";
-import PropTypes from "prop-types";
-import styles from "./ConfigureReport.module.css";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // Ensure this package is installed
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  MenuItem,
+} from "@mui/material";
+import axios from "axios";
+import styles from "./AddReport.module.css";
+import { toast } from "react-toastify";
+import { FC } from "react";
 
-const ConfigureReport = ({ isOpen, closeForm }) => {
+interface AddReportProps {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (newReport: any) => void;
+  applicationId:string;
+}
+
+const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd,applicationId }) => {
+ // const [saveDisabled, setSaveDisabled] = useState(true)
   const [formData, setFormData] = useState({
     alias: '',
     description: '',
@@ -14,38 +31,45 @@ const ConfigureReport = ({ isOpen, closeForm }) => {
     parameter: ''
   });
 
-  const [isSuccess, setIsSuccess] = useState(false); // State for success message
 
-  const handleChange = (e) => {
+  const handleChange = (e:any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulate successful form submission
-    setIsSuccess(true);
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+    const userId=3;
+    // try {
+    //   console.log('hmm,')
+    //   const saveResponse = await axios.post(
+    //     `${import.meta.env.VITE_BACKEND_URL}/api/destinations`,
+    //     {...formData,applicationId,userId}
+    //   );
+
+    //   if (saveResponse.status === 201) {
+    //     toast.success("Destination saved successfully!");
+    //     console.log(saveResponse.data.destination)
+    //     onAdd(saveResponse.data.destination);
+    //   //  setSaveDisabled(true);
+    //     onClose();
+    //   } else {
+    //     toast.error("Failed to save destination.");
+    //   }
+    // } catch (error) {
+    //   toast.error("Error saving destination. Please try again.");
+    // }
+   // setSaveDisabled(!saveDisabled);
   };
 
-  const handleCloseSuccess = () => {
-    setIsSuccess(false);
-    closeForm(); // Close the dialog
-  };
 
   return (
-    <Dialog open={isOpen} onClose={closeForm} maxWidth="sm" fullWidth>
-      {isSuccess ? (
-        <DialogContent className={styles.successContent}>
-          <CheckCircleIcon className={styles.successIcon} />
-          <Typography variant="h6">Configuration Successful</Typography>
-          <Button onClick={handleCloseSuccess} variant="contained" color="primary">Close</Button>
-        </DialogContent>
-      ) : (
-        <>
-          <DialogTitle>Configure Report</DialogTitle>
-          <DialogContent>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formContainer}>
+    <>
+      <Dialog open={open} onClose={onClose} >
+        <DialogTitle>Configure Report</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+          <div className={styles.formContainer}>
                 <TextField
                   margin="dense"
                   id="alias"
@@ -131,20 +155,37 @@ const ConfigureReport = ({ isOpen, closeForm }) => {
                   />
                 </div>
               </div>
-              <DialogActions className={styles.formActions}>
-                <Button type="submit" color="primary">Add</Button>
-              </DialogActions>
-            </form>
-          </DialogContent>
-        </>
-      )}
-    </Dialog>
+            <DialogActions className={styles.formActions}>
+              <Button
+                size="small"
+                onClick={onClose}
+                sx={{
+                  backgroundColor: "#7d0e0e",
+                  color: "white",
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}>
+                Cancel
+              </Button>
+              <Button type="submit" size="small"
+                sx={{
+                  backgroundColor: "#7d0e0e",
+                  color: "white",
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}>
+                Generate
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
-ConfigureReport.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  closeForm: PropTypes.func.isRequired,
-};
-
-export default ConfigureReport;
+export default AddReport;

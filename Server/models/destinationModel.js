@@ -83,16 +83,6 @@ class Destination {
           .orWhere("apikey", "ilike", `%${query}%`);
       });
 
-    // Apply additional filters if provided
-    if (filters.alias) {
-      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.url) {
-      baseQuery.andWhere("url", "ilike", `%${filters.url}%`);
-    }
-    if (filters.apikey) {
-      baseQuery.andWhere("apikey", "ilike", `%${filters.apikey}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
@@ -118,15 +108,6 @@ class Destination {
           .orWhere("apikey", "ilike", `%${query}%`);
       });
 
-    if (filters.alias) {
-      baseQuery.andWhere("alias", "ilike", `%${filters.alias}%`);
-    }
-    if (filters.url) {
-      baseQuery.andWhere("url", "ilike", `%${filters.url}%`);
-    }
-    if (filters.apikey) {
-      baseQuery.andWhere("apikey", "ilike", `%${filters.apikey}%`);
-    }
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);

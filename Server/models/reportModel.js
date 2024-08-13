@@ -98,31 +98,68 @@ class Report {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(query, filters) {
+  static async countSearchResults(applicationId, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
+      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
+      .where({ "report.applicationid": applicationId })
       .where((builder) => {
         builder
-          .where("title", "ilike", `%${query}%`)
-          .orWhere("description", "ilike", `%${query}%`);
+          .where("report.title", "ilike", `%${query}%`)
+          .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("sc.alias", "ilike", `%${query}%`)
+          .orWhere("d.alias", "ilike", `%${query}%`)
+          .orWhere("sp.name", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
       });
-
-    if (filters) {
-      if (filters.title) {
-        baseQuery = baseQuery.andWhere("title", "ilike", `%${filters.title}%`);
-      }
-      if (filters.date) {
-        baseQuery = baseQuery.andWhere("generationdate", "=", filters.date);
-      }
-    }
 
     const [count] = await baseQuery;
     return parseInt(count.count, 10);
   }
-  static async findByApplicationId(applicationid) {
-    return knex("report").where({
-      applicationid: applicationid,
-    });
+
+  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+    let baseQuery = knex("report")
+      .select(
+        "report.title",
+        "report.description",
+        knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+        "report.sourceconnectionid",
+        "report.destinationid",
+        "report.applicationid",
+        "report.storedprocedureid",
+        "sc.alias as sourceConnection",
+        "d.alias as destination",
+        "sp.name as storedProcedure",
+      )
+      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
+      .where({ "report.applicationid": applicationId })
+      .andWhere((builder) => {
+        builder
+          .where("report.title", "ilike", `%${query}%`)
+          .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("sc.alias", "ilike", `%${query}%`)
+          .orWhere("d.alias", "ilike", `%${query}%`)
+          .orWhere("sp.name", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
+      });
+
+    if (filters.sortField && filters.sortField !== "None") {
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }
+
+    return baseQuery.offset(offset).limit(limit);
   }
 }
 

@@ -13,9 +13,9 @@ import styles from "./AddSource.module.css";
 import { FC } from "react";
 
 interface AddSourceProps {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (newApplication: any) => void;
+    open: boolean;
+    onClose: () => void;
+    onAdd: (newSource: any) => void;
 }
 
 const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {

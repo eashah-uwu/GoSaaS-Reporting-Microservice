@@ -167,7 +167,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} />
+          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true} />
         </Box>
         <Box
           sx={{
@@ -189,7 +189,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           <Button
             onClick={handleSearchSubmit}
             size="medium"
-            sx={{ ml: 1, color: "white", backgroundColor: "#7d0e0e" }}
+            sx={{backgroundColor: "#7d0e0e",color: "white",
+              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            }}
           >
             Search
           </Button>

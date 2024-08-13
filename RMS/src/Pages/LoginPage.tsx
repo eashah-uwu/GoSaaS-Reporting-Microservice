@@ -184,6 +184,7 @@ function LoginPage() {
                           gridColumn: isNonMobile ? undefined : "span 4",
                         },
                       }}
+                      style={{ marginTop: "2%" }}
                     >
                       <TextField
                         label="Email"
@@ -198,7 +199,7 @@ function LoginPage() {
                           gridColumn: "span 4",
                           width: "100%",
                           pt: "0.5rem",
-                          maxWidth: "80%", // Set to match the Google button
+                          maxWidth: "80%",
                         }}
                         style={{
                           marginLeft: "10%",
@@ -221,7 +222,7 @@ function LoginPage() {
                           gridColumn: "span 4",
                           width: "100%",
                           pt: "0.5rem",
-                          maxWidth: "80%", // Set to match the Google button
+                          maxWidth: "80%",
                         }}
                         style={{
                           marginLeft: "10%",

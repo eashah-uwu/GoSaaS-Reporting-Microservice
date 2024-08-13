@@ -7,12 +7,13 @@ const {
   updateReport,
   deleteReport,
   searchReports,
+  getReportsByApplicationId
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 
 router.post("/", createReport);
 router.get("/", validateQuery, searchReports); // Validate query parameters using querySchema
-router.get("/:id", getReportById);
+router.get("/:id",   getReportsByApplicationId);
 router.put("/:id", updateReport);
 router.delete("/:id", deleteReport);
 

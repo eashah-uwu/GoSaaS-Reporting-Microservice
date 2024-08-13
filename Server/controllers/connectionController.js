@@ -140,7 +140,12 @@ const deleteConnection = async (req, res) => {
 
 
 const getConnectionsByApplicationId = async (req, res) => {
-  const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
   const { id: applicationId } = req.params;
 
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);

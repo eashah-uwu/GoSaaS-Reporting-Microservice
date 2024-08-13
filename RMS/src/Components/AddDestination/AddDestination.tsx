@@ -16,7 +16,7 @@ import { FC } from "react";
 interface AddDestinationProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newApplication: any) => void;
+  onAdd: (newDestination: any) => void;
   applicationId:string;
 }
 

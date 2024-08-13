@@ -119,10 +119,44 @@ class Report {
     const [count] = await baseQuery;
     return parseInt(count.count, 10);
   }
-  static async findByApplicationId(applicationid) {
-    return knex("report").where({
-      applicationid: applicationid,
-    });
+
+  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+    let baseQuery = knex("report")
+      .select(
+        "report.title",
+        "report.description",
+        knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+        "report.sourceconnectionid",
+        "report.destinationid",
+        "report.applicationid",
+        "report.storedprocedureid",
+        "sc.alias as sourceConnection",
+        "d.alias as destination",
+        "sp.name as storedProcedure",
+      )
+      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
+      .where({ "report.applicationid": applicationId })
+      .andWhere((builder) => {
+        builder
+          .where("report.title", "ilike", `%${query}%`)
+          .orWhere("report.description", "ilike", `%${query}%`)
+      });
+
+    // Apply additional filters if provided
+    if (filters.alias) {
+      baseQuery.andWhere("report.title", "ilike", `%${filters.alias}%`);
+    }
+    if (filters.url) {
+      baseQuery.andWhere("report.description", "ilike", `%${filters.url}%`);
+    }
+    // Apply sorting if sortField is provided
+    if (filters.sortField && filters.sortField !== "None") {
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }
+
+    return baseQuery.offset(offset).limit(limit);
   }
 }
 

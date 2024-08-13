@@ -11,9 +11,10 @@ import {
 interface FilterProps {
   columns: { accessorKey: string; header: string }[];
   onFilterChange: (filters: any) => void;
+  showStatusFilter: boolean;
 }
 
-const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
+const Filter: React.FC<FilterProps> = ({ columns, onFilterChange, showStatusFilter }) => {
   const [sortField, setSortField] = useState("None");
   const [sortOrder, setSortOrder] = useState("asc");
   const [status, setStatus] = useState("All");
@@ -80,19 +81,20 @@ const Filter: React.FC<FilterProps> = ({ columns, onFilterChange }) => {
           <MenuItem value="desc">Descending</MenuItem>
         </Select>
       </FormControl>
-
-      <FormControl
-        variant="outlined"
-        size="small"
-        sx={{ ml: { sm: 2 }, width: { xs: "100%", sm: "auto" } }}
-      >
-        <InputLabel>Status</InputLabel>
-        <Select value={status} onChange={handleStatusChange} label="Status">
-          <MenuItem value="All">All</MenuItem>
-          <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-        </Select>
-      </FormControl>
+      {showStatusFilter &&
+        <FormControl
+          variant="outlined"
+          size="small"
+          sx={{ ml: { sm: 2 }, width: { xs: "100%", sm: "auto" } }}
+        >
+          <InputLabel>Status</InputLabel>
+          <Select value={status} onChange={handleStatusChange} label="Status">
+            <MenuItem value="All">All</MenuItem>
+            <MenuItem value="active">Active</MenuItem>
+            <MenuItem value="inactive">Inactive</MenuItem>
+          </Select>
+        </FormControl>
+      }
     </Box>
   );
 };

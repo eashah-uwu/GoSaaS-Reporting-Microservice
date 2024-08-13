@@ -2,6 +2,7 @@ const Report = require("../models/reportModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
+const config = require("config");
 require("dotenv").config();
 
 const createReport = async (req, res) => {
@@ -160,20 +161,33 @@ const searchReports = async (req, res) => {
   });
 };
 const getReportsByApplicationId = async (req, res) => {
-  const { id: applicationid } = req.params;
-  const reports = await Report.findByApplicationId(applicationid);
-  if (!reports || reports.length === 0) {
-    logger.warn("Reports not found", {
-      context: { traceid: req.traceId, applicationid },
-    });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Reports not found" });
-  }
-  logger.info("Retrieved reports by application ID", {
-    context: { traceid: req.traceId, applicationid, reports },
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
+  const { id: applicationId } = req.params;
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [reports, total] = await Promise.all([
+    Report.findByApplicationId({
+      applicationId,
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Report.countSearchResults(applicationId, query, filters),
+  ]);
+  logger.info("Reports retrieved by application ID", {
+    context: { traceid: req.traceId, applicationId, reports },
   });
-  res.status(StatusCodes.OK).json(reports);
+  res.status(StatusCodes.OK).json({
+    data: reports,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 module.exports = {
@@ -183,5 +197,5 @@ module.exports = {
   updateReport,
   deleteReport,
   searchReports,
-  getReportsByApplicationId,
+  getReportsByApplicationId
 };

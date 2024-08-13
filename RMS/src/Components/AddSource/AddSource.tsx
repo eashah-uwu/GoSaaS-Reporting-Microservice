@@ -7,7 +7,7 @@ import {FC } from "react";
 interface AddSourceProps {
     open: boolean;
     onClose: () => void;
-    onAdd: (newApplication: any) => void;
+    onAdd: (newSource: any) => void;
 }
 
 const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {

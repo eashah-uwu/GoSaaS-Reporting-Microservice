@@ -5,7 +5,6 @@ import Dashboard from "../Components/Dashboard/Dashboard";
 import WidgetWrapper from "../Components/WidgetWrapper";
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import ConfigureReport from "../Components/ConfigureReport/ConfigureReport.jsx"; // Ensure correct import path
 
 function DashboardPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -17,17 +16,9 @@ function DashboardPage() {
   return (
     <>
       <Navbar />
-      {/* <div>
-        <button onClick={openSourceModal}>Source</button>
-        <button onClick={openDestinationModal}>Destination</button>
-        <button onClick={openReportModal}>Report</button>
-      </div> */}
+     
 
 
-      <ConfigureReport
-        isOpen={isReportModalOpen}
-        closeForm={closeReportModal}
-      />
 
       <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
         Dashboard

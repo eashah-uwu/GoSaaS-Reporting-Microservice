@@ -1,6 +1,7 @@
 const Destination = require("../models/destinationModel");
 const { StatusCodes } = require("http-status-codes");
 const { connectToDestination, uploadFile } = require('../storage/cloudStorageService.js');
+const config = require("config");
 const logger = require("../logger");
 const {
   createDestinationSchema,

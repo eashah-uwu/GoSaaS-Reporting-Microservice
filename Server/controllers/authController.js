@@ -50,7 +50,7 @@ const authenticate = (req, res) => {
     );
     // res.redirect(my app component);
   } else {
-    res.redirect('http://localhost:5173/login');
+    res.redirect(`${process.env.DEPLOY_FRONTEND_URL}/login`);
   }
 };
 

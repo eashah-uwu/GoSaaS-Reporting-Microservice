@@ -17,11 +17,16 @@ interface AddDestinationProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newApplication: any) => void;
-  applicationId:string;
+  applicationId: string;
 }
 
-const AddDestination: FC<AddDestinationProps> = ({ open, onClose, onAdd,applicationId }) => {
-  const [saveDisabled, setSaveDisabled] = useState(true)
+const AddDestination: FC<AddDestinationProps> = ({
+  open,
+  onClose,
+  onAdd,
+  applicationId,
+}) => {
+  const [saveDisabled, setSaveDisabled] = useState(true);
   const [formData, setFormData] = useState({
     alias: "",
     destination: "aws",
@@ -34,20 +39,19 @@ const AddDestination: FC<AddDestinationProps> = ({ open, onClose, onAdd,applicat
     setFormData({ ...formData, [name]: value });
   };
 
-
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    const userId=3;
+    const userId = 3;
     try {
-      console.log('hmm,')
+      console.log("hmm,");
       const saveResponse = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations`,
-        {...formData,applicationId,userId}
+        { ...formData, applicationId, userId }
       );
 
       if (saveResponse.status === 201) {
         toast.success("Destination saved successfully!");
-        console.log(saveResponse.data.destination)
+        console.log(saveResponse.data.destination);
         onAdd(saveResponse.data.destination);
         setSaveDisabled(true);
         onClose();
@@ -81,7 +85,7 @@ const AddDestination: FC<AddDestinationProps> = ({ open, onClose, onAdd,applicat
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} >
+      <Dialog open={open} onClose={onClose}>
         <DialogTitle>Destination</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
@@ -148,7 +152,7 @@ const AddDestination: FC<AddDestinationProps> = ({ open, onClose, onAdd,applicat
                     backgroundColor: "#7d0e0e",
                     color: "white",
                   },
-                  marginRight: "auto"
+                  marginRight: "auto",
                 }}
               >
                 Connect Destination
@@ -163,18 +167,23 @@ const AddDestination: FC<AddDestinationProps> = ({ open, onClose, onAdd,applicat
                     backgroundColor: "#7d0e0e",
                     color: "white",
                   },
-                }}>
+                }}
+              >
                 Cancel
               </Button>
-              <Button type="submit" size="small" disabled={saveDisabled}
+              <Button
+                type="submit"
+                size="small"
+                disabled={saveDisabled}
                 sx={{
-                  backgroundColor: (saveDisabled ? "white" : "#7d0e0e"),
+                  backgroundColor: saveDisabled ? "white" : "#7d0e0e",
                   color: "white",
                   ":hover": {
                     backgroundColor: "#7d0e0e",
                     color: "white",
                   },
-                }}>
+                }}
+              >
                 Save
               </Button>
             </DialogActions>

@@ -2,20 +2,30 @@ import React, { useEffect, useState } from "react";
 import { useParams, redirect } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../Components/Navbar/Navbar";
-import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from "@mui/material";
 import classes from "./ApplicationPage.module.css";
 import Source from "../Components/Source/Source";
 import Destination from "../Components/Destination/Destination";
 import Report from "../Components/Report/Report";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 
 const ApplicationPage = () => {
   const { id } = useParams();
   const [applicationData, setApplicationData] = useState<any>(null);
   const [activeButton, setActiveButton] = useState<string>("source");
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const fetchApplicationData = async () => {
@@ -45,8 +55,8 @@ const ApplicationPage = () => {
 
   const handleAdd = () => {
     if (applicationData) {
-      setName(applicationData.name || '');
-      setDescription(applicationData.description || '');
+      setName(applicationData.name || "");
+      setDescription(applicationData.description || "");
     }
     setOpen(true);
   };
@@ -55,20 +65,22 @@ const ApplicationPage = () => {
     setOpen(false);
   };
 
-  const handleEdit = async (event: { preventDefault: () => void; }) => {
+  const handleEdit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     const updatedData = {
       ...applicationData,
       name: name,
-      description: description
+      description: description,
     };
 
     try {
-      const response = await axios.put(`http://localhost:3000/api/applications/${id}`, updatedData);
-
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${id}`,
+        updatedData
+      );
       if (response.status === 200) {
         console.log("Application data updated successfully");
- 
+
         setApplicationData(response.data);
         setOpen(false);
       } else {
@@ -76,17 +88,17 @@ const ApplicationPage = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-          if (error.response && error.response.status === 409) {
-              alert('Application name already exists. Please choose another name.');
-          } else {
-              console.error("Failed to create application:", error);
-              alert('An error occurred. Please try again later.');
-          }
+        if (error.response && error.response.status === 409) {
+          alert("Application name already exists. Please choose another name.");
+        } else {
+          console.error("Failed to create application:", error);
+          alert("An error occurred. Please try again later.");
+        }
       } else {
-          console.error("An unexpected error occurred:", error);
-          alert('An unexpected error occurred. Please try again later.');
+        console.error("An unexpected error occurred:", error);
+        alert("An unexpected error occurred. Please try again later.");
       }
-  }
+    }
   };
 
   return (
@@ -94,9 +106,25 @@ const ApplicationPage = () => {
       <Navbar />
       <main className={classes.main_content}>
         <Box display="flex">
-          <Typography variant="h4" sx={{ paddingLeft: "12rem", paddingRight: "12rem", marginTop: "3rem", textAlign: "left" }}>
-            {applicationData && <div className={classes.appName}>{name || applicationData.name}</div>}
-            {applicationData && <div className={classes.appDes}>{description || applicationData.description}</div>}
+          <Typography
+            variant="h4"
+            sx={{
+              paddingLeft: "12rem",
+              paddingRight: "12rem",
+              marginTop: "3rem",
+              textAlign: "left",
+            }}
+          >
+            {applicationData && (
+              <div className={classes.appName}>
+                {name || applicationData.name}
+              </div>
+            )}
+            {applicationData && (
+              <div className={classes.appDes}>
+                {description || applicationData.description}
+              </div>
+            )}
           </Typography>
           <Button
             fullWidth
@@ -117,7 +145,8 @@ const ApplicationPage = () => {
               justifyContent: "flex-end",
             }}
           >
-            <EditIcon />Edit Application
+            <EditIcon />
+            Edit Application
           </Button>
         </Box>
         {applicationData && (
@@ -162,7 +191,8 @@ const ApplicationPage = () => {
               onClick={() => handleButtonClick("reports")}
               sx={{
                 color: activeButton !== "reports" ? "#7d0e0e" : "white",
-                backgroundColor: activeButton !== "reports" ? "white" : "#7d0e0e",
+                backgroundColor:
+                  activeButton !== "reports" ? "white" : "#7d0e0e",
                 marginLeft: "0.3rem",
                 border: "1px solid #7d0e0e",
                 ":hover": {

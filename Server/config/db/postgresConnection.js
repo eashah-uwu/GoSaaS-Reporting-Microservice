@@ -1,19 +1,33 @@
-const knex = require('knex');
-const debug = require('debug');
+const knex = require("knex");
+const debug = require("debug");
 
 class PostgreSQLConnection {
   constructor(config) {
-    this.config = config;
+    // Convert port to number if it is defined in the config
+    if (config.port) {
+      config.port = Number(config.port);
+    }
+
+    // Essential PostgreSQL configuration
+    this.config = {
+      host: config.host,
+      user: config.username,
+      password: config.password,
+      database: config.database,
+      port: config.port,
+    };
+
     console.log("Using PostgreSQL config:", this.config);
+
+    // Initialize knex with the essential PostgreSQL configuration
     this.knex = knex({
-      client: 'pg',
+      client: "pg",
       connection: this.config,
     });
   }
-
   async testConnection() {
     try {
-      await this.knex.raw('SELECT 1+1 AS result');
+      await this.knex.raw("SELECT 1+1 AS result");
       console.log("Connection successful");
       return {
         success: true,

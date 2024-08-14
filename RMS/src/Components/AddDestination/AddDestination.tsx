@@ -17,7 +17,7 @@ interface AddDestinationProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newDestination: any) => void;
-  applicationId:string;
+  applicationId: string;
 }
 
 const AddDestination: FC<AddDestinationProps> = ({

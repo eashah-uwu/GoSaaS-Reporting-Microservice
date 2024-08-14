@@ -17,9 +17,15 @@ interface AddSourceProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newSource: any) => void;
+  applicationId: string;
 }
 
-const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
+const AddSource: FC<AddSourceProps> = ({
+  open,
+  onClose,
+  onAdd,
+  applicationId,
+}) => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -45,14 +51,16 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
       return;
     }
     try {
+      const userId = 3;
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
-        formData
+        { ...formData, applicationId, userId }
       );
-      if (response.data.success) {
+      if (response.status === 201) {
         toast.success("Connection added successfully!");
-        onAdd(response.data.data);
-        onClose();
+        onAdd(response.data.connection);
+        setSaveDisabled(true);
+        handleClose(); // Ensure form data is cleared
       } else {
         toast.error("Failed to add connection: " + response.data.message);
       }
@@ -80,9 +88,22 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
     }
   };
 
+  const handleClose = () => {
+    setFormData({
+      username: "",
+      password: "",
+      database: "",
+      type: "",
+      host: "",
+      port: "",
+      alias: "",
+    });
+    onClose();
+  };
+
   return (
     <>
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Source Connection</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
@@ -200,7 +221,7 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
               </Button>
               <Button
                 size="small"
-                onClick={onClose}
+                onClick={handleClose}
                 sx={{
                   backgroundColor: "#7d0e0e",
                   color: "white",

@@ -3,15 +3,34 @@ const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
-const ConnectionFactory = require('../config/db/connectionFactory');
+const ConnectionFactory = require("../config/db/connectionFactory");
 
 // Create a new connection
 const createConnection = async (req, res) => {
-  const data = connectionSchema.parse(req.body);
-  const connection = await Connection.create(data);
+  // Destructure and transform the request body
+  const { applicationId, userId, ...restData } = req.body;
+
+  // Convert port and IDs to integers
+  const data = {
+    ...restData,
+    port: parseInt(restData.port, 10),
+    applicationid: parseInt(applicationId, 10),
+    createdby: parseInt(userId, 10),
+    updatedby: parseInt(userId, 10),
+  };
+
+  // Validate and parse the transformed data with connectionSchema
+  const validatedData = connectionSchema.parse(data);
+
+  // Call the model method to create a new connection
+  const connection = await Connection.create(validatedData);
+
+  // Log the successful creation
   logger.info("Connection created successfully", {
     context: { traceid: req.traceId, connection },
   });
+
+  // Send a response with the created connection
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
     connection,
@@ -19,9 +38,9 @@ const createConnection = async (req, res) => {
 };
 
 //test connection
-const testConnection = async (req,res) => {
-   const {type, ...config} = req.body;
-   try {
+const testConnection = async (req, res) => {
+  const { type, ...config } = req.body;
+  try {
     const connection = ConnectionFactory.createConnection(type, config);
     const result = await connection.testConnection();
     logger.info("Connection test successful", {
@@ -29,7 +48,6 @@ const testConnection = async (req,res) => {
     });
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-
     logger.error("Error testing connection", {
       context: { traceid: req.traceId, type, config, error: error.message },
     });
@@ -37,7 +55,7 @@ const testConnection = async (req,res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "An error occurred while testing the connection",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -137,7 +155,6 @@ const deleteConnection = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Connection deleted successfully!" });
 };
-
 
 const getConnectionsByApplicationId = async (req, res) => {
   const {

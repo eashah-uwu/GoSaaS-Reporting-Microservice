@@ -20,6 +20,7 @@ class Connection {
     // Encrypt the password before saving it to the database
     const encryptedPassword = encrypt(password);
 
+    // Insert the new connection into the database and return the created record
     const [connection] = await knex("connection")
       .insert({
         alias,
@@ -37,9 +38,8 @@ class Connection {
         updatedby,
       })
       .returning("*");
-    return connection;
+    return { alias, database, type, host, port, isactive, isdeleted };
   }
-
 
   static async findAll() {
     return knex("connection").select("*").where({ isdeleted: false });
@@ -109,13 +109,16 @@ class Connection {
   }
 
   static async update(id, data) {
-    const { alias, host, port, database, type, isactive, isdeleted, password } = data;
+    const { alias, host, port, database, type, isactive, isdeleted, password } =
+      data;
 
     const [prevConnection] = await knex("connection").where({
       connectionid: id,
     });
 
-    const encryptedPassword = password ? encrypt(password) : prevConnection.password;
+    const encryptedPassword = password
+      ? encrypt(password)
+      : prevConnection.password;
 
     const [connection] = await knex("connection")
       .where({ connectionid: id })
@@ -134,7 +137,6 @@ class Connection {
       .returning("*");
     return connection;
   }
-
 
   static async delete(id) {
     const [connection] = await knex("connection")

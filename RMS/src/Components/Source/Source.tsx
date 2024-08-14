@@ -93,7 +93,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       alert("Failed to update data");
     }
   };
-  
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
@@ -127,7 +127,17 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setOpenAddSource(false);
   };
   const handleAddSource = (newSource: any) => {
-    setConnections((prevData) => [newSource, ...prevData]);
+    setConnections((prevData) => [
+      {
+        ...newSource,
+        status: newSource.isdeleted
+          ? "deleted"
+          : newSource.isactive
+          ? "active"
+          : "inactive",
+      },
+      ...prevData,
+    ]);
   };
 
   const handleConnectionDelete = async (connectionId: string | null) => {
@@ -139,7 +149,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -161,13 +171,15 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(connections);
 
-
-
   return (
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true} />
+          <Filter
+            columns={baseColumns}
+            onFilterChange={handleFilterChange}
+            showStatusFilter={true}
+          />
         </Box>
         <Box
           sx={{
@@ -189,8 +201,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           <Button
             onClick={handleSearchSubmit}
             size="medium"
-            sx={{backgroundColor: "#7d0e0e",color: "white",
-              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            sx={{
+              backgroundColor: "#7d0e0e",
+              color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" },
             }}
           >
             Search
@@ -255,6 +269,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         )}
       </div>
       <AddSource
+        applicationId={applicationId}
         open={openAddSource}
         onClose={handleAddApplicationClose}
         onAdd={handleAddSource}

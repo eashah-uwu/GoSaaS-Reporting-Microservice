@@ -10,12 +10,13 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import styles from "./AddSource.module.css";
+import { toast } from "react-toastify";
 import { FC } from "react";
 
 interface AddSourceProps {
-    open: boolean;
-    onClose: () => void;
-    onAdd: (newSource: any) => void;
+  open: boolean;
+  onClose: () => void;
+  onAdd: (newSource: any) => void;
 }
 
 const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
@@ -28,58 +29,54 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
     port: "",
     alias: "",
   });
-  const [valid, setValid] = useState(false);
+  const [saveDisabled, setSaveDisabled] = useState(true);
 
-  const handleChange = (e: any) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = { ...formData };
-    console.log(data);
-    if (!valid) {
-      alert("Please test the connection before saving!");
+    if (saveDisabled) {
+      toast.error("Please test the connection before saving!");
       return;
     }
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
-        data
+        formData
       );
-      console.log(response.data);
       if (response.data.success) {
-        alert("Connection added successfully!");
+        toast.success("Connection added successfully!");
         onAdd(response.data.data);
         onClose();
       } else {
-        alert("Failed to add connection: " + response.data.message);
+        toast.error("Failed to add connection: " + response.data.message);
       }
     } catch (error: any) {
-      console.error("Error adding connection:", error);
-      alert("Failed to add connection: " + error.message);
+      toast.error("Failed to add connection: " + error.message);
     }
   };
 
-  const onTest = async () => {
-    console.log("Testing connection...");
-    console.log("formDATA", formData);
+  const handleConnect = async () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections/test-connection`,
         formData
       );
       if (response.data.success) {
-        alert("Connection successful!");
-        setValid(true);
+        toast.success("Connection successful!");
+        setSaveDisabled(false);
       } else {
-        alert("Connection failed: " + response.data.message);
+        toast.error("Connection failed: " + response.data.message);
+        setSaveDisabled(true);
       }
     } catch (error: any) {
-      console.error("Error testing connection:", error);
-      alert("Connection failed: " + error.message);
+      toast.error("Error connecting to source. Please try again.");
+      setSaveDisabled(true);
     }
   };
 
@@ -185,11 +182,49 @@ const AddSource: FC<AddSourceProps> = ({ open, onClose, onAdd }) => {
                 />
               </div>
             </div>
-            <DialogActions>
-              <Button onClick={onTest} color="primary">
-                Test
+            <DialogActions className={styles.formActions}>
+              <Button
+                size="small"
+                onClick={handleConnect}
+                sx={{
+                  backgroundColor: "#7d0e0e",
+                  color: "white",
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                  marginRight: "auto",
+                }}
+              >
+                Test Connection
               </Button>
-              <Button type="submit" color="primary">
+              <Button
+                size="small"
+                onClick={onClose}
+                sx={{
+                  backgroundColor: "#7d0e0e",
+                  color: "white",
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="small"
+                disabled={saveDisabled}
+                sx={{
+                  backgroundColor: saveDisabled ? "white" : "#7d0e0e",
+                  color: "white",
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
                 Save
               </Button>
             </DialogActions>

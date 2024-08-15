@@ -3,35 +3,35 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { loginSchema } = require("../schemas/authSchema");
-const passport = require("../config/passport");
+const { StatusCodes } = require("http-status-codes");
+
+// Helper function to generate JWT
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+};
 
 const login = async (req, res, next) => {
-  const data = loginSchema.parse(req.body);
-  const { email, password } = data;
-
   try {
+    // Parse and validate request body
+    const data = loginSchema.parse(req.body);
+    const { email, password } = data;
+
+    // Find user by email
     const user = await User.findByEmail(email);
     if (!user || user.password !== password) {
       const error = new Error("Invalid credentials");
-      error.status = 401;
+      error.status = StatusCodes.UNAUTHORIZED;
       return next(error);
     }
 
-    //ask Fahad about password hashing
-    // const isMatch = await bcrypt.compare(password, user.password);
-    // if (!isMatch) {
-    //   const error = new Error('Invalid credentials');
-    //   error.status = 401;
-    //   return next(error);
-    // }
+    // Generate token
+    const token = generateToken(user.userid); // Use user.userid here
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res.json({ token });
+    // Send token and userId
+    res.status(StatusCodes.OK).json({ token, userId: user.userid }); // Use user.userid here
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         message: "Validation error",
         errors: error.errors,
       });
@@ -42,15 +42,14 @@ const login = async (req, res, next) => {
 
 const authenticate = (req, res) => {
   if (req.user) {
-    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = generateToken(req.user.userid); // Use req.user.userid here
+    console.log("UserId",req.user.userid)
+    // Redirect with token and userId
     res.redirect(
-      `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}`
+      `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}&userId=${req.user.userid}` // Use req.user.userid here
     );
-    // res.redirect(my app component);
   } else {
-    res.redirect(`${process.env.DEPLOY_FRONTEND_URL}/login`);
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: "User not authenticated" });
   }
 };
 

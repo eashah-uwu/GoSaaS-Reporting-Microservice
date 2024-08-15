@@ -1,5 +1,5 @@
 const knex = require("knex");
-const debug = require("debug");
+const debug = require("debug")("postgresql-connection");
 
 class PostgreSQLConnection {
   constructor(config) {
@@ -17,7 +17,7 @@ class PostgreSQLConnection {
       port: config.port,
     };
 
-    console.log("Using PostgreSQL config:", this.config);
+    debug("Using PostgreSQL config:", this.config);
 
     // Initialize knex with the essential PostgreSQL configuration
     this.knex = knex({
@@ -25,13 +25,16 @@ class PostgreSQLConnection {
       connection: this.config,
     });
   }
+
   async testConnection() {
     try {
       await this.knex.raw("SELECT 1+1 AS result");
-      debug("Connection successful");
+      const storedProcedures = await this.getStoredProcedures();
+      console.log("Stored procedures:", storedProcedures);
       return {
         success: true,
         message: "Connection successful",
+        storedProcedures,
       };
     } catch (error) {
       console.error("Error connecting to PostgreSQL:", error);
@@ -68,9 +71,9 @@ class PostgreSQLConnection {
   async closePool() {
     try {
       await this.knex.destroy();
-      debug("PostgreSQL connection pool has been closed");
+      debug("PostgreSQL pool has been closed");
     } catch (error) {
-      debug("Error closing the PostgreSQL connection pool:", error);
+      debug("Error closing the PostgreSQL pool:", error);
       throw error;
     }
   }

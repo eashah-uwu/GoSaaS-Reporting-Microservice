@@ -12,6 +12,7 @@ import axios from "axios";
 import styles from "./AddSource.module.css";
 import { toast } from "react-toastify";
 import { FC } from "react";
+import { StatusCodes } from "http-status-codes";
 
 interface AddSourceProps {
   open: boolean;
@@ -56,7 +57,7 @@ const AddSource: FC<AddSourceProps> = ({
         `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
         { ...formData, applicationId, userId }
       );
-      if (response.status === 201) {
+      if (response.status === StatusCodes.CREATED) {
         toast.success("Connection added successfully!");
         onAdd(response.data.connection);
         setSaveDisabled(true);

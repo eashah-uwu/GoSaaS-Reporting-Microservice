@@ -43,9 +43,9 @@ const getApplications = async (req, res) => {
     pageSize = config.get("pageSize"),
     filters = config.get("filters"),
     sortField,
-    sortOrder
+    sortOrder,
   } = req.query;
-  
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [applications, total] = await Promise.all([
     Application.find({
@@ -54,7 +54,7 @@ const getApplications = async (req, res) => {
       limit: parseInt(pageSize, 10),
       filters,
       sortField,
-      sortOrder
+      sortOrder,
     }),
     Application.countSearchResults(query, filters),
   ]);
@@ -88,7 +88,6 @@ const updateApplication = async (req, res) => {
   const { id } = req.params;
   const data = applicationSchema.partial().parse(req.body);
 
-
   const existingApplication = await Application.findByName(data.name);
   if (existingApplication && existingApplication.id !== id) {
     logger.warn("Application name must be unique", {
@@ -100,7 +99,7 @@ const updateApplication = async (req, res) => {
   }
 
   const application = await Application.update(id, data);
-  
+
   if (!application) {
     logger.warn("Application not found for update", {
       context: { traceid: req.traceId },
@@ -118,7 +117,6 @@ const updateApplication = async (req, res) => {
     application,
   });
 };
-
 
 const deleteApplication = async (req, res) => {
   const { id } = req.params;

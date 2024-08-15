@@ -47,7 +47,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd,applicationId }) =
     //     {...formData,applicationId,userId}
     //   );
 
-    //   if (saveResponse.status === 201) {
+    //   if (saveResponse.status === StatusCodes.CREATED) {
     //     toast.success("Destination saved successfully!");
     //     console.log(saveResponse.data.destination)
     //     onAdd(saveResponse.data.destination);

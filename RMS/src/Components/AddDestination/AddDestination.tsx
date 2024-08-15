@@ -68,7 +68,7 @@ const AddDestination: FC<AddDestinationProps> = ({
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations/connect`,
         formData
       );
-      if (response.status === 200) {
+      if (response.status === StatusCodes.OK) {
         toast.success("Connection successful!");
         setSaveDisabled(false);
       } else {

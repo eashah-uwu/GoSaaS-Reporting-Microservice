@@ -60,6 +60,28 @@ const testConnection = async (req, res) => {
   }
 };
 
+const getStoredProcedures = async (req, res) => {
+  const { id } = req.body;
+  //const connection = await Connection.findById(id);
+  const connection = {
+    username: "root",
+    password: "12345678",
+    database: "rms_db",
+    type: "PostgreSQL",
+    host: "localhost",
+    port: "5432",
+    alias: "testt",
+  }
+  const { port, } = connection;
+  const connectedConnection = ConnectionFactory.createConnection(connection.type, {...connection});
+  await connectedConnection.testConnection();
+  const storedProcedures = await connectedConnection.getStoredProcedures();
+  console.log("storedproc",storedProcedures)
+
+}
+
+
+
 // Get connections
 const getConnections = async (req, res) => {
   const {
@@ -197,4 +219,5 @@ module.exports = {
   getConnections,
   getConnectionsByApplicationId,
   testConnection,
+  getStoredProcedures
 };

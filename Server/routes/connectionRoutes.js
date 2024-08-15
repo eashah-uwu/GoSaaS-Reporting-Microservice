@@ -8,13 +8,15 @@ const {
   deleteConnection,
   getConnections,
   getConnectionsByApplicationId,
+  getStoredProcedures
 } = require("../controllers/connectionController");
 const validateQuery = require("../middlewares/validateQuery");
 
 // Define routes
 router.post("/", createConnection);
-router.post("/test-connection", testConnection);
 router.get("/", validateQuery, getConnections); // Validate query parameters
+router.post("/test-connection", testConnection);
+router.post("/get-stored-procedures",getStoredProcedures);
 // router.get("/:id", getConnectionById);
 router.put("/:id", updateConnection);
 router.delete("/:id", deleteConnection);

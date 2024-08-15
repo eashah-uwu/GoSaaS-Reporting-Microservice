@@ -8,6 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import axios from "axios";
+import { StatusCodes } from "http-status-codes";
 import { useState, FC } from "react";
 
 interface AddApplicationProps {
@@ -29,7 +30,7 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
         `${import.meta.env.VITE_BACKEND_URL}/api/applications`,
         data
       );
-      if (response.status === 201) {
+      if (response.status === StatusCodes.CREATED) {
         const createdApplication = response.data.application;
         const { applicationid, name, createdat, isactive, isdeleted, status } =
           createdApplication;

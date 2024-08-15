@@ -28,7 +28,7 @@ class PostgreSQLConnection {
   async testConnection() {
     try {
       await this.knex.raw("SELECT 1+1 AS result");
-      console.log("Connection successful");
+      debug("Connection successful");
       return {
         success: true,
         message: "Connection successful",
@@ -72,6 +72,16 @@ class PostgreSQLConnection {
     } catch (error) {
       debug("Error closing the PostgreSQL connection pool:", error);
       throw error;
+    }
+  }
+  async getStoredProcedures() {
+    try {
+      const result = await this.knex.raw(
+        `SELECT routine_name FROM information_schema.routines WHERE routine_type='PROCEDURE' AND specific_schema='public'`
+      );
+      return result.rows.map((row) => ({ name: row.routine_name }));
+    } catch (error) {
+      throw new Error("Failed to retrieve stored procedures: " + error.message);
     }
   }
 }

@@ -27,12 +27,12 @@ const AddSource: FC<AddSourceProps> = ({
   applicationId,
 }) => {
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    database: "",
-    type: "",
-    host: "",
-    port: "",
+    username: "root",
+    password: "12345678",
+    database: "rms_db",
+    type: "PostgreSQL",
+    host: "localhost",
+    port: "5432",
     alias: "",
   });
   const [saveDisabled, setSaveDisabled] = useState(true);

@@ -104,7 +104,7 @@ class Connection {
         "isactive",
         "isdeleted"
       )
-      .where({ applicationid: id, isdeleted: false })
+      .where({ connectionid: id, isdeleted: false })
       .first();
   }
 

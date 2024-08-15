@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import { FC } from "react";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../State/store";
+import { StatusCodes } from "http-status-codes";
+
 
 interface AddDestinationProps {
   open: boolean;
@@ -45,12 +47,13 @@ const AddDestination: FC<AddDestinationProps> = ({
         { ...formData, applicationId, userId }
       );
       
-      if (saveResponse.status === 200) {
+      if (saveResponse.status === StatusCodes.OK) {
         toast.success("Destination saved successfully!");
         onAdd(saveResponse.data.destination);
         setSaveDisabled(true);
         onClose();
-      } else {
+    }
+     else {
         toast.error("Failed to save destination.");
       }
     } catch (error) {

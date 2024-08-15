@@ -1,13 +1,19 @@
 import React, { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+} from "@mui/material";
 import axios from "axios";
 import styles from "./AddDestination.module.css";
 import { toast } from "react-toastify";
 import { FC } from "react";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
 import { StatusCodes } from "http-status-codes";
-
 
 interface AddDestinationProps {
   open: boolean;
@@ -32,7 +38,6 @@ const AddDestination: FC<AddDestinationProps> = ({
 
   // Retrieve userId from Redux state
   const userId = useSelector((state: RootState) => state.auth.userId);
-  console.log("userid:", userId);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -46,14 +51,13 @@ const AddDestination: FC<AddDestinationProps> = ({
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations`,
         { ...formData, applicationId, userId }
       );
-      
+
       if (saveResponse.status === StatusCodes.OK) {
         toast.success("Destination saved successfully!");
         onAdd(saveResponse.data.destination);
         setSaveDisabled(true);
         onClose();
-    }
-     else {
+      } else {
         toast.error("Failed to save destination.");
       }
     } catch (error) {
@@ -80,8 +84,6 @@ const AddDestination: FC<AddDestinationProps> = ({
       setSaveDisabled(true);
     }
   };
-
-
 
   return (
     <>

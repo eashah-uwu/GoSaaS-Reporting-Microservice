@@ -30,7 +30,6 @@ class PostgreSQLConnection {
     try {
       await this.knex.raw("SELECT 1+1 AS result");
       const storedProcedures = await this.getStoredProcedures();
-      console.log("Stored procedures:", storedProcedures);
       return {
         success: true,
         message: "Connection successful",
@@ -58,7 +57,7 @@ class PostgreSQLConnection {
         error,
       };
     }
-  } 
+  }
   async getStoredProcedures() {
     try {
       const result = await this.knex.raw(`

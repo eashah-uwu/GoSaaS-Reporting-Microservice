@@ -1,17 +1,11 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  MenuItem,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
 import axios from "axios";
 import styles from "./AddDestination.module.css";
 import { toast } from "react-toastify";
 import { FC } from "react";
+import { useSelector } from 'react-redux';
+import { RootState } from "../../State/store";
 
 interface AddDestinationProps {
   open: boolean;
@@ -34,6 +28,10 @@ const AddDestination: FC<AddDestinationProps> = ({
     apiKey: "MmCHyXR+AVUmuxywRqHrLQx318htFQT19Hs1gCUe",
   });
 
+  // Retrieve userId from Redux state
+  const userId = useSelector((state: RootState) => state.auth.userId);
+  console.log("userid:", userId);
+
   const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -41,17 +39,14 @@ const AddDestination: FC<AddDestinationProps> = ({
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    const userId = 3;
     try {
-      console.log("hmm,");
       const saveResponse = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations`,
         { ...formData, applicationId, userId }
       );
-
-      if (saveResponse.status === 201) {
+      
+      if (saveResponse.status === 200) {
         toast.success("Destination saved successfully!");
-        console.log(saveResponse.data.destination);
         onAdd(saveResponse.data.destination);
         setSaveDisabled(true);
         onClose();
@@ -82,6 +77,8 @@ const AddDestination: FC<AddDestinationProps> = ({
       setSaveDisabled(true);
     }
   };
+
+
 
   return (
     <>

@@ -16,7 +16,7 @@ const createDestination = async (req, res) => {
   logger.info("Destination created successfully", {
     context: { traceid: req.traceId, destination },
   });
-    res.status(201).json({
+    res.status(StatusCodes.OK).json({
       message: "Destination created successfully!",
       destination: newDestination,
     });

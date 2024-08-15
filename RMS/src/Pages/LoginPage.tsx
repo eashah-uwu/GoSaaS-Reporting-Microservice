@@ -4,7 +4,7 @@ import { Formik, FormikHelpers } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setToken } from "../State/authSlice";
+import { setToken, setUserId } from "../State/authSlice";
 import axios from "axios";
 import styles from "./pages.module.css";
 
@@ -51,9 +51,11 @@ function LoginPage() {
         values
       );
 
-      const token = response.data.token;
+      const { token, userId } = response.data; // Assuming the response contains userId
       dispatch(setToken(token));
+      dispatch(setUserId(userId)); // Dispatch userId
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId); // Store userId in local storage
       navigate("/");
     } catch (error) {
       setError("Login failed");
@@ -61,9 +63,7 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${
-      import.meta.env.VITE_BACKEND_URL
-    }/api/auth/google`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`;
   };
 
   const handleFormSubmit = async (

@@ -72,11 +72,17 @@ const getStoredProcedures = async (req, res) => {
     port: "5432",
     alias: "testt",
   }
-  const { port, } = connection;
+  const { port } = connection;
   const connectedConnection = ConnectionFactory.createConnection(connection.type, {...connection});
-  await connectedConnection.testConnection();
-  const storedProcedures = await connectedConnection.getStoredProcedures();
+  const storedProcedures = await connectedConnection.getStoredProceduresData();
   console.log("storedproc",storedProcedures)
+  logger.info("Stored Procedures Retreived", {
+    context: { traceid: req.traceId, storedProcedures },
+  });
+  res.status(StatusCodes.OK).json({
+    success: true,
+    data: storedProcedures
+  });
 
 }
 

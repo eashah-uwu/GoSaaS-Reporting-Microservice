@@ -24,6 +24,8 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const [sources, setSources] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [storedProcedures, setStoredProcedures] = useState<any[]>([]);
+  const [selectedProcedure, setSelectedProcedure] = useState('');
+  const [parameters, setParameters] = useState('');
   // const [saveDisabled, setSaveDisabled] = useState(true)
   const [formData, setFormData] = useState({
     alias: '',
@@ -66,8 +68,8 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
         );
 
         if (response.data.success) {
-          console.log(response.data.storedProcedures)
-          setStoredProcedures(response.data.storedProcedures);
+          console.log(response.data.data)
+          setStoredProcedures(response.data.data);
           toast.success("Connection successful, stored procedures loaded!");
         } else {
           toast.error("Failed to load stored procedures: " + response.data.message);
@@ -76,6 +78,13 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
         toast.error("Error testing connection. Please try again.");
       }
     }
+  };
+
+  const handleProcedureSelect = (e:any) => {
+    const selectedProc = storedProcedures.find(proc => proc.procedure_name === e.target.value);
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setParameters(selectedProc.parameter_list);
   };
 
   const handleSubmit = async (event: any) => {
@@ -144,7 +153,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   value={formData.source}
                   onChange={handleChange}
                 >
-                  <MenuItem value="">Select Source</MenuItem>
+                  <MenuItem value="" hidden>Select Source</MenuItem>
                   {sources.map((source) => (
                     <MenuItem key={source.connectionid} value={source.connectionid}>
                       {source.alias}
@@ -163,7 +172,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   value={formData.destination}
                   onChange={handleChange}
                 >
-                  <MenuItem value="">Select Destination</MenuItem>
+                  <MenuItem value="" hidden>Select Destination</MenuItem>
                   {destinations.map((destination) => (
                     <MenuItem key={destination.destinationid} value={destination.destinationid}>
                       {destination.alias}
@@ -182,13 +191,13 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   select
                   fullWidth
                   value={formData.storedProcedure}
-                  onChange={handleChange}
+                  onChange={handleProcedureSelect}
                 >
-                  <MenuItem value="">Select Stored Procedure</MenuItem>
-                  {storedProcedures.map((proc) => (
-                    <MenuItem key={proc.name} value={proc.name}>
-                      {proc.name}
-                    </MenuItem>
+                  <MenuItem value="" hidden>Select Stored Procedure</MenuItem>
+                  {storedProcedures.map((proc, index) => (
+                    <MenuItem key={index} value={proc.procedure_name}>
+                    {proc.procedure_name}
+                  </MenuItem> 
                   ))}
                 </TextField>
               </div>
@@ -199,8 +208,11 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   name="parameter"
                   label="Parameter"
                   type="text"
+                  value={parameters} 
+                  InputProps={{
+                    readOnly: true,
+                  }}
                   fullWidth
-                  value={formData.parameter}
                   onChange={handleChange}
                 />
               </div>

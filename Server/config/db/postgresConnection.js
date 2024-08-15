@@ -45,7 +45,20 @@ class PostgreSQLConnection {
       };
     }
   }
-
+  async getStoredProceduresData() {
+    try {
+      const storedProcedures = await this.getStoredProcedures();
+      console.log("Stored procedures:", storedProcedures);
+      return storedProcedures;
+    } catch (error) {
+      console.error("Error connecting to PostgreSQL:", error);
+      return {
+        success: false,
+        message: "Failed to establish PostgreSQL connection",
+        error,
+      };
+    }
+  } 
   async getStoredProcedures() {
     try {
       const result = await this.knex.raw(`
@@ -75,16 +88,6 @@ class PostgreSQLConnection {
     } catch (error) {
       debug("Error closing the PostgreSQL pool:", error);
       throw error;
-    }
-  }
-  async getStoredProcedures() {
-    try {
-      const result = await this.knex.raw(
-        `SELECT routine_name FROM information_schema.routines WHERE routine_type='PROCEDURE' AND specific_schema='public'`
-      );
-      return result.rows.map((row) => ({ name: row.routine_name }));
-    } catch (error) {
-      throw new Error("Failed to retrieve stored procedures: " + error.message);
     }
   }
 }

@@ -29,8 +29,6 @@ class PostgreSQLConnection {
   async testConnection() {
     try {
       await this.knex.raw("SELECT 1+1 AS result");
-      console.log("Connection successful");
-
       const storedProcedures = await this.getStoredProcedures();
       console.log("Stored procedures:", storedProcedures);
 
@@ -50,23 +48,35 @@ class PostgreSQLConnection {
   }
 
   async getStoredProcedures() {
-    const storedProcedures = await this.knex.raw(`
-    SELECT
-      n.nspname AS schema_name,
-      p.proname AS function_name,
-      l.lanname AS language,
-      p.prokind AS kind
-    FROM
-      pg_catalog.pg_proc p
-    LEFT JOIN pg_catalog.pg_namespace n ON p.pronamespace = n.oid
-    LEFT JOIN pg_catalog.pg_language l ON p.prolang = l.oid
-    WHERE
-      p.prokind = 'p'  -- Filter for procedures only
-    ORDER BY
-      schema_name, function_name;
-  `);
+    try {
+      const result = await this.knex.raw(`
+        SELECT
+          p.proname AS procedure_name,
+          pg_catalog.pg_get_function_identity_arguments(p.oid) AS parameter_list
+        FROM
+          pg_catalog.pg_proc p
+        JOIN
+          pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname NOT IN ('pg_catalog', 'information_schema')
+        ORDER BY
+          p.proname;
+      `);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching stored procedures:", error);
+      throw error;
+    }
+  }
 
-    return storedProcedures.rows;
+  async closePool() {
+    try {
+      await this.knex.destroy();
+      debug("PostgreSQL pool has been closed");
+    } catch (error) {
+      debug("Error closing the PostgreSQL pool:", error);
+      throw error;
+    }
   }
 }
 

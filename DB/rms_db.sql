@@ -47,6 +47,7 @@ CREATE TABLE Connection (
     Port INT,
     Database VARCHAR(255),
     Type VARCHAR(50),
+    Username VARCHAR(255) NOT NULL,  -- Added the Username column
     isActive BOOLEAN DEFAULT TRUE,
     IsDeleted BOOLEAN DEFAULT FALSE,
     Password VARCHAR(255),
@@ -57,6 +58,7 @@ CREATE TABLE Connection (
     UpdatedBy INT,
     FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
 );
+
 
 CREATE TABLE StoredProcedure (
     StoredProcedureID SERIAL PRIMARY KEY,

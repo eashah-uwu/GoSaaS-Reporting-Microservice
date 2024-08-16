@@ -23,12 +23,13 @@ interface AddApplicationProps {
 const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  // Retrieve userId from Redux state
+  const userid = useSelector((state: RootState) => state.auth.userId);
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    // Retrieve userId from Redux state
-    const userid = useSelector((state: RootState) => state.auth.userId);
     const data = { name, description, userid };
+    console.log(data);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/applications`,

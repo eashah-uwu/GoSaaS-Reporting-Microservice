@@ -127,6 +127,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setOpenAddSource(false);
   };
   const handleAddSource = (newSource: any) => {
+    console.log(newSource)
     setConnections((prevData) => [
       {
         ...newSource,

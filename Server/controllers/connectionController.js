@@ -4,6 +4,7 @@ const logger = require("../logger");
 const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
 const ConnectionFactory = require("../config/db/connectionFactory");
+const { decrypt } = require("../config/encryption");
 
 // Create a new connection
 const createConnection = async (req, res) => {
@@ -18,12 +19,13 @@ const createConnection = async (req, res) => {
     createdby: parseInt(userId, 10),
     updatedby: parseInt(userId, 10),
   };
+  console.log(data)
 
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
-
+  const {username,alias,host,port,database,type,password,applicationid,createdby,updatedby}=data;
   // Call the model method to create a new connection
-  const connection = await Connection.create(validatedData);
+  const connection = await Connection.create(username,alias,host,port,database,type,password,applicationid,createdby,updatedby);
 
   // Log the successful creation
   logger.info("Connection created successfully", {
@@ -62,21 +64,14 @@ const testConnection = async (req, res) => {
 
 const getStoredProcedures = async (req, res) => {
   const { id } = req.body;
-  //const connection = await Connection.findById(id);
-  const connection = {
-    username: "root",
-    password: "12345678",
-    database: "rms_db",
-    type: "PostgreSQL",
-    host: "localhost",
-    port: "5432",
-    alias: "testt",
-  };
-  const { port } = connection;
-  const connectedConnection = ConnectionFactory.createConnection(
-    connection.type,
-    { ...connection }
-  );
+  const connection_db = await Connection.findById(id);
+  const password=decrypt(connection_db.password)
+  console.log(password)
+  const connection={
+    ...connection_db,
+    password:password
+  }
+  const connectedConnection = ConnectionFactory.createConnection(connection.type, {...connection});
   const storedProcedures = await connectedConnection.getStoredProceduresData();
   logger.info("Stored Procedures Retreived", {
     context: { traceid: req.traceId, storedProcedures },

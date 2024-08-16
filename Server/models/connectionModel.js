@@ -2,43 +2,32 @@ const knex = require("../config/db/db");
 const { encrypt, decrypt } = require("../config/encryption");
 
 class Connection {
-  static async create(data) {
-    const {
-      alias,
-      host,
-      port,
-      database,
-      type,
-      isactive,
-      isdeleted,
-      password,
-      applicationid,
-      createdby,
-      updatedby,
-    } = data;
-
+  static async create(username_p,alias_p,host_p,port_p,database_p,type_p,password_p,applicationid_p,createdby_p,updatedby_p) {
+    
     // Encrypt the password before saving it to the database
-    const encryptedPassword = encrypt(password);
+    const encryptedPassword = encrypt(password_p);
 
     // Insert the new connection into the database and return the created record
     const [connection] = await knex("connection")
       .insert({
-        alias,
-        host,
-        port,
-        database,
-        type,
-        isactive,
-        isdeleted,
+        username:username_p,
+        alias:alias_p,
+        host:host_p,
+        port:port_p,
+        database:database_p,
+        type:type_p,
+        isactive:true,
+        isdeleted:false,
         password: encryptedPassword, // Save the encrypted password
-        applicationid,
+        applicationid:applicationid_p,
         createdat: new Date(),
         updatedat: new Date(),
-        createdby,
-        updatedby,
+        createdby:createdby_p,
+        updatedby:updatedby_p
       })
       .returning("*");
-    return { alias, database, type, host, port, isactive, isdeleted };
+    const {alias,host,port,applicationid,connectionid,database,type,isactive,isdeleted}=connection;
+    return {alias,host,port,applicationid,connectionid,database,type,isactive,isdeleted};
   }
 
   static async findAll() {
@@ -102,7 +91,9 @@ class Connection {
         "host",
         "port",
         "isactive",
-        "isdeleted"
+        "isdeleted",
+        "password",
+        "username"
       )
       .where({ connectionid: id, isdeleted: false })
       .first();

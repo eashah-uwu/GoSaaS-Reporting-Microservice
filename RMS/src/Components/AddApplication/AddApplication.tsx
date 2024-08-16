@@ -1,4 +1,7 @@
 import classes from "./AddApplication.module.css";
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
+
 import {
   Dialog,
   DialogTitle,
@@ -23,7 +26,8 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    const userid = 4;
+    // Retrieve userId from Redux state
+    const userid = useSelector((state: RootState) => state.auth.userId);
     const data = { name, description, userid };
     try {
       const response = await axios.post(

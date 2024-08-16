@@ -12,6 +12,8 @@ import axios from "axios";
 import styles from "./AddReport.module.css";
 import { toast } from "react-toastify";
 import { FC } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
 
 interface AddReportProps {
   open: boolean;
@@ -89,7 +91,8 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    const userId = 3;
+    // Retrieve userId from Redux state
+    const userId = useSelector((state: RootState) => state.auth.userId);
     // try {
     //   console.log('hmm,')
     //   const saveResponse = await axios.post(

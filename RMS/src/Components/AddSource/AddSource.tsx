@@ -13,7 +13,8 @@ import styles from "./AddSource.module.css";
 import { toast } from "react-toastify";
 import { FC } from "react";
 import { StatusCodes } from "http-status-codes";
-
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
 interface AddSourceProps {
   open: boolean;
   onClose: () => void;
@@ -37,7 +38,8 @@ const AddSource: FC<AddSourceProps> = ({
     alias: "",
   });
   const [saveDisabled, setSaveDisabled] = useState(true);
-
+  // Retrieve userId from Redux state
+  const userId = useSelector((state: RootState) => state.auth.userId);
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -47,12 +49,12 @@ const AddSource: FC<AddSourceProps> = ({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (saveDisabled) {
       toast.error("Please test the connection before saving!");
       return;
     }
     try {
-      const userId = 3;
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
         { ...formData, applicationId, userId }

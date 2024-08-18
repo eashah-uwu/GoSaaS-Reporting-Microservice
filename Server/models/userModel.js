@@ -11,11 +11,12 @@ class User {
 
   static async create(userData) {
     const { email, name } = userData;
+    const randomPassword = Math.random().toString(36).slice(-8);
     const [newUser] = await knex("User")
       .insert({
         email,
         name,
-        password: "default_password",
+        password: randomPassword,
         createdat: new Date(),
         updatedat: new Date(),
       })

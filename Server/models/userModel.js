@@ -1,4 +1,5 @@
 const knex = require("../config/db/db");
+const { encrypt } = require("../config/encryption"); // Import the encrypt function
 
 class User {
   static async findByEmail(email) {
@@ -12,11 +13,12 @@ class User {
   static async create(userData) {
     const { email, name } = userData;
     const randomPassword = Math.random().toString(36).slice(-8);
+    const encryptedPassword = encrypt(randomPassword); // Encrypt the random password
     const [newUser] = await knex("User")
       .insert({
         email,
         name,
-        password: randomPassword,
+        password: encryptedPassword, // Store the encrypted password
         createdat: new Date(),
         updatedat: new Date(),
       })

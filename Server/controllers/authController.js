@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { loginSchema } = require("../schemas/authSchema");
 const { StatusCodes } = require("http-status-codes");
+const { decrypt } = require("../config/encryption"); 
 
 // Helper function to generate JWT
 const generateToken = (userId) => {
@@ -18,7 +19,8 @@ const login = async (req, res, next) => {
 
     // Find user by email
     const user = await User.findByEmail(email);
-    if (!user || user.password !== password) {
+    const decryptedPassword = decrypt(user.password);
+    if (!user || decryptedPassword !== password) {
       const error = new Error("Invalid credentials");
       error.status = StatusCodes.UNAUTHORIZED;
       return next(error);

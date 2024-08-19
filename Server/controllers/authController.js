@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { loginSchema } = require("../schemas/authSchema");
 const { StatusCodes } = require("http-status-codes");
+const { decrypt } = require("../config/encryption"); 
 
 // Helper function to generate JWT
 const generateToken = (userId) => {
@@ -18,7 +19,8 @@ const login = async (req, res, next) => {
 
     // Find user by email
     const user = await User.findByEmail(email);
-    if (!user || user.password !== password) {
+    const decryptedPassword = decrypt(user.password);
+    if (!user || decryptedPassword !== password) {
       const error = new Error("Invalid credentials");
       error.status = StatusCodes.UNAUTHORIZED;
       return next(error);
@@ -43,7 +45,6 @@ const login = async (req, res, next) => {
 const authenticate = (req, res) => {
   if (req.user) {
     const token = generateToken(req.user.userid); // Use req.user.userid here
-    debug("UserId",req.user.userid)
     // Redirect with token and userId
     res.redirect(
       `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}&userId=${req.user.userid}` // Use req.user.userid here

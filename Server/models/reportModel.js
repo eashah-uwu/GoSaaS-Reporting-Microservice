@@ -1,35 +1,41 @@
 const knex = require("../config/db/db");
 
 class Report {
-  static async create(data) {
-    const {
-      title,
-      description,
-      generationdate,
-      parameters,
-      sourceconnectionid,
-      destinationid,
-      applicationid,
-      storedprocedureid,
-      userid,
-      createdby,
-    } = data;
-    const [report] = await knex("report")
+  static async create(title_p, description_p, parameter_p, source_p, destination_p, applicationid_p, storedprocedure_p, userid_p, key_p) {
+    const [createdReport] = await knex("report")
       .insert({
-        title,
-        description,
-        generationdate: new Date(generationdate),
-        parameters: JSON.stringify(parameters), // Ensure parameters are stored as JSON
-        sourceconnectionid: sourceconnectionid,
-        destinationid: destinationid,
-        applicationid: applicationid,
-        storedprocedureid: storedprocedureid,
-        userid: userid,
+        title: title_p,
+        description: description_p,
+        generationdate: new Date(),
+        parameters: JSON.stringify(parameter_p),
+        sourceconnectionid: source_p,
+        destinationid: destination_p,
+        applicationid: applicationid_p,
+        storedprocedure: storedprocedure_p,
+        userid: userid_p,
         createdat: new Date(),
-        createdby: createdby,
+        updatedat: new Date(),
+        createdby: userid_p,
+        filekey: key_p
       })
       .returning("*");
-    return report;
+    const [report] = await knex("report")
+    .select(
+      "report.title",
+      "report.description",
+      knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+      "report.sourceconnectionid",
+      "report.destinationid",
+      "report.storedprocedure as storedProcedure",
+      "report.applicationid",
+      "sc.alias as sourceConnection",
+      "d.alias as destination"
+    )
+    .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+    .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+    .where({ "report.reportid": createdReport.reportid });
+
+     return report;
   }
 
   static async findById(id) {
@@ -103,15 +109,14 @@ class Report {
       .count({ count: "*" })
       .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
       .where({ "report.applicationid": applicationId })
       .where((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)
           .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("report.storedprocedure", "ilike", `%${query}%`)
           .orWhere("sc.alias", "ilike", `%${query}%`)
           .orWhere("d.alias", "ilike", `%${query}%`)
-          .orWhere("sp.name", "ilike", `%${query}%`)
           .orWhere(
             knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
             "ilike",
@@ -131,23 +136,21 @@ class Report {
         knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
         "report.sourceconnectionid",
         "report.destinationid",
+        "report.storedprocedure as storedProcedure",
         "report.applicationid",
-        "report.storedprocedureid",
         "sc.alias as sourceConnection",
         "d.alias as destination",
-        "sp.name as storedProcedure",
       )
       .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .leftJoin("storedprocedure as sp", "report.storedprocedureid", "sp.storedprocedureid")
       .where({ "report.applicationid": applicationId })
       .andWhere((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)
           .orWhere("report.description", "ilike", `%${query}%`)
+          .orWhere("report.storedprocedure", "ilike", `%${query}%`)
           .orWhere("sc.alias", "ilike", `%${query}%`)
           .orWhere("d.alias", "ilike", `%${query}%`)
-          .orWhere("sp.name", "ilike", `%${query}%`)
           .orWhere(
             knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD')`),
             "ilike",

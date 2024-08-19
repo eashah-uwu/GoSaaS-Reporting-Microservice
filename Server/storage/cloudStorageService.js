@@ -35,7 +35,7 @@ const uploadFile = async (destination, url, apiKey,file, bucketName) => {
             });
             const params = {
                 Bucket: bucketName,
-                Key: file.originalname,
+                Key: file.key,
                 Body: file.buffer,
             };
             const data = await s3.upload(params).promise();

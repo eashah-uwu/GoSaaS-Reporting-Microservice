@@ -4,37 +4,61 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
+const path = require('path');
+const Destination = require("../models/destinationModel");
+const { uploadFile } = require('../storage/cloudStorageService.js');
+
 
 const createReport = async (req, res) => {
-  // Validate and parse request body using reportSchema
-  const data = reportSchema.parse(req.body);
+  const {buffer,originalname} = req.file; 
+  const { alias, description, source, destination, storedProcedure, parameter, userid,applicationid } = req.body;
+  const fileName = `${userid}-${originalname}`;
+  const folderName = `user_${userid}`;
+  const key = `${folderName}/${fileName}`;
+  const destination_db = await Destination.findById(destination);
+  await uploadFile("aws", destination_db.url, destination_db.apikey,{key,buffer}, "reportsdestination0")
 
-  const existingReport = await Report.findByTitle(data.title);
-  if (existingReport) {
-    logger.warn("Report title must be unique", {
-      context: { traceid: req.traceId },
-    });
-    return res.status(StatusCodes.CONFLICT).json({
-      message: "Report title must be unique",
-    });
-  }
-
-  const report = await Report.create(data);
-
+  const newReport = await Report.create(
+      alias,
+      description,
+      parameter,
+      source,
+      destination,
+      applicationid,
+      storedProcedure,
+      userid,
+      key, 
+  );
   logger.info("Report created successfully", {
-    context: { traceid: req.traceId, report },
+    context: { traceid: req.traceId, newReport },
   });
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
-    report: {
-      reportid: report.reportid,
-      createdat: report.createdat,
-      isactive: report.isactive,
-      isdeleted: report.isdeleted,
-      name: report.name,
-      status: "active",
-    },
+    report:newReport,
   });
+};
+
+
+const downloadReport = async (req, res) => {
+  const { reportId } = req.params;
+  try {
+    const report = await Report.findByPk(reportId);
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: report.fileName,
+    };
+
+    const fileStream = s3.getObject(params).createReadStream();
+    res.attachment(path.basename(report.fileName));
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading report:', error);
+    return res.status(500).json({ success: false, message: 'Error downloading report' });
+  }
 };
 const getReports = async (req, res) => {
   const reports = await Report.findAll();
@@ -197,5 +221,6 @@ module.exports = {
   updateReport,
   deleteReport,
   searchReports,
-  getReportsByApplicationId
+  getReportsByApplicationId,
+  downloadReport
 };

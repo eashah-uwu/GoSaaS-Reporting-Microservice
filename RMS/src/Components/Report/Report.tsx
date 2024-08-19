@@ -112,8 +112,8 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const handleAddReportClose = () => {
     setOpenAddReport(false);
   };
-  const handleAddReport = (newDestination: any) => {
-    //setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
+  const handleAddReport = (newReport: any) => {
+    setReports((prevData) => [...prevData,{...newReport}]);
   };
 
   const handleReportDelete = async (destinationId: string | null) => {

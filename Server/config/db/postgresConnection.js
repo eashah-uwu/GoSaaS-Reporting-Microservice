@@ -47,7 +47,7 @@ class PostgreSQLConnection {
   async getStoredProceduresData() {
     try {
       const storedProcedures = await this.getStoredProcedures();
-      console.log("Stored procedures:", storedProcedures);
+      debug("Stored procedures:", storedProcedures);
       return storedProcedures;
     } catch (error) {
       console.error("Error connecting to PostgreSQL:", error);

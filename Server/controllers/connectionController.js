@@ -19,7 +19,6 @@ const createConnection = async (req, res) => {
     createdby: parseInt(userId, 10),
     updatedby: parseInt(userId, 10),
   };
-  console.log(data)
 
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);

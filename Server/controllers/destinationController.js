@@ -10,7 +10,6 @@ const {
 
 const createDestination = async (req, res) => {
   const {destination,alias,url,apiKey,applicationId,userId } = req.body;
-  console.log(destination,alias,url,apiKey,applicationId,userId)
   await connectToDestination(destination, url, apiKey);
   const newDestination = await Destination.create(alias,url,apiKey,applicationId,userId);
   logger.info("Destination created successfully", {

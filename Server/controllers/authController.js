@@ -43,7 +43,7 @@ const login = async (req, res, next) => {
 const authenticate = (req, res) => {
   if (req.user) {
     const token = generateToken(req.user.userid); // Use req.user.userid here
-    console.log("UserId",req.user.userid)
+    debug("UserId",req.user.userid)
     // Redirect with token and userId
     res.redirect(
       `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}&userId=${req.user.userid}` // Use req.user.userid here

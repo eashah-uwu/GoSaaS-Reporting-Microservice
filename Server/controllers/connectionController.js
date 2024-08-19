@@ -66,7 +66,6 @@ const getStoredProcedures = async (req, res) => {
   const { id } = req.body;
   const connection_db = await Connection.findById(id);
   const password=decrypt(connection_db.password)
-  console.log(password)
   const connection={
     ...connection_db,
     password:password

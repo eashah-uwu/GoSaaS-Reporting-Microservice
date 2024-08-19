@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -26,8 +26,9 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const [sources, setSources] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [storedProcedures, setStoredProcedures] = useState<any[]>([]);
-  const [selectedProcedure, setSelectedProcedure] = useState('');
   const [parameters, setParameters] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const userid = useSelector((state: RootState) => state.auth.userId||"");
   // const [saveDisabled, setSaveDisabled] = useState(true)
   const [formData, setFormData] = useState({
     alias: '',
@@ -70,7 +71,6 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
         );
 
         if (response.data.success) {
-          console.log(response.data.data)
           setStoredProcedures(response.data.data);
           toast.success("Connection successful, stored procedures loaded!");
         } else {
@@ -81,38 +81,51 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       }
     }
   };
-
-  const handleProcedureSelect = (e:any) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+  const handleProcedureSelect = (e: any) => {
     const selectedProc = storedProcedures.find(proc => proc.procedure_name === e.target.value);
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({...formData,[name]: value,parameter:selectedProc.parameter_list})
     setParameters(selectedProc.parameter_list);
   };
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    // Retrieve userId from Redux state
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    // try {
-    //   console.log('hmm,')
-    //   const saveResponse = await axios.post(
-    //     `${import.meta.env.VITE_BACKEND_URL}/api/destinations`,
-    //     {...formData,applicationId,userId}
-    //   );
 
-    //   if (saveResponse.status === StatusCodes.CREATED) {
-    //     toast.success("Destination saved successfully!");
-    //     console.log(saveResponse.data.destination)
-    //     onAdd(saveResponse.data.destination);
-    //   //  setSaveDisabled(true);
-    //     onClose();
-    //   } else {
-    //     toast.error("Failed to save destination.");
-    //   }
-    // } catch (error) {
-    //   toast.error("Error saving destination. Please try again.");
-    // }
-    // setSaveDisabled(!saveDisabled);
+    if (!file) {
+      toast.error("Please upload an .xls file.");
+      return;
+    }
+
+    try {const formDataToSend = new FormData();
+      formDataToSend.append("alias", formData.alias);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("source", formData.source);
+      formDataToSend.append("destination", formData.destination);
+      formDataToSend.append("storedProcedure", formData.storedProcedure);
+      formDataToSend.append("parameter", formData.parameter);
+      formDataToSend.append("userid", userid);
+      formDataToSend.append("file", file);
+      formDataToSend.append("applicationid", applicationId);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports`,
+        formDataToSend
+      );
+
+      if (response.status === 201) {
+        toast.success("Report created successfully!");
+        onAdd(response.data.report);
+        onClose();
+      } else {
+        toast.error("Failed to create report.");
+      }
+    } catch (error: any) {
+      toast.error("Error creating report. Please try again.");
+    }
   };
 
 
@@ -199,8 +212,8 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   <MenuItem value="" hidden>Select Stored Procedure</MenuItem>
                   {storedProcedures.map((proc, index) => (
                     <MenuItem key={index} value={proc.procedure_name}>
-                    {proc.procedure_name}
-                  </MenuItem> 
+                      {proc.procedure_name}
+                    </MenuItem>
                   ))}
                 </TextField>
               </div>
@@ -211,7 +224,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   name="parameter"
                   label="Parameter"
                   type="text"
-                  value={parameters} 
+                  value={parameters}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -219,6 +232,14 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
                   onChange={handleChange}
                 />
               </div>
+            </div>
+            <div className={styles.formRow}>
+              <input
+                accept=".xsl"
+                id="upload-file"
+                type="file"
+                onChange={handleFileChange}
+              />
             </div>
             <DialogActions className={styles.formActions}>
               <Button

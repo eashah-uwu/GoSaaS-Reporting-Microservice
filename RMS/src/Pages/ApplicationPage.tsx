@@ -115,7 +115,7 @@ const ApplicationPage = () => {
             padding: "1.3rem",
             boxShadow: isSmallScreen
               ? "rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px"
-              : "rgba(0, 0, 0, 0.2) 0px 4px 8px -1px, rgba(0, 0, 0, 0.14) 0px 2px 4px 0px",
+              : "rgba(0, 0, 0, 0.2) 0px 2px 8px -1px, rgba(0, 0, 0, 0.14) 0px 2px 4px 0px",
             borderRadius: "4px",
             marginTop: isSmallScreen ? "1rem" : "2rem",
             marginLeft: isSmallScreen ? "1rem" : "9.5rem",

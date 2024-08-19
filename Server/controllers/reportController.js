@@ -4,47 +4,68 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
-const path = require('path');
+const path = require("path");
 const Destination = require("../models/destinationModel");
-const { uploadFile } = require('../storage/cloudStorageService.js');
+const { uploadFile } = require("../storage/cloudStorageService.js");
 
-
+const { v4: uuidv4 } = require("uuid");
 const createReport = async (req, res) => {
-  const {buffer,originalname} = req.file; 
-  const { alias, description, source, destination, storedProcedure, parameter, userid,applicationid } = req.body;
-  const fileName = `${userid}-${originalname}`;
+  const { buffer, originalname } = req.file;
+  const {
+    alias,
+    description,
+    source,
+    destination,
+    storedProcedure,
+    parameter,
+    userid,
+    applicationid,
+  } = req.body;
+
+  const uid = uuidv4(); // Generate a unique identifier
+  const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
   const folderName = `user_${userid}`;
   const key = `${folderName}/${fileName}`;
+
   const destination_db = await Destination.findById(destination);
-  await uploadFile("aws", destination_db.url, destination_db.apikey,{key,buffer}, "reportsdestination0")
+  await uploadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    { key, buffer },
+    "reportsdestination0"
+  );
 
   const newReport = await Report.create(
-      alias,
-      description,
-      parameter,
-      source,
-      destination,
-      applicationid,
-      storedProcedure,
-      userid,
-      key, 
+    alias,
+    description,
+    parameter,
+    source,
+    destination,
+    applicationid,
+    storedProcedure,
+    userid,
+    key
   );
+
   logger.info("Report created successfully", {
     context: { traceid: req.traceId, newReport },
   });
+
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
-    report:newReport,
+    report: newReport,
   });
 };
-
 
 const downloadReport = async (req, res) => {
   const { reportId } = req.params;
   try {
     const report = await Report.findByPk(reportId);
     if (!report) {
-      return res.status(404).json({ success: false, message: 'Report not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Report not found" });
     }
 
     const params = {
@@ -56,8 +77,10 @@ const downloadReport = async (req, res) => {
     res.attachment(path.basename(report.fileName));
     fileStream.pipe(res);
   } catch (error) {
-    console.error('Error downloading report:', error);
-    return res.status(500).json({ success: false, message: 'Error downloading report' });
+    console.error("Error downloading report:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error downloading report" });
   }
 };
 const getReports = async (req, res) => {
@@ -222,5 +245,5 @@ module.exports = {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadReport
+  downloadReport,
 };

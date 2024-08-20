@@ -9,15 +9,18 @@ import AddButton from "../AddButton/AddButton";
 interface TableConfigProps {
     data: any[];
     includeStatus: boolean;
+    includeEdit:boolean;
     baseColumns: any[];
     pageSize: number;
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
     onDelete: (selectedDataId:string | null) => void;
     onAddData: () => void;
+    onEdit: (item: any) => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete,onAddData }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete,onAddData, includeEdit, onEdit
+ }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -60,7 +63,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
 
     
 
-    const columns = setColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor);
+    const columns = setColumns(baseColumns, includeStatus,includeEdit, handleStatusChange, rowIdAccessor, onEdit);
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,

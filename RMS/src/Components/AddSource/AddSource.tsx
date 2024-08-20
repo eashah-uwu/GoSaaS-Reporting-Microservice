@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -19,27 +19,35 @@ interface AddSourceProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newSource: any) => void;
+  onEdit?: (updatedSource: any) => void;
   applicationId: string;
-}
+  sourceToEdit?: any; 
+};
 
 const AddSource: FC<AddSourceProps> = ({
   open,
   onClose,
   onAdd,
+  onEdit,
   applicationId,
+  sourceToEdit,
 }) => {
   const [formData, setFormData] = useState({
-    username: "",
+    username:  "",
     password: "",
-    database: "",
-    type: "",
-    host: "",
-    port: "",
-    alias: "",
+    database:  "",
+    type:  "",
+    host:  "",
+    port:  "",
+    alias:  "",
   });
+
+  
+
   const [saveDisabled, setSaveDisabled] = useState(true);
-  // Retrieve userId from Redux state
+
   const userId = useSelector((state: RootState) => state.auth.userId);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -54,26 +62,46 @@ const AddSource: FC<AddSourceProps> = ({
       toast.error("Please test the connection before saving!");
       return;
     }
+
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
-        { ...formData, applicationId, userId }
-      );
-      if (response.status === StatusCodes.CREATED) {
-        toast.success("Connection added successfully!");
-        onAdd(response.data.connection);
-        setSaveDisabled(true);
-        handleClose(); // Ensure form data is cleared
+      if (sourceToEdit) {
+        console.log(sourceToEdit.connectionid)
+        console.log({ ...formData, applicationId, userId })
+        const response = await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${sourceToEdit.connectionid}`,
+          { ...formData, applicationId, userId }
+        );
+        if (response.status === StatusCodes.OK) {
+          toast.success("Connection updated successfully!");
+          onEdit && onEdit(response.data.connection);
+        } else {
+          toast.error("Failed to update connection: " + response.data.message);
+        }
       } else {
-        toast.error("Failed to add connection: " + response.data.message);
+        // Add mode
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
+          { ...formData, applicationId, userId }
+        );
+        if (response.status === StatusCodes.CREATED) {
+          toast.success("Connection added successfully!");
+          onAdd(response.data.connection);
+        } else {
+          toast.error("Failed to add connection: " + response.data.message);
+        }
       }
+
+      setSaveDisabled(true);
+      handleClose();
     } catch (error: any) {
-      toast.error("Failed to add connection: " + error.message);
+      toast.error("Failed to save connection: " + error.message);
     }
   };
 
   const handleConnect = async () => {
     try {
+      console.log(sourceToEdit)
+      console.log(formData)
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections/test-connection`,
         formData
@@ -89,6 +117,7 @@ const AddSource: FC<AddSourceProps> = ({
       toast.error("Error connecting to source. Please try again.");
       setSaveDisabled(true);
     }
+ 
   };
 
   const handleClose = () => {
@@ -105,10 +134,9 @@ const AddSource: FC<AddSourceProps> = ({
   };
 
   return (
-    <>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Source Connection</DialogTitle>
-        <DialogContent>
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>{sourceToEdit ? "Edit Source" : "Add Source"}</DialogTitle>
+      <DialogContent>
           <form onSubmit={handleSubmit}>
             <div className={styles.formContainer}>
               <div className={styles.formItem}>
@@ -206,56 +234,55 @@ const AddSource: FC<AddSourceProps> = ({
                 />
               </div>
             </div>
-            <DialogActions className={styles.formActions}>
-              <Button
-                size="small"
-                onClick={handleConnect}
-                sx={{
+          <DialogActions>
+            <Button
+              size="small"
+              onClick={handleConnect}
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": {
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                  ":hover": {
-                    backgroundColor: "#7d0e0e",
-                    color: "white",
-                  },
-                  marginRight: "auto",
-                }}
-              >
-                Test Connection
-              </Button>
-              <Button
-                size="small"
-                onClick={handleClose}
-                sx={{
+                },
+                marginRight: "auto",
+              }}
+            >
+              Test Connection
+            </Button>
+            <Button
+              size="small"
+              onClick={handleClose}
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": {
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                  ":hover": {
-                    backgroundColor: "#7d0e0e",
-                    color: "white",
-                  },
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                disabled={saveDisabled}
-                sx={{
-                  backgroundColor: saveDisabled ? "white" : "#7d0e0e",
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="small"
+              disabled={saveDisabled}
+              sx={{
+                backgroundColor: saveDisabled ? "white" : "#7d0e0e",
+                color: "white",
+                ":hover": {
+                  backgroundColor: "#7d0e0e",
                   color: "white",
-                  ":hover": {
-                    backgroundColor: "#7d0e0e",
-                    color: "white",
-                  },
-                }}
-              >
-                Save
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+                },
+              }}
+            >
+              {sourceToEdit ? "Update" : "Save"}
+            </Button>
+          </DialogActions>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

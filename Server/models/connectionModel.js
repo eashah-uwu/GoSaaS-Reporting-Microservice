@@ -67,6 +67,7 @@ class Connection {
     let baseQuery = knex("connection")
       .select(
         "alias",
+        "username",
         "applicationid",
         "connectionid",
         "database",
@@ -130,7 +131,7 @@ class Connection {
   }
 
   static async update(id, data) {
-    const { alias, host, port, database, type, isactive, isdeleted, password } =
+    const { alias, username, host, port, database, type, isactive, isdeleted, password } =
       data;
 
     const [prevConnection] = await knex("connection").where({
@@ -148,6 +149,7 @@ class Connection {
         isactive: isactive,
         isdeleted: isdeleted,
         alias: alias,
+        username:username,
         host: host,
         port: port,
         database: database,

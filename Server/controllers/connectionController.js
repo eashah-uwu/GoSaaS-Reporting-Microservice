@@ -10,7 +10,7 @@ const { decrypt } = require("../config/encryption");
 const createConnection = async (req, res) => {
   // Destructure and transform the request body
   const { applicationId, userId, ...restData } = req.body;
-  console.log(req.body)
+ 
 
 
   // Convert port and IDs to integers
@@ -24,7 +24,7 @@ const createConnection = async (req, res) => {
   
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
-  console.log
+
   const {username,alias,host,port,database,type,password,applicationid,createdby,updatedby}=data;
   
   const existingConnection = await Connection.findByName(alias);
@@ -56,7 +56,7 @@ const createConnection = async (req, res) => {
 //test connection
 const testConnection = async (req, res) => {
   const { type, ...config } = req.body;
-  console.log(req.body);
+  
   try {
     const connection = ConnectionFactory.createConnection(type, config);
     const result = await connection.testConnection();

@@ -173,7 +173,6 @@ const ApplicationPage = () => {
           </Typography>
         </Box>
 
-        {/* Rest of your code remains the same */}
         {applicationData && (
           <div className={classes.buttonDiv}>
             <Button

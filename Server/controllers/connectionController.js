@@ -177,7 +177,7 @@ const updateConnection = async (req, res) => {
     });
     return res
       .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Application not found" });
+      .json({ message: "Connection not found" });
   }
   else {
     const application = await Application.findById(existingConnection.applicationid);
@@ -223,18 +223,29 @@ const updateConnection = async (req, res) => {
 
 // Delete a connection (soft delete)
 const deleteConnection = async (req, res) => {
-  const { id } = req.params;
-  const connection = await Connection.delete(id);
-  if (!connection) {
+  const { connectionid } = req.params;
+  const userid = req.user.userid;
+
+  const existingConnection = await Connection.findById(connectionid);
+  if (!existingConnection) {
     logger.warn("Connection not found for deletion", {
-      context: { traceid: req.traceId, id },
+      context: { traceid: req.traceId, connectionid },
     });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
+  }else{
+    const application = await Application.findById(existingConnection.applicationid);
+    if (!application || application.userid != userid) {
+      logger.warn("Application not found for connection", { context: { traceid: req.traceId } });
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Application not found" });
+    }
   }
+  const connection = await Connection.delete(connectionid);
   logger.info("Connection deleted successfully", {
-    context: { traceid: req.traceId, id },
+    context: { traceid: req.traceId, connectionid },
   });
   res
     .status(StatusCodes.OK)

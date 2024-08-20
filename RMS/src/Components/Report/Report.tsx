@@ -113,7 +113,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setOpenAddReport(false);
   };
   const handleAddReport = (newReport: any) => {
-    setReports((prevData) => [...prevData,{...newReport}]);
+    setReports((prevData) => [...prevData, { ...newReport }]);
   };
 
   const handleReportDelete = async (destinationId: string | null) => {
@@ -237,7 +237,11 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
               </Box>
             </FormControl>
           </Box>
+
         )}
+        {/* <a href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download/11`} download>
+          <button>Download File</button>
+        </a> */}
       </div>
       <AddReport
         open={openAddReport}

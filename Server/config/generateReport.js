@@ -4,7 +4,8 @@ const { decrypt } = require("./encryption");
 const { downloadFile } = require("../storage/cloudStorageService.js");
 const logger = require("../logger");
 const js2xmlparser = require("js2xmlparser");
-
+const { Xslt, XmlParser } = require("xslt-processor");
+const fs = require("fs");
 // Function to check report existence
 async function checkReportExistence(reportName) {
   const report = await knex("report").where({ title: reportName }).first();
@@ -125,7 +126,18 @@ async function getProcedureRows(knexInstance, queryText, schemaName) {
     throw error;
   }
 }
-
+async function performXsltTransformation(xmlData, xslContent) {
+  try {
+    const xslt = new Xslt();
+    const xmlParser = new XmlParser();
+    const parsedXml = xmlParser.xmlParse(xmlData);
+    const parsedXsl = xmlParser.xmlParse(xslContent);
+    const outXmlString = await xslt.xsltProcess(parsedXml, parsedXsl);
+    return outXmlString;
+  } catch (xsltError) {
+    throw new Error("XSLT Transformation error: " + xsltError.message);
+  }
+}
 // Main function to generate a report
 async function generateReport(req, res, next) {
   const { reportName, parameters } = req.body;
@@ -186,7 +198,6 @@ async function generateReport(req, res, next) {
       parametersDefs,
       parameters
     );
-    console.log("Generated Query:", query);
 
     // Step 9: Execute the generated query
     const schemaName = "ETS"; // Assuming schema is part of reportDetails
@@ -198,9 +209,19 @@ async function generateReport(req, res, next) {
       data: result,
     });
 
-    // Send the XML response
-    res.set("Content-Type", "application/xml");
-    return res.status(200).send(xmlData);
+    // XSLT Transformation
+    try {
+      const outXmlString = await performXsltTransformation(xmlData, xslContent);
+
+      // Send the HTML response
+      res.set("Content-Type", "text/html");
+      return res.status(200).send(outXmlString);
+    } catch (error) {
+      logger.error("Error generating report", { error: error.message });
+      return res
+        .status(500)
+        .json({ message: "XSLT Transformation failed", error: error.message });
+    }
   } catch (err) {
     logger.error("Error generating report", { error: err });
     next(err);

@@ -19,7 +19,7 @@ router.post("/test-connection",verifyToken, testConnection);
 router.post("/get-stored-procedures",getStoredProcedures);
 router.get("/get-con/:connectionid",verifyToken, getConnectionById);
 router.put("/:connectionid",verifyToken, updateConnection);
-router.delete("/:id", deleteConnection);
+router.delete("/:connectionid",verifyToken, deleteConnection);
 router.get("/:applicationid",verifyToken,validateQuery, getConnectionsByApplicationId);
 
 module.exports = router;

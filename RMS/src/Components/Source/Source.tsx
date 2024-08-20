@@ -169,7 +169,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const handleConnectionDelete = async (connectionId: string | null) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionId}`
+        `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       fetchConnections(page, pageSize, searchQuery, filters);
     } catch (e) {

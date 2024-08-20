@@ -34,6 +34,7 @@ const getAllDestinations = async (req, res) => {
 // Get destination by ID
 const getDestinationById = async (req, res) => {
   const { id } = req.params;
+  console.log(id);
   const destination = await Destination.findById(id);
   if (!destination) {
     logger.warn("Destination not found", {

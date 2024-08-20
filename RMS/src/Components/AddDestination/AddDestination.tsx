@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,6 +6,7 @@ import {
   DialogActions,
   TextField,
   Button,
+  Tooltip,
 } from "@mui/material";
 import axios from "axios";
 import styles from "./AddDestination.module.css";
@@ -14,13 +15,25 @@ import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
 import { StatusCodes } from "http-status-codes";
+import { useForm, Controller, set } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DisabledByDefaultSharp } from "@mui/icons-material";
+
+const destinationSchema = z.object({
+  alias: z.string().max(255).nonempty("Alias is required"),
+  destination: z.string().max(255).nonempty("Destination is required"),
+  url: z.string().max(255).optional(),
+  apiKey: z.string().max(255).optional(),
+});
+
 
 interface AddDestinationProps {
   open: boolean;
   onClose: () => void;
   onAddOrEdit: (destination: any) => void;
   applicationId: string;
-  initialData?: any; // This will hold data when editing
+  initialData?: any;
 }
 
 const AddDestination: FC<AddDestinationProps> = ({
@@ -30,54 +43,106 @@ const AddDestination: FC<AddDestinationProps> = ({
   applicationId,
   initialData,
 }) => {
-  const isEditing = Boolean(initialData); // Determine if editing
-  const [saveDisabled, setSaveDisabled] = useState(true);
-  const [formData, setFormData] = useState({
-    alias: "",
-    destination: "",
-    url: "",
-    apiKey: "",
-    ...initialData, // Populate form with initial data if available
-  });
+  const isEditing = Boolean(initialData);
 
   // Retrieve userId from Redux state
   const userId = useSelector((state: RootState) => state.auth.userId);
+  const [disabled,setDisabled] = useState(true);
+  const [destination, setDestination] = useState<string>("");
 
-
-  useEffect(() => {
-    setFormData({
+  const {
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(destinationSchema),
+    defaultValues: {
       alias: "",
       destination: "",
       url: "",
       apiKey: "",
       ...initialData,
-    });
-  }, [initialData]);
+    },
+  });
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const formData = watch();
 
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
+
+  useEffect(() => {
+    console.log(initialData);
+    const fetch = async () => {
+      if (initialData) {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/api/destinations/get-dest/${initialData.destinationid}`
+          );
+          console.log(response.data);
+          const {  destination } = response.data;
+          setDestination(destination);
+          reset({
+            alias: initialData.alias || "",
+            destination: destination || "",
+            url:  initialData.url || "",
+             apiKey: initialData.apikey || "",
+         
+          });
+        } catch (error) {
+          console.error("Failed to fetch connection data", error);
+        }
+      }
+    };
+  
+    fetch();
+  }, [initialData, reset]);
+
+  // useEffect(() => {
+   
+  //   if (initialData) {
+  //     console.log(initialData);
+  //     cons
+  //     setValue("alias", initialData.alias || "");
+  //     setValue("destination", initialData.destination || "");
+  //     setValue("url", initialData.url || "");
+  //     setValue("apiKey", initialData.apikey || "");
+  //   } else {
+  //     reset({
+  //       alias: "",
+  //       destination: "",
+  //       url: "",
+  //       apiKey: "",
+  //     });
+  //   }
+  // }, [initialData, setValue, reset]);
+
+  const onSubmit = async (data: any) => {
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${isEditing ? `/${initialData.destinationid}` : ''}`;
-      const method = isEditing ? 'put' : 'post';
-      const saveResponse = await axios[method](url, { ...formData, applicationId, userId });
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${
+        isEditing ? `/${initialData.destinationid}` : ""
+      }`;
+      const method = isEditing ? "put" : "post";
+      const saveResponse = await axios[method](url, {
+        ...data,
+        applicationId,
+        userId,
+      });
 
       if (saveResponse.status === StatusCodes.OK) {
-        toast.success(`Destination ${isEditing ? 'updated' : 'added'} successfully!`);
+        toast.success(
+          `Destination ${isEditing ? "updated" : "added"} successfully!`
+        );
         onAddOrEdit(saveResponse.data.destination);
-        setSaveDisabled(true);
         onClose();
       } else {
-        toast.error(`Failed to ${isEditing ? 'update' : 'add'} destination.`);
+        toast.error(`Failed to ${isEditing ? "update" : "add"} destination.`);
       }
     } catch (error) {
-      toast.error(`Error ${isEditing ? 'updating' : 'adding'} destination. Please try again.`);
+      toast.error(
+        `Error ${isEditing ? "updating" : "adding"} destination. Please try again.`
+      );
     }
-    setSaveDisabled(!saveDisabled);
   };
 
   const handleConnect = async () => {
@@ -88,71 +153,91 @@ const AddDestination: FC<AddDestinationProps> = ({
       );
       if (response.status === StatusCodes.OK) {
         toast.success("Connection successful!");
-        setSaveDisabled(false);
+        setDisabled(false);
       } else {
         toast.error("Connection failed. Please check the details.");
-        setSaveDisabled(true);
       }
     } catch (error) {
       toast.error("Error connecting to destination. Please try again.");
-      setSaveDisabled(true);
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{isEditing ? 'Edit Destination' : 'Add Destination'}</DialogTitle>
+      <DialogTitle>
+        {isEditing ? "Edit Destination" : "Add Destination"}
+      </DialogTitle>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.formContainer}>
             <div className={styles.formItem}>
-              <TextField
-                margin="dense"
-                id="alias"
+              <Controller
                 name="alias"
-                label="Alias"
-                type="text"
-                fullWidth
-                value={formData.alias}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="Alias"
+                    type="text"
+                    fullWidth
+                    error={!!errors.alias}
+                    helperText={errors.alias?.message?.toString()}
+                  />
+                )}
               />
             </div>
             <div className={styles.formItem}>
-              <TextField
-                margin="dense"
-                id="destination"
+              <Controller
                 name="destination"
-                label="Destination"
-                type="text"
-                fullWidth
-                value={formData.destination}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="Destination"
+                    type="text"
+                    fullWidth
+                    error={!!errors.destination}
+                    helperText={errors.destination?.message?.toString()}
+                  />
+                )}
               />
             </div>
           </div>
           <div className={styles.formContainer}>
             <div className={styles.formItem}>
-              <TextField
-                margin="dense"
-                id="url"
+              <Controller
                 name="url"
-                label="URL"
-                type="text"
-                fullWidth
-                value={formData.url}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="URL"
+                    type="text"
+                    fullWidth
+                    error={!!errors.url}
+                    helperText={errors.url?.message?.toString()}
+                  />
+                )}
               />
             </div>
             <div className={styles.formItem}>
-              <TextField
-                margin="dense"
-                id="apiKey"
+              <Controller
                 name="apiKey"
-                label="API Key"
-                type="text"
-                fullWidth
-                value={formData.apiKey}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="API Key"
+                    type="text"
+                    fullWidth
+                    error={!!errors.apiKey}
+                    helperText={errors.apiKey?.message?.toString()}
+                  />
+                )}
               />
             </div>
           </div>
@@ -186,21 +271,43 @@ const AddDestination: FC<AddDestinationProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              size="small"
-              disabled={saveDisabled}
-              sx={{
-                backgroundColor: saveDisabled ? "white" : "#7d0e0e",
-                color: "white",
-                ":hover": {
+            {disabled ? (
+              <Tooltip title="Please test the connection before saving">
+                <span>
+                  <Button
+                    type="submit"
+                    size="small"
+                    disabled={disabled}
+                    sx={{
+                      backgroundColor: "grey",
+                      color: "white",
+                      ":hover": {
+                        backgroundColor: "grey",
+                        color: "white",
+                      },
+                    }}
+                  >
+                    {initialData ? "Update" : "Save"}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="submit"
+                size="small"
+                disabled={disabled}
+                sx={{
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                },
-              }}
-            >
-              Save
-            </Button>
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
+                {initialData ? "Update" : "Save"}
+              </Button>
+            )}
           </DialogActions>
         </form>
       </DialogContent>

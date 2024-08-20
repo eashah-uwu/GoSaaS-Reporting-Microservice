@@ -264,7 +264,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         onClose={onClose}
         onAddOrEdit={handleAddOrEditDestination}
         applicationId={applicationId}
-        initialData={editingDestination} // Pass data if editing
+        initialData={editingDestination} 
       />
     </>
   );

@@ -98,8 +98,7 @@ const ApplicationPage = () => {
       );
       if (response.status === 200) {
         toast.success("Application data updated successfully");
-
-        setApplicationData(response.data);
+        setApplicationData(response.data.application);
         setOpen(false);
       } else {
         toast.error("Failed to update application data");

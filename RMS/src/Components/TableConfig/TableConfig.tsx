@@ -46,7 +46,10 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
             );
         }
     };
-
+    const handleDeleteClick = (id: string) => {
+        setSelectedDataId(id);
+        setOpenDialog(true);
+    };
     const handleDeleteConfirm =  () => {
             onDelete(selectedDataId); 
             setOpenDialog(false);
@@ -60,7 +63,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
 
     
 
-    const columns = setColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor);
+    const columns = setColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor,handleDeleteClick);
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,

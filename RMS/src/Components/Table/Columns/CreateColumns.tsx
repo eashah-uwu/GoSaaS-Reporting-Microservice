@@ -1,19 +1,19 @@
 import { ColumnDef } from "@tanstack/react-table";
 import StatusSelect from "./StatusComponent/StatusSelect";
 import { Link } from "react-router-dom";
-
-export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void,rowIdAccessor: string) => {
-    const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus, handleStatusChange,rowIdAccessor);
+import DeleteIcon from '@mui/icons-material/Delete';
+export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string,handleDeleteClick: (id: string) => void) => {
+    const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor,handleDeleteClick);
     return Columns;
 };
 
-const createColumns = (baseColumns: { accessorKey: string; header: string; }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void,rowIdAccessor: string): ColumnDef<any>[] => {
+const createColumns = (baseColumns: { accessorKey: string; header: string; }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string,handleDeleteClick: (id: string) => void): ColumnDef<any>[] => {
     const columns: ColumnDef<any>[] = baseColumns.map((col) => ({
         accessorKey: col.accessorKey,
         header: col.header,
         cell: (info: any) => (
-            col.accessorKey === 'name' ? (
-                <Link to={`/application/${info.row.original[rowIdAccessor]}`}>
+            (col.accessorKey === 'name' && rowIdAccessor == "applicationid") ? (
+                <Link style={{ color: "#bc1a1a", fontWeight: "bold", textDecoration: "none" }} to={`/application/${info.row.original[rowIdAccessor]}`}>
                     {info.getValue()}
                 </Link>
             ) : info.getValue()
@@ -26,6 +26,14 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original[rowIdAccessor]} handleStatusChange={handleStatusChange} />,
         });
     }
+    columns.push({
+        accessorKey: 'actions',
+        header: 'Actions',
+        cell: (info: any) => <DeleteIcon
+            sx={{ color: "#7d0e0e", cursor: "pointer" }}
+            onClick={() => handleDeleteClick(info.row.original[rowIdAccessor])} // Call handleDeleteClick on click
+        />,
+    });
 
     return columns;
 };

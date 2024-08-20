@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const errorHandler = require('./middlewares/errorMiddleware');
 
 const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -14,6 +13,7 @@ const authMiddleware = async (req, res, next) => {
       return next(new Error('Unauthorized'));
     }
     req.user = user;
+    console.log(req.user)
     next();
   } catch (error) {
     next(new Error('Unauthorized'));

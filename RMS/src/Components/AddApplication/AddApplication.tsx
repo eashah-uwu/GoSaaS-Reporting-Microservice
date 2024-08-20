@@ -1,7 +1,7 @@
 import classes from "./AddApplication.module.css";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
-
+import { toast } from "react-toastify";
 import {
   Dialog,
   DialogTitle,
@@ -21,21 +21,29 @@ interface AddApplicationProps {
 }
 
 const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
+
+  
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  // Retrieve userId from Redux state
-  const userid = useSelector((state: RootState) => state.auth.userId);
+
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    const data = { name, description, userid };
+    const data = { name, description};
     console.log(data);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/applications`,
-        data
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
       );
       if (response.status === StatusCodes.CREATED) {
+        toast.success("Application created successfully!");
         const createdApplication = response.data.application;
         const { applicationid, name, createdat, isactive, isdeleted, status } =
           createdApplication;
@@ -49,10 +57,10 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
         });
         onClose();
       } else {
-        console.error("Failed to submit data");
+        toast.error("Failed to add Application");
       }
     } catch (error) {
-      console.error("Error submitting data:", error);
+      toast.error("Error Adding Application");
     }
   };
   return (

@@ -1,12 +1,11 @@
 const knex = require("../config/db/db");
 
 class Application {
-  static async create(data) {
+  static async create(data,userid) {
     const {
       name,
       description,
       isactive = true,
-      userid,
       createdby = userid,
       updatedby = userid,
       isdeleted = false,
@@ -53,10 +52,13 @@ class Application {
   }
 
   static async update(id, data) {
-    const { name, isactive, isdeleted } = data;
+    let { name, isactive, isdeleted,description=""} = data;
     const [prevApplication] = await knex("application").where({
       applicationid: id,
     });
+    if(!description){
+      description=prevApplication.description
+    }
     const [application] = await knex("application")
       .where({ applicationid: id })
       .update({
@@ -64,6 +66,7 @@ class Application {
         name: name,
         isactive: isactive,
         isdeleted: isdeleted,
+        description:description,
         updatedat: new Date(),
       })
       .returning("*");
@@ -85,7 +88,7 @@ class Application {
     return count;
   }
 
-  static async find({ query, offset, limit, filters = {} }) {
+  static async find({ query, offset, limit, filters = {},userid }) {
     let baseQuery = knex("application")
       .select(
         "applicationid",
@@ -94,7 +97,7 @@ class Application {
         "isdeleted",
         knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`)
       )
-      .where("isdeleted", false)
+      .where({ userid: userid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("name", "ilike", `%${query}%`)
@@ -119,10 +122,10 @@ class Application {
   }
   
 
-  static async countSearchResults(query, filters = {}) {
+  static async countSearchResults(query, filters = {},userid) {
     let baseQuery = knex("application")
       .count({ count: "*" })
-      .where("isdeleted", false)
+      .where({ userid: userid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("name", "ilike", `%${query}%`)

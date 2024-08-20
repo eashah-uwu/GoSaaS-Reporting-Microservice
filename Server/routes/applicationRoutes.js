@@ -8,11 +8,13 @@ const {
   deleteApplication,
 } = require("../controllers/applicationController");
 const validateQuery = require("../middlewares/validateQuery");
+const verifyToken=require("../middlewares/auth")
 
-router.post("/", createApplication);
-router.get("/", validateQuery, getApplications); // Validate query parameters
-router.get("/:id", getApplicationById);
-router.put("/:id", updateApplication);
-router.delete("/:id", deleteApplication);
+
+router.post("/",verifyToken, createApplication);
+router.get("/",verifyToken, validateQuery, getApplications); // Validate query parameters
+router.get("/:applicationid",verifyToken, getApplicationById);
+router.put("/:applicationid",verifyToken, updateApplication);
+router.delete("/:applicationid",verifyToken, deleteApplication);
 
 module.exports = router;

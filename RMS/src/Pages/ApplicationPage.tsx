@@ -20,9 +20,12 @@ import Source from "../Components/Source/Source";
 import Destination from "../Components/Destination/Destination";
 import Report from "../Components/Report/Report";
 import EditIcon from "@mui/icons-material/Edit";
+import { useSelector } from "react-redux";
+import { RootState } from "../State/store";
+import { toast } from "react-toastify";
 
 const ApplicationPage = () => {
-  const { id } = useParams();
+  const { applicationid } = useParams();
   const [applicationData, setApplicationData] = useState<any>(null);
   const [activeButton, setActiveButton] = useState<string>("source");
   const [open, setOpen] = useState(false);
@@ -30,12 +33,18 @@ const ApplicationPage = () => {
   const [description, setDescription] = useState("");
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const token = useSelector((state: RootState) => state.auth.token);
 
   useEffect(() => {
     const fetchApplicationData = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${id}`
+          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
         setApplicationData(response.data);
         console.log(response.data);
@@ -45,7 +54,7 @@ const ApplicationPage = () => {
     };
 
     fetchApplicationData();
-  }, [id]);
+  }, [applicationid]);
 
   if (!applicationData) return <div>Loading...</div>;
 
@@ -53,7 +62,7 @@ const ApplicationPage = () => {
     setActiveButton(buttonName);
   };
 
-  if (!id) {
+  if (!applicationid) {
     return redirect("/");
   }
 
@@ -79,28 +88,31 @@ const ApplicationPage = () => {
 
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${id}`,
-        updatedData
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
       );
       if (response.status === 200) {
-        console.log("Application data updated successfully");
+        toast.success("Application data updated successfully");
 
         setApplicationData(response.data);
         setOpen(false);
       } else {
-        console.log("Failed to update application data");
+        toast.error("Failed to update application data");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response && error.response.status === 409) {
-          alert("Application name already exists. Please choose another name.");
+          toast.error("Application name already exists. Please choose another name.");
         } else {
-          console.error("Failed to create application:", error);
-          alert("An error occurred. Please try again later.");
+          toast.error("An error occurred. Please try again later.");
         }
       } else {
-        console.error("An unexpected error occurred:", error);
-        alert("An unexpected error occurred. Please try again later.");
+        toast.error("An unexpected error occurred. Please try again later.");
       }
     }
   };
@@ -218,9 +230,9 @@ const ApplicationPage = () => {
         )}
 
         <div className={classes.component_content}>
-          {activeButton === "source" && <Source applicationId={id} />}
-          {activeButton === "destination" && <Destination applicationId={id} />}
-          {activeButton === "reports" && <Report applicationId={id} />}
+          {activeButton === "source" && <Source applicationId={applicationid} />}
+          {activeButton === "destination" && <Destination applicationId={applicationid} />}
+          {activeButton === "reports" && <Report applicationId={applicationid} />}
         </div>
       </main>
       <Dialog open={open} onClose={handleClose}>

@@ -4,29 +4,36 @@ const logger = require("../logger");
 const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
 const ConnectionFactory = require("../config/db/connectionFactory");
+const Application = require("../models/applicationModel");
 const { decrypt } = require("../config/encryption");
 
 // Create a new connection
 const createConnection = async (req, res) => {
   // Destructure and transform the request body
-  const { applicationId, userId, ...restData } = req.body;
- 
+  const { applicationId, ...restData } = req.body;
+  const userid = req.user.userid;
+  const application = await Application.findById(applicationId);
 
-
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
   // Convert port and IDs to integers
   const data = {
     ...restData,
     port: parseInt(restData.port, 10),
     applicationid: parseInt(applicationId, 10),
-    createdby: parseInt(userId, 10),
-    updatedby: parseInt(userId, 10),
+    createdby: parseInt(userid, 10),
+    updatedby: parseInt(userid, 10),
   };
-  
+
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
 
-  const {username,alias,host,port,database,type,password,applicationid,createdby,updatedby}=data;
-  
+  const { username, alias, host, port, database, type, password, applicationid, createdby, updatedby } = data;
+
   const existingConnection = await Connection.findByName(alias);
   if (existingConnection) {
     logger.warn("Alias name must be unique", {
@@ -37,7 +44,7 @@ const createConnection = async (req, res) => {
     });
   }
   // Call the model method to create a new connection
-  const connection = await Connection.create(username,alias,host,port,database,type,password,applicationid,createdby,updatedby);
+  const connection = await Connection.create(username, alias, host, port, database, type, password, applicationid, createdby, updatedby);
 
   // Log the successful creation
   logger.info("Connection created successfully", {
@@ -56,7 +63,7 @@ const createConnection = async (req, res) => {
 //test connection
 const testConnection = async (req, res) => {
   const { type, ...config } = req.body;
-  
+
   try {
     const connection = ConnectionFactory.createConnection(type, config);
     const result = await connection.testConnection();
@@ -80,12 +87,12 @@ const testConnection = async (req, res) => {
 const getStoredProcedures = async (req, res) => {
   const { id } = req.body;
   const connection_db = await Connection.findById(id);
-  const password=decrypt(connection_db.password)
-  const connection={
+  const password = decrypt(connection_db.password)
+  const connection = {
     ...connection_db,
-    password:password
+    password: password
   }
-  const connectedConnection = ConnectionFactory.createConnection(connection.type, {...connection});
+  const connectedConnection = ConnectionFactory.createConnection(connection.type, { ...connection });
   const storedProcedures = await connectedConnection.getStoredProceduresData();
   logger.info("Stored Procedures Retreived", {
     context: { traceid: req.traceId, storedProcedures },
@@ -134,56 +141,74 @@ const getConnections = async (req, res) => {
 
 // Get connection by ID
 const getConnectionById = async (req, res) => {
-  const { id } = req.params;
-  const connection = await Connection.findById(id);
-  if (!connection) {
+  const { connectionid } = req.params;
+  const userid = req.user.userid;
+  const connection = await Connection.findById(connectionid);
+  const application = await Application.findById(connection.applicationid);
+  if (!connection && application.userid != userid) {
     logger.warn("Connection not found", {
-      context: { traceid: req.traceId, id },
+      context: { traceid: req.traceId, connectionid },
     });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
   }
   logger.info("Retrieved connection by ID", {
-    context: { traceid: req.traceId, id, connection },
+    context: { traceid: req.traceId, connectionid, connection },
   });
   res.status(StatusCodes.OK).json(connection);
 };
 
 // Update a connection
 const updateConnection = async (req, res) => {
-  const { id } = req.params;
-  
+  const { connectionid } = req.params;
+  const userid = req.user.userid;
   // Parse the ID to an integer
-  const parsedId = parseInt(id, 10);
+  const parsedId = parseInt(connectionid, 10);
 
-  // Destructure and parse the request body to ensure number fields are treated as numbers
-  const {
-    port, applicationid, createdby, updatedby, ...restData
-  } = req.body;
 
-  const data = {
-    ...restData,
-    port: port ? parseInt(port, 10) : undefined,
-    applicationid: applicationid ? parseInt(applicationid, 10) : undefined,
-    createdby: createdby ? parseInt(createdby, 10) : undefined,
-    updatedby: updatedby ? parseInt(updatedby, 10) : undefined,
-  };
+  const data = req.body;
+  const {alias=""}=req.body;
+  const existingConnection = await Connection.findById(parsedId);
+
+  if (!existingConnection) {
+    logger.warn("Connection not found to update", {
+      context: { traceid: req.traceId },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+  else {
+    const application = await Application.findById(existingConnection.applicationid);
+    if (!application || application.userid != userid) {
+      logger.warn("Application not found for connection", { context: { traceid: req.traceId } });
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Application not found" });
+    }
+  }
+  if(alias!=""){
+    const otherConnection = await Connection.findByName(req.body.alias);
+    if (otherConnection && otherConnection.connectionid!=connectionid) {
+      logger.warn("Connection alias must be unique", {
+        context: { traceid: req.traceId },
+      });
+      return res.status(StatusCodes.CONFLICT).json({
+        message: "Connection alias must be unique",
+      });
+    }
+  }
+ 
+
+
+
 
   // Validate and parse the data using connectionSchema
   const validatedData = connectionSchema.partial().parse(data);
 
   // Call the model method to update the connection
   const connection = await Connection.update(parsedId, validatedData);
-
-  if (!connection) {
-    logger.warn("Connection not found for update", {
-      context: { traceid: req.traceId, id: parsedId },
-    });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Connection not found" });
-  }
 
   logger.info("Connection updated successfully", {
     context: { traceid: req.traceId, id: parsedId, connection },
@@ -223,22 +248,31 @@ const getConnectionsByApplicationId = async (req, res) => {
     pageSize = config.get("pageSize"),
     filters = config.get("filters"),
   } = req.query;
-  const { id: applicationId } = req.params;
-
+  const { applicationid } = req.params;
+  const userid = req.user.userid;
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+
+  const application = await Application.findById(applicationid);
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+
 
   const [connections, total] = await Promise.all([
     Connection.findByApplicationId({
-      applicationId,
+      applicationid,
       query,
       offset,
       limit: parseInt(pageSize, 10),
       filters,
     }),
-    Connection.countSearchResults(applicationId, query, filters),
+    Connection.countSearchResults(applicationid, query, filters),
   ]);
   logger.info("Retrieved connections by application ID", {
-    context: { traceid: req.traceId, applicationId, connections },
+    context: { traceid: req.traceId, applicationid, connections },
   });
 
   res.status(StatusCodes.OK).json({

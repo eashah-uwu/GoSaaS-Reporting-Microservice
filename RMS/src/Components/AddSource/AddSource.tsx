@@ -56,6 +56,7 @@ const AddSource: FC<AddSourceProps> = ({
   sourceToEdit,
 }) => {
   const userId = useSelector((state: RootState) => state.auth.userId);
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const {
     control,
@@ -80,26 +81,18 @@ const AddSource: FC<AddSourceProps> = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
    
-  // const fetch = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`
-  //     );
-  //     const {username,password}= response.data;
-  //     console.log(response.data);
-  //     setUsername(username);
-  //     setPassword(password);
-  //   } catch (error) {
-  //     console.error("Failed to fetch connection data", error);
-  //   }
-  // }
 
   useEffect(() => {
     const fetch = async () => {
       if (sourceToEdit) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`
+            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, 
+              },
+            }
           );
           const { username, password } = response.data;
           setUsername(username);
@@ -131,12 +124,17 @@ const AddSource: FC<AddSourceProps> = ({
     }
 
     try {
-      const payload = { ...formData,  applicationId, userId };
+      const payload = { ...formData,  applicationId };
 
       if (sourceToEdit) {
         const response = await axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${sourceToEdit.connectionid}`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
 
         if (response.status === StatusCodes.OK) {
@@ -148,7 +146,12 @@ const AddSource: FC<AddSourceProps> = ({
       } else {
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
 
         if (response.status === StatusCodes.CREATED) {
@@ -175,7 +178,12 @@ const AddSource: FC<AddSourceProps> = ({
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections/test-connection`,
-        data
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
       );
 
       if (response.data.success) {
@@ -192,7 +200,15 @@ const AddSource: FC<AddSourceProps> = ({
   };
 
   const handleClose = () => {
-    reset();
+    reset({
+      alias:  "",
+      username:  "",
+      host: "",
+      port:  "",
+      database: "",
+      type: "",
+      password: "",
+    });
     onClose();
   };
 
@@ -225,7 +241,7 @@ const AddSource: FC<AddSourceProps> = ({
                 render={({ field }) => (
                   <TextField
                     margin="dense"
-                    label="Username"
+                    label="username"
                     fullWidth
                     {...field}
                     error={!!errors.username}

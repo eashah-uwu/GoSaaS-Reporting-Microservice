@@ -141,9 +141,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setConnections((prevData) => [
       {
         ...newSource,
-        status: newSource.isdeleted
-          ? "deleted"
-          : newSource.isactive
+        status: newSource.isactive
           ? "active"
           : "inactive",
       },
@@ -161,9 +159,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleEdit = (connection: any) => {
     setEditingSource(connection);
- setOpenAddSource(true);
-
-
+    setOpenAddSource(true);
   };
   
 

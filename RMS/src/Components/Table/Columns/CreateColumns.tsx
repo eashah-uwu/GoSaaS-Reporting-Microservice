@@ -45,7 +45,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
         header: 'Actions',
         cell: (info: any) => <DeleteIcon
             sx={{ color: "#7d0e0e", cursor: "pointer" }}
-            onClick={() => handleDeleteClick(info.row.original[rowIdAccessor])} // Call handleDeleteClick on click
+            onClick={() => handleDeleteClick(info.row.original[rowIdAccessor])} 
         />,
     });
     return columns;

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
 import TableConfig from "../TableConfig/TableConfig";
 import { Pagination, FormControl } from '@mui/material';
 import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import classes from "./Dashboard.module.css"
 import Filter from "../Filter/Filter";
+import { toast } from "react-toastify";
 import AddApplication from "../AddApplication/AddApplication";
 const Dashboard = () => {
+  const token = useSelector((state: RootState) => state.auth.token);
+
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +40,9 @@ const Dashboard = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/applications`,
         {
           params: { page, pageSize, query, filters },
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
         }
       );
       const processedData = data.data.map((app: any) => ({
@@ -59,21 +67,24 @@ const Dashboard = () => {
       const requests = updatedItems.map((item) => {
         const { applicationid, name, createdat, isactive, isdeleted } = item;
         return axios.put(
-          `${import.meta.env.VITE_BACKEND_URL
-          }/api/applications/${applicationid}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
           {
-            applicationid,
             name,
             createdat,
             isactive,
             isdeleted,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
           }
         );
       });
       await Promise.all(requests);
-      console.log("updated Items", updatedItems);
+      toast.success("Updated Applications successfully!");
     } catch (error) {
-      alert("Failed to update data");
+      toast.error("Failed to update Applications!");
     }
   };
 
@@ -117,7 +128,12 @@ const Dashboard = () => {
   const handleApplicationDelete = async (applicationid: string | null) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
       );
 
       fetchApplications(page, pageSize, searchQuery, filters);

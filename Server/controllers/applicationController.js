@@ -6,6 +6,7 @@ const config = require("config");
 require("dotenv").config();
 
 const createApplication = async (req, res) => {
+  const userid=req.user.userid;
   const data = applicationSchema.parse(req.body);
 
   const existingApplication = await Application.findByName(data.name);
@@ -18,7 +19,7 @@ const createApplication = async (req, res) => {
     });
   }
 
-  const application = await Application.create(data);
+  const application = await Application.create(data,userid);
 
   logger.info("Application created successfully", {
     context: { traceid: req.traceId },
@@ -37,6 +38,7 @@ const createApplication = async (req, res) => {
 };
 
 const getApplications = async (req, res) => {
+  const userid=req.user.userid;
   const {
     query = config.get("query"),
     page = config.get("page"),
@@ -55,8 +57,9 @@ const getApplications = async (req, res) => {
       filters,
       sortField,
       sortOrder,
+      userid
     }),
-    Application.countSearchResults(query, filters),
+    Application.countSearchResults(query, filters,userid),
   ]);
 
   logger.info("Searched applications retrieved", {
@@ -71,9 +74,10 @@ const getApplications = async (req, res) => {
 };
 
 const getApplicationById = async (req, res) => {
-  const { id } = req.params;
-  const application = await Application.findById(id);
-  if (!application) {
+  const { applicationid } = req.params;
+  const userid=req.user.userid;
+  const application = await Application.findById(applicationid);
+  if (!application || application.userid!=userid) {
     logger.warn("Application not found", { context: { traceid: req.traceId } });
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -85,11 +89,20 @@ const getApplicationById = async (req, res) => {
   res.status(StatusCodes.OK).json(application);
 };
 const updateApplication = async (req, res) => {
-  const { id } = req.params;
+  const userid=req.user.userid;
+  const { applicationid } = req.params;
   const data = applicationSchema.partial().parse(req.body);
-
-  const existingApplication = await Application.findByName(data.name);
-  if (existingApplication && existingApplication.id !== id) {
+  const existingApplication=await Application.findById(applicationid);
+  if (!existingApplication || (existingApplication && existingApplication.userid!=userid)){
+    logger.warn("Application not found for update", {
+      context: { traceid: req.traceId },
+    });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+  const otherApplication = await Application.findByName(data.name);
+  if (otherApplication && otherApplication.applicationid != applicationid) {
     logger.warn("Application name must be unique", {
       context: { traceid: req.traceId },
     });
@@ -98,17 +111,7 @@ const updateApplication = async (req, res) => {
     });
   }
 
-  const application = await Application.update(id, data);
-
-  if (!application) {
-    logger.warn("Application not found for update", {
-      context: { traceid: req.traceId },
-    });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Application not found" });
-  }
-
+  const application = await Application.update(applicationid, data);
   logger.info("Application updated successfully", {
     context: { traceid: req.traceId, application },
   });
@@ -119,16 +122,18 @@ const updateApplication = async (req, res) => {
 };
 
 const deleteApplication = async (req, res) => {
-  const { id } = req.params;
-  const application = await Application.delete(id);
-  if (!application) {
+  const userid=req.user.userid;
+  const { applicationid } = req.params;
+  const existingApplication = await Application.findById(applicationid);
+  if (!existingApplication || (existingApplication && existingApplication.userid!=userid)){
     logger.warn("Application not found for deletion", {
       context: { traceid: req.traceId },
     });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Application not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Application not Found!"
+    });
   }
+  const application = await Application.delete(applicationid);
   logger.info("Application deleted successfully", {
     context: { traceid: req.traceId },
   });

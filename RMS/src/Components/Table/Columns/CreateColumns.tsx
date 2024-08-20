@@ -1,13 +1,16 @@
 import { ColumnDef } from "@tanstack/react-table";
 import StatusSelect from "./StatusComponent/StatusSelect";
 import { Link } from "react-router-dom";
+import { IconButton } from "@mui/material";
+import Edit from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
-export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string,handleDeleteClick: (id: string) => void) => {
-    const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus, handleStatusChange, rowIdAccessor,handleDeleteClick);
+
+export const setColumns = (baseColumns: { accessorKey: string; header: string }[], includeStatus: boolean, includeEdit: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string, onEdit: (item: any) => void, handleDeleteClick: (id: string) => void) => {
+    const Columns: ColumnDef<any>[] = createColumns(baseColumns, includeStatus, includeEdit, handleStatusChange, rowIdAccessor, onEdit, handleDeleteClick);
     return Columns;
 };
 
-const createColumns = (baseColumns: { accessorKey: string; header: string; }[], includeStatus: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string,handleDeleteClick: (id: string) => void): ColumnDef<any>[] => {
+const createColumns = (baseColumns: { accessorKey: string; header: string; }[], includeStatus: boolean, includeEdit: boolean, handleStatusChange: (id: string, newStatus: string) => void, rowIdAccessor: string, onEdit: (item: any) => void, handleDeleteClick: (id: string) => void): ColumnDef<any>[] => {
     const columns: ColumnDef<any>[] = baseColumns.map((col) => ({
         accessorKey: col.accessorKey,
         header: col.header,
@@ -25,6 +28,17 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             header: 'Status',
             cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original[rowIdAccessor]} handleStatusChange={handleStatusChange} />,
         });
+        if (includeEdit) {
+            columns.push({
+                accessorKey: "edit",
+                header: "Edit",
+                cell: ({ row }: any) => (
+                    <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
+                        <Edit />
+                    </IconButton>
+                ),
+            });
+        }
     }
     columns.push({
         accessorKey: 'actions',
@@ -34,7 +48,6 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             onClick={() => handleDeleteClick(info.row.original[rowIdAccessor])} // Call handleDeleteClick on click
         />,
     });
-
     return columns;
 };
 

@@ -67,6 +67,7 @@ class Connection {
     let baseQuery = knex("connection")
       .select(
         "alias",
+        "username",
         "applicationid",
         "connectionid",
         "database",
@@ -130,7 +131,7 @@ class Connection {
   }
 
   static async update(id, data) {
-    const { alias, host, port, database, type, isactive, isdeleted, password } =
+    const { alias, username, host, port, database, type, isactive, isdeleted, password } =
       data;
 
     const [prevConnection] = await knex("connection").where({
@@ -148,6 +149,7 @@ class Connection {
         isactive: isactive,
         isdeleted: isdeleted,
         alias: alias,
+        username:username,
         host: host,
         port: port,
         database: database,
@@ -165,6 +167,10 @@ class Connection {
       .update({ isdeleted: true, updatedat: new Date() })
       .returning("*");
     return connection;
+  }
+
+  static async findByName(alias) {
+    return knex("connection").where({ alias }).first();
   }
 
   static async findByApplicationId({

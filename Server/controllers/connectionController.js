@@ -10,6 +10,8 @@ const { decrypt } = require("../config/encryption");
 const createConnection = async (req, res) => {
   // Destructure and transform the request body
   const { applicationId, userId, ...restData } = req.body;
+ 
+
 
   // Convert port and IDs to integers
   const data = {
@@ -19,10 +21,21 @@ const createConnection = async (req, res) => {
     createdby: parseInt(userId, 10),
     updatedby: parseInt(userId, 10),
   };
-
+  
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
+
   const {username,alias,host,port,database,type,password,applicationid,createdby,updatedby}=data;
+  
+  const existingConnection = await Connection.findByName(alias);
+  if (existingConnection) {
+    logger.warn("Alias name must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Alias name must be unique",
+    });
+  }
   // Call the model method to create a new connection
   const connection = await Connection.create(username,alias,host,port,database,type,password,applicationid,createdby,updatedby);
 
@@ -32,15 +45,18 @@ const createConnection = async (req, res) => {
   });
 
   // Send a response with the created connection
+  console.log(connection);
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
-    connection,
+  
   });
+
 };
 
 //test connection
 const testConnection = async (req, res) => {
   const { type, ...config } = req.body;
+  
   try {
     const connection = ConnectionFactory.createConnection(type, config);
     const result = await connection.testConnection();
@@ -137,24 +153,48 @@ const getConnectionById = async (req, res) => {
 // Update a connection
 const updateConnection = async (req, res) => {
   const { id } = req.params;
-  const data = connectionSchema.partial().parse(req.body);
-  const connection = await Connection.update(id, data);
+  
+  // Parse the ID to an integer
+  const parsedId = parseInt(id, 10);
+
+  // Destructure and parse the request body to ensure number fields are treated as numbers
+  const {
+    port, applicationid, createdby, updatedby, ...restData
+  } = req.body;
+
+  const data = {
+    ...restData,
+    port: port ? parseInt(port, 10) : undefined,
+    applicationid: applicationid ? parseInt(applicationid, 10) : undefined,
+    createdby: createdby ? parseInt(createdby, 10) : undefined,
+    updatedby: updatedby ? parseInt(updatedby, 10) : undefined,
+  };
+
+  // Validate and parse the data using connectionSchema
+  const validatedData = connectionSchema.partial().parse(data);
+
+  // Call the model method to update the connection
+  const connection = await Connection.update(parsedId, validatedData);
+
   if (!connection) {
     logger.warn("Connection not found for update", {
-      context: { traceid: req.traceId, id },
+      context: { traceid: req.traceId, id: parsedId },
     });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
   }
+
   logger.info("Connection updated successfully", {
-    context: { traceid: req.traceId, id, connection },
+    context: { traceid: req.traceId, id: parsedId, connection },
   });
+
   res.status(StatusCodes.OK).json({
     message: "Connection updated successfully!",
     connection,
   });
 };
+
 
 // Delete a connection (soft delete)
 const deleteConnection = async (req, res) => {

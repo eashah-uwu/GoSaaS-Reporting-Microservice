@@ -16,6 +16,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [error, setError] = useState<string | null>(null);
 
   const [openAddDestination, setOpenAddDestination] = useState<boolean>(false);
+  const [editingDestination, setEditingDestination] = useState<any>(null);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -24,7 +25,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [filters, setFilters] = useState<{
     sortField?: string;
     sortOrder?: string;
-    status?: string;
+  status?: string;
   }>({});
 
   const fetchDestinations = async (
@@ -115,11 +116,22 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     setOpenAddDestination(true);
   };
 
-  const handleAddDestinationClose = () => {
+  const onClose = () => {
+    setEditingDestination(null);
     setOpenAddDestination(false);
   };
-  const handleAddDestination = (newDestination: any) => {
-    setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
+  // const handleAddDestination = (newDestination: any) => {
+  //   setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
+  // };
+
+  const handleAddOrEditDestination = (newOrUpdatedDestination: any) => {
+    setEditingDestination(null);
+    fetchDestinations();
+  };
+
+  const handleEdit = (destination: any) => {
+    setEditingDestination(destination);
+    setOpenAddDestination(true);
   };
 
   const handleConnectionDelete = async (destinationId: string | null) => {
@@ -152,6 +164,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   };
 
   const baseColumns = generateBaseColumns(destinations);
+
 
   return (
     <>
@@ -192,12 +205,14 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
           <TableConfig
             data={destinations}
             includeStatus={true}
+            includeEdit={true}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="destinationid"
             onDelete={handleConnectionDelete}
             onAddData={handleAddDestinationOpen}
+            onEdit={handleEdit}
           />
         )}
         {!loading && !error && (
@@ -245,10 +260,11 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         )}
       </div>
       <AddDestination
-        applicationId={applicationId}
         open={openAddDestination}
-        onClose={handleAddDestinationClose}
-        onAdd={handleAddDestination}
+        onClose={onClose}
+        onAddOrEdit={handleAddOrEditDestination}
+        applicationId={applicationId}
+        initialData={editingDestination} // Pass data if editing
       />
     </>
   );

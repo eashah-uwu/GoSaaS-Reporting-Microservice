@@ -15,6 +15,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [error, setError] = useState<string | null>(null);
 
   const [openAddSource, setOpenAddSource] = useState<boolean>(false);
+  const [editingSource, setEditingSource] = useState<any>(null);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -62,9 +63,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
+  
       const requests = updatedItems.map((item) => {
         const {
           connectionid,
+          username,
+          password,
           alias,
           host,
           port,
@@ -73,12 +77,15 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           isactive,
           isdeleted,
         } = item;
+        console.log(item)
         return axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionid}`,
           {
             connectionid,
             alias,
             host,
+            username,
+            password,
             port,
             database,
             type,
@@ -120,14 +127,17 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setPage(1);
   };
   const handleAddSourceOpen = () => {
+    setEditingSource(null);
     setOpenAddSource(true);
   };
 
   const handleAddApplicationClose = () => {
+    setEditingSource(null);
     setOpenAddSource(false);
   };
   const handleAddSource = (newSource: any) => {
     console.log(newSource)
+
     setConnections((prevData) => [
       {
         ...newSource,
@@ -140,6 +150,22 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       ...prevData,
     ]);
   };
+
+  const handleUpdateSource = (updatedSource: any) => {
+    setConnections((prevData) =>
+      prevData.map((source) =>
+        source.connectionid === updatedSource.connectionid ? updatedSource : source
+      )
+    );
+  };
+
+  const handleEdit = (connection: any) => {
+    setEditingSource(connection);
+ setOpenAddSource(true);
+
+
+  };
+  
 
   const handleConnectionDelete = async (connectionId: string | null) => {
     try {
@@ -154,8 +180,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
+  
     const sample = data[0];
-    return Object.keys(sample)
+    const columns = Object.keys(sample)
       .filter(
         (key) =>
           key !== "connectionid" &&
@@ -167,8 +194,15 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       .map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1),
+        
       }));
+
+    
+   
+  
+    return columns;
   };
+  
 
   const baseColumns = generateBaseColumns(connections);
 
@@ -217,12 +251,14 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           <TableConfig
             data={connections}
             includeStatus={true}
+            includeEdit={true}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="connectionid"
             onDelete={handleConnectionDelete}
             onAddData={handleAddSourceOpen}
+            onEdit={handleEdit}
           />
         )}
         {!loading && !error && (
@@ -274,7 +310,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         open={openAddSource}
         onClose={handleAddApplicationClose}
         onAdd={handleAddSource}
+        onEdit={handleUpdateSource}
+        sourceToEdit={editingSource}
       />
+
+   
+
     </>
   );
 };

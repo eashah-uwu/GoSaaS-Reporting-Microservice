@@ -12,7 +12,7 @@ const verifyToken=require("../middlewares/auth")
 
 
 router.post("/",verifyToken, createApplication);
-router.get("/",verifyToken, validateQuery, getApplications); // Validate query parameters
+router.get("/",verifyToken, validateQuery, getApplications); 
 router.get("/:applicationid",verifyToken, getApplicationById);
 router.put("/:applicationid",verifyToken, updateApplication);
 router.delete("/:applicationid",verifyToken, deleteApplication);

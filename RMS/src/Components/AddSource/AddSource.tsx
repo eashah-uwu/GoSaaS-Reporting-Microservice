@@ -19,6 +19,7 @@ import { RootState } from "../../State/store";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Source } from "@mui/icons-material";
 
 const connectionSchema = z.object({
   alias: z.string().max(255, "Alias should not exceed 255 characters").optional(),
@@ -76,20 +77,52 @@ const AddSource: FC<AddSourceProps> = ({
   });
 
   const [saveDisabled, setSaveDisabled] = useState(true);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+   
+  // const fetch = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`
+  //     );
+  //     const {username,password}= response.data;
+  //     console.log(response.data);
+  //     setUsername(username);
+  //     setPassword(password);
+  //   } catch (error) {
+  //     console.error("Failed to fetch connection data", error);
+  //   }
+  // }
 
   useEffect(() => {
-    if (sourceToEdit) {
-      reset({
-        alias: sourceToEdit.alias || "",
-        username: sourceToEdit.username || "",
-        host: sourceToEdit.host || "",
-        port: sourceToEdit.port || "",
-        database: sourceToEdit.database || "",
-        type: sourceToEdit.type || "",
-        password: sourceToEdit.password || "",
-      });
-    }
+    const fetch = async () => {
+      if (sourceToEdit) {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`
+          );
+          const { username, password } = response.data;
+          setUsername(username);
+          setPassword(password);
+  
+          reset({
+            alias: sourceToEdit.alias || "",
+            username: username || "",
+            host: sourceToEdit.host || "",
+            port: sourceToEdit.port || "",
+            database: sourceToEdit.database || "",
+            type: sourceToEdit.type || "",
+            password: password || "",
+          });
+        } catch (error) {
+          console.error("Failed to fetch connection data", error);
+        }
+      }
+    };
+  
+    fetch();
   }, [sourceToEdit, reset]);
+  
 
   const onSubmit = async (formData: any) => {
     if (saveDisabled) {

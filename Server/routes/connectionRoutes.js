@@ -17,7 +17,7 @@ router.post("/", createConnection);
 router.get("/", validateQuery, getConnections); // Validate query parameters
 router.post("/test-connection", testConnection);
 router.post("/get-stored-procedures",getStoredProcedures);
-// router.get("/:id", getConnectionById);
+router.get("/get-con/:id", getConnectionById);
 router.put("/:id", updateConnection);
 router.delete("/:id", deleteConnection);
 router.get("/:id", getConnectionsByApplicationId);

@@ -110,9 +110,9 @@ class Connection {
 
     return baseQuery.offset(offset).limit(limit);
   }
-
   static async findById(id) {
-    return knex("connection")
+ 
+    const connection = await knex("connection")
       .select(
         "alias",
         "applicationid",
@@ -128,6 +128,14 @@ class Connection {
       )
       .where({ connectionid: id, isdeleted: false })
       .first();
+    if (!connection) {
+      throw new Error(`Connection with id ${id} not found`);
+    }
+    const decryptedPassword = decrypt(connection.password);
+    return {
+      ...connection,
+      password: decryptedPassword,
+    };
   }
 
   static async update(id, data) {
@@ -142,24 +150,27 @@ class Connection {
       ? encrypt(password)
       : prevConnection.password;
 
-    const [connection] = await knex("connection")
+      const [updatedConnection] = await knex("connection")
       .where({ connectionid: id })
-      .update({
-        ...prevConnection,
-        isactive: isactive,
-        isdeleted: isdeleted,
-        alias: alias,
-        username:username,
-        host: host,
-        port: port,
-        database: database,
-        type: type,
-        password: encryptedPassword, // Update with the encrypted password
-        updatedat: new Date(),
-      })
-      .returning("*");
-    return connection;
+      .update(
+        {
+          alias,
+          username,
+          host,
+          port,
+          database,
+          type,
+          isactive,
+          isdeleted,
+          password: encryptedPassword,
+          updatedat: new Date(),
+        },
+        ["alias", "host", "username", "port", "applicationid", "connectionid", "database", "type", "isactive", "isdeleted"]
+      );
+  
+    return updatedConnection;
   }
+  
 
   static async delete(id) {
     const [connection] = await knex("connection")

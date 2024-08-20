@@ -48,7 +48,7 @@ const createConnection = async (req, res) => {
   console.log(connection);
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
-  
+    connection,
   });
 
 };

@@ -58,7 +58,24 @@ const uploadFile = async (destination, url, apiKey,file, bucketName) => {
         }
 };
 
+
+const downloadFile = async (destination, url, apiKey,bucketName, fileKey) => {
+    if (destination === 'aws') {
+        const s3 = new AWS.S3({
+            accessKeyId: url,
+            secretAccessKey: apiKey,
+            region: 'eu-north-1', 
+        });
+        const downloadParams = {
+            Bucket: bucketName,
+            Key: fileKey,
+        };
+        const file = await s3.getObject(downloadParams).promise();
+        return file;
+    }
+  };
 module.exports = {
     connectToDestination,
     uploadFile,
+    downloadFile
 };

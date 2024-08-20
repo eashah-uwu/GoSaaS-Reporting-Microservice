@@ -21,11 +21,21 @@ const createConnection = async (req, res) => {
     createdby: parseInt(userId, 10),
     updatedby: parseInt(userId, 10),
   };
-
+  
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
+  console.log
   const {username,alias,host,port,database,type,password,applicationid,createdby,updatedby}=data;
-  console.log(data);
+  
+  const existingConnection = await Connection.findByName(alias);
+  if (existingConnection) {
+    logger.warn("Alias name must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Alias name must be unique",
+    });
+  }
   // Call the model method to create a new connection
   const connection = await Connection.create(username,alias,host,port,database,type,password,applicationid,createdby,updatedby);
 
@@ -35,15 +45,18 @@ const createConnection = async (req, res) => {
   });
 
   // Send a response with the created connection
+  console.log(connection);
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
-    connection,
+  
   });
+
 };
 
 //test connection
 const testConnection = async (req, res) => {
   const { type, ...config } = req.body;
+  console.log(req.body);
   try {
     const connection = ConnectionFactory.createConnection(type, config);
     const result = await connection.testConnection();

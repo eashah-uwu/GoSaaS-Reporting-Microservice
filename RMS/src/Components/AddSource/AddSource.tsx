@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import axios from "axios";
 import styles from "./AddSource.module.css";
@@ -15,14 +16,35 @@ import { FC } from "react";
 import { StatusCodes } from "http-status-codes";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const connectionSchema = z.object({
+  alias: z.string().max(255, "Alias should not exceed 255 characters").optional(),
+  username: z.string().max(255, "Username should not exceed 255 characters").optional(),
+  host: z.string().max(255, "Host should not exceed 255 characters").optional(),
+  port: z
+  .preprocess((val) => {
+    if (typeof val === "string") val = parseInt(val, 10);
+    return val;
+  }, z.number().int().positive().max(65535).or(z.nan()).refine(
+      (val) => !isNaN(val),
+      { message: "Port must be a valid integer between 1 and 65535" }
+    )),
+  database: z.string().max(255, "Database should not exceed 255 characters").optional(),
+  type: z.string().max(50, "Type should not exceed 50 characters").optional(),
+  password: z.string().max(255, "Password should not exceed 255 characters").optional(),
+});
+
 interface AddSourceProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newSource: any) => void;
   onEdit?: (updatedSource: any) => void;
   applicationId: string;
-  sourceToEdit?: any; 
-};
+  sourceToEdit?: any;
+}
 
 const AddSource: FC<AddSourceProps> = ({
   open,
@@ -32,45 +54,58 @@ const AddSource: FC<AddSourceProps> = ({
   applicationId,
   sourceToEdit,
 }) => {
-  const [formData, setFormData] = useState({
-    username:  "",
-    password: "",
-    database:  "",
-    type:  "",
-    host:  "",
-    port:  "",
-    alias:  "",
-  });
+  const userId = useSelector((state: RootState) => state.auth.userId);
 
-  
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(connectionSchema),
+    defaultValues: {
+      alias: "",
+      username:"",
+      host: "",
+      port: "",
+      database: "",
+      type: "",
+      password: "",
+    },
+  });
 
   const [saveDisabled, setSaveDisabled] = useState(true);
 
-  const userId = useSelector((state: RootState) => state.auth.userId);
+  useEffect(() => {
+    if (sourceToEdit) {
+      reset({
+        alias: sourceToEdit.alias || "",
+        username: sourceToEdit.username || "",
+        host: sourceToEdit.host || "",
+        port: sourceToEdit.port || "",
+        database: sourceToEdit.database || "",
+        type: sourceToEdit.type || "",
+        password: sourceToEdit.password || "",
+      });
+    }
+  }, [sourceToEdit, reset]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const onSubmit = async (formData: any) => {
     if (saveDisabled) {
       toast.error("Please test the connection before saving!");
       return;
     }
 
     try {
+      const payload = { ...formData,  applicationId, userId };
+
       if (sourceToEdit) {
-        console.log(sourceToEdit.connectionid)
-        console.log({ ...formData, applicationId, userId })
         const response = await axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${sourceToEdit.connectionid}`,
-          { ...formData, applicationId, userId }
+          payload
         );
+
         if (response.status === StatusCodes.OK) {
           toast.success("Connection updated successfully!");
           onEdit && onEdit(response.data.connection);
@@ -78,11 +113,11 @@ const AddSource: FC<AddSourceProps> = ({
           toast.error("Failed to update connection: " + response.data.message);
         }
       } else {
-        // Add mode
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections`,
-          { ...formData, applicationId, userId }
+          payload
         );
+
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
           onAdd(response.data.connection);
@@ -94,18 +129,21 @@ const AddSource: FC<AddSourceProps> = ({
       setSaveDisabled(true);
       handleClose();
     } catch (error: any) {
-      toast.error("Failed to save connection: " + error.message);
+      if (error.response && error.response.status === StatusCodes.CONFLICT) {
+        setError("alias", { message: "Alias must be unique" });
+      } else {
+        toast.error("Failed to save connection: " + error.message);
+      }
     }
   };
 
-  const handleConnect = async () => {
+  const handleConnect = async (data: any) => {
     try {
-      console.log(sourceToEdit)
-      console.log(formData)
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/connections/test-connection`,
-        formData
+        data
       );
+
       if (response.data.success) {
         toast.success("Connection successful!");
         setSaveDisabled(false);
@@ -117,19 +155,10 @@ const AddSource: FC<AddSourceProps> = ({
       toast.error("Error connecting to source. Please try again.");
       setSaveDisabled(true);
     }
- 
   };
 
   const handleClose = () => {
-    setFormData({
-      username: "",
-      password: "",
-      database: "",
-      type: "",
-      host: "",
-      port: "",
-      alias: "",
-    });
+    reset();
     onClose();
   };
 
@@ -137,107 +166,137 @@ const AddSource: FC<AddSourceProps> = ({
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{sourceToEdit ? "Edit Source" : "Add Source"}</DialogTitle>
       <DialogContent>
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formContainer}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="username"
-                  name="username"
-                  label="Username"
-                  type="text"
-                  fullWidth
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="password"
-                  name="password"
-                  label="Password"
-                  type="password"
-                  fullWidth
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="alias"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Alias"
+                    fullWidth
+                    {...field}
+                    error={!!errors.alias}
+                    helperText={errors.alias?.message}
+                  />
+                )}
+              />
             </div>
-            <div className={styles.formContainer}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="database"
-                  name="database"
-                  label="Database"
-                  type="text"
-                  fullWidth
-                  value={formData.database}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="type"
-                  name="type"
-                  label="Type"
-                  select
-                  fullWidth
-                  value={formData.type}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="">Select Type</MenuItem>
-                  <MenuItem value="Oracle">Oracle</MenuItem>
-                  <MenuItem value="PostgreSQL">PostgreSQL</MenuItem>
-                </TextField>
-              </div>
+            <div className={styles.formItem}>
+              <Controller
+                name="username"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Username"
+                    fullWidth
+                    {...field}
+                    error={!!errors.username}
+                    helperText={errors.username?.message}
+                  />
+                )}
+              />
             </div>
-            <div className={styles.formContainer}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="host"
-                  name="host"
-                  label="Host"
-                  type="text"
-                  fullWidth
-                  value={formData.host}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="port"
-                  name="port"
-                  label="Port"
-                  type="text"
-                  fullWidth
-                  value={formData.port}
-                  onChange={handleChange}
-                />
-              </div>
+            <div className={styles.formItem}>
+              <Controller
+                name="host"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Host"
+                    fullWidth
+                    {...field}
+                    error={!!errors.host}
+                    helperText={errors.host?.message}
+                  />
+                )}
+              />
             </div>
-            <div className={styles.formContainer}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="alias"
-                  name="alias"
-                  label="Alias"
-                  type="text"
-                  fullWidth
-                  value={formData.alias}
-                  onChange={handleChange}
-                />
-              </div>
+          </div>
+          <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="port"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Port"
+                    fullWidth
+                    {...field}
+                    error={!!errors.port}
+                    helperText={errors.port?.message}
+                  />
+                )}
+              />
             </div>
+            <div className={styles.formItem}>
+              <Controller
+                name="database"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Database"
+                    fullWidth
+                    {...field}
+                    error={!!errors.database}
+                    helperText={errors.database?.message}
+                  />
+                )}
+              />
+            </div>
+          </div>
+          <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Type"
+                    select
+                    fullWidth
+                    {...field}
+                    error={!!errors.type}
+                    helperText={errors.type?.message}
+                  >
+                    <MenuItem value="">Select Type</MenuItem>
+                    <MenuItem value="Oracle">Oracle</MenuItem>
+                    <MenuItem value="PostgreSQL">PostgreSQL</MenuItem>
+                  </TextField>
+                )}
+              />
+            </div>
+          </div>
+          <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Password"
+                    type="password"
+                    fullWidth
+                    {...field}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                  />
+                )}
+              />
+            </div>
+          </div>
           <DialogActions>
             <Button
               size="small"
-              onClick={handleConnect}
+              onClick={handleSubmit(handleConnect)}
               sx={{
                 backgroundColor: "#7d0e0e",
                 color: "white",
@@ -264,21 +323,43 @@ const AddSource: FC<AddSourceProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              size="small"
-              disabled={saveDisabled}
-              sx={{
-                backgroundColor: saveDisabled ? "white" : "#7d0e0e",
-                color: "white",
-                ":hover": {
+            {saveDisabled ? (
+              <Tooltip title="Please test the connection before saving">
+                <span>
+                  <Button
+                    type="submit"
+                    size="small"
+                    disabled={saveDisabled}
+                    sx={{
+                      backgroundColor: "grey",
+                      color: "white",
+                      ":hover": {
+                        backgroundColor: "grey",
+                        color: "white",
+                      },
+                    }}
+                  >
+                    {sourceToEdit ? "Update" : "Save"}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="submit"
+                size="small"
+                disabled={saveDisabled}
+                sx={{
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                },
-              }}
-            >
-              {sourceToEdit ? "Update" : "Save"}
-            </Button>
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
+                {sourceToEdit ? "Update" : "Save"}
+              </Button>
+            )}
           </DialogActions>
         </form>
       </DialogContent>

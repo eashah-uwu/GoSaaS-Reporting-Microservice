@@ -1,7 +1,6 @@
 import classes from "./AddApplication.module.css";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
-import { toast } from "react-toastify";
 import {
   Dialog,
   DialogTitle,
@@ -12,7 +11,16 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { StatusCodes } from "http-status-codes";
-import { useState, FC } from "react";
+import { FC } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required").max(255, "Name must be at most 255 characters"),
+  description: z.string().optional(),
+});
 
 interface AddApplicationProps {
   open: boolean;
@@ -21,29 +29,33 @@ interface AddApplicationProps {
 }
 
 const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
-
-  
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setError,
+  } = useForm({
+    resolver: zodResolver(schema),
+  });
 
   const token = useSelector((state: RootState) => state.auth.token);
 
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    const data = { name, description};
-    console.log(data);
+  const onSubmit = async (data: any) => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/applications`,
         data,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+
       if (response.status === StatusCodes.CREATED) {
         toast.success("Application created successfully!");
+        reset();
         const createdApplication = response.data.application;
         const { applicationid, name, createdat, isactive, isdeleted, status } =
           createdApplication;
@@ -58,37 +70,69 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
         onClose();
       } else {
         toast.error("Failed to add Application");
+        setError("name", {
+          type: "manual",
+          message: "Failed to add Application",
+        });
       }
-    } catch (error) {
-      toast.error("Error Adding Application");
+    } catch (error: any) {
+      if (error.response?.data?.message === "Application name must be unique") {
+        setError("name", {
+          type: "manual",
+          message: "Name must be unique, please choose another.",
+        });
+      } else {
+        toast.error("Failed to add Application");
+        setError("name", {
+          type: "manual",
+          message: "Error Adding Application",
+        });
+      }
     }
   };
+
   return (
     <>
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>Add Application</DialogTitle>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+            <Controller
+              name="name"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  autoFocus
+                  margin="dense"
+                  id="name"
+                  label="Name"
+                  type="text"
+                  fullWidth
+                  variant="standard"
+                  error={!!errors.name}
+                  helperText={errors.name?.message?.toString()}
+                />
+              )}
             />
-            <TextField
-              margin="dense"
-              id="description"
-              label="Description"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+            <Controller
+              name="description"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="dense"
+                  id="description"
+                  label="Description"
+                  type="text"
+                  fullWidth
+                  variant="standard"
+                  error={!!errors.description}
+                  helperText={errors.description?.message?.toString()}
+                />
+              )}
             />
           </DialogContent>
           <DialogActions>

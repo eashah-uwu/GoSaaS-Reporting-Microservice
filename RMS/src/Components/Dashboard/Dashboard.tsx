@@ -208,8 +208,9 @@ const Dashboard = () => {
           onSave={handleSave}
           rowIdAccessor="applicationid"
           onDelete={handleApplicationDelete}
-          onAddData={handleAddApplicationOpen}
-        />
+          onAddData={handleAddApplicationOpen} includeEdit={false} onEdit={function (item: any): void {
+            throw new Error("Function not implemented.");
+          } }        />
       )}
       {!loading && !error && (
         <Box

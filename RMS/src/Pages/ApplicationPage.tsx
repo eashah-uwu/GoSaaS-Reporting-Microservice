@@ -23,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useSelector } from "react-redux";
 import { RootState } from "../State/store";
 import { toast } from "react-toastify";
+import { StatusCodes } from "http-status-codes";
 
 const ApplicationPage = () => {
   const { applicationid } = useParams();
@@ -47,6 +48,7 @@ const ApplicationPage = () => {
           }
         );
         setApplicationData(response.data);
+        console.log(applicationData)
         console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch application data", error);
@@ -55,6 +57,8 @@ const ApplicationPage = () => {
 
     fetchApplicationData();
   }, [applicationid]);
+
+  console.log(applicationid)
 
   if (!applicationData) return <div>Loading...</div>;
 
@@ -96,10 +100,9 @@ const ApplicationPage = () => {
           },
         }
       );
-      if (response.status === 200) {
+      if (response.status === StatusCodes.OK) {
         toast.success("Application data updated successfully");
-
-        setApplicationData(response.data);
+        setApplicationData(response.data.application);
         setOpen(false);
       } else {
         toast.error("Failed to update application data");

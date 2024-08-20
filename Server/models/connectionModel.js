@@ -169,6 +169,10 @@ class Connection {
     return connection;
   }
 
+  static async findByName(alias) {
+    return knex("connection").where({ alias }).first();
+  }
+
   static async findByApplicationId({
     applicationId,
     query,

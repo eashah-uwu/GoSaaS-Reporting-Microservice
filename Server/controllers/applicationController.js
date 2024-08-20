@@ -86,6 +86,7 @@ const getApplicationById = async (req, res) => {
   logger.info("Retrieved application by ID", {
     context: { traceid: req.traceId, application },
   });
+  console.log(application);
   res.status(StatusCodes.OK).json(application);
 };
 const updateApplication = async (req, res) => {

@@ -1,7 +1,7 @@
 const knex = require("../config/db/db");
 
 class Application {
-  static async create(data,userid) {
+  static async create(data, userid) {
     const {
       name,
       description,
@@ -52,12 +52,12 @@ class Application {
   }
 
   static async update(id, data) {
-    let { name, isactive, isdeleted,description=""} = data;
+    let { name, isactive, isdeleted, description = "" } = data;
     const [prevApplication] = await knex("application").where({
       applicationid: id,
     });
-    if(!description){
-      description=prevApplication.description
+    if (!description) {
+      description = prevApplication.description
     }
     const [application] = await knex("application")
       .where({ applicationid: id })
@@ -66,7 +66,7 @@ class Application {
         name: name,
         isactive: isactive,
         isdeleted: isdeleted,
-        description:description,
+        description: description,
         updatedat: new Date(),
       })
       .returning("*");
@@ -88,7 +88,7 @@ class Application {
     return count;
   }
 
-  static async find({ query, offset, limit, filters = {},userid }) {
+  static async find({ query, offset, limit, filters = {}, userid }) {
     let baseQuery = knex("application")
       .select(
         "applicationid",
@@ -107,22 +107,22 @@ class Application {
             `%${query}%`
           );
       });
-  
+
     if (filters.status) {
       if (filters.status === "active") baseQuery.andWhere("isactive", true);
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
       if (filters.status === "delete") baseQuery.andWhere("isdeleted", true);
     }
-    if (filters.sortField) {
+    if (filters.sortField && filters.sortField !== "None") {
       const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
       baseQuery.orderBy(filters.sortField, sortOrder);
     }
-  
+
     return baseQuery.offset(offset).limit(limit);
   }
-  
 
-  static async countSearchResults(query, filters = {},userid) {
+
+  static async countSearchResults(query, filters = {}, userid) {
     let baseQuery = knex("application")
       .count({ count: "*" })
       .where({ userid: userid, isdeleted: false })

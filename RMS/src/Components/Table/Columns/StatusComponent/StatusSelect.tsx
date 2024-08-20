@@ -24,19 +24,12 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ value, rowId, handleStatusC
                         <option value="active" hidden selected className={`${classes.status_active} option`}>Active</option>
                         <option value="inactive" className={`${classes.status_inactive} option`}>Inactive</option>
                     </>
-                ) : status === "inactive" ? (
+                ) : (
                     <>
                         <option value="inactive" hidden selected className={`${classes.status_inactive} option`}>Inactive</option>
                         <option value="active" className={`${classes.status_active} option`}>Active</option>
-                        <option value="delete" className={`${classes.status_delete} option`}>Delete</option>
                     </>
-                ) : (
-                    <>
-                        <option value="inactive" className={`${classes.status_inactive} option`}>Inactive</option>
-                        <option value="active" className={`${classes.status_active} option`}>Active</option>
-                        <option value="delete" hidden selected className={`${classes.status_delete} option`}>Delete</option>
-                    </>
-                )}
+                ) }
             </select>
             <span className="dropdown-icon">&#9662;</span>
         </div>

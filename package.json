@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "http-status-codes": "^2.3.0",
-    "react-toastify": "^10.0.5"
+    "react-hook-form": "^7.52.2",
+    "react-toastify": "^10.0.5",
+    "zod": "^3.23.8"
   }
 }

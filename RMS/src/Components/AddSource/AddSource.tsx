@@ -153,6 +153,7 @@ const AddSource: FC<AddSourceProps> = ({
 
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
+          console.log(response)
           onAdd(response.data.connection);
         } else {
           toast.error("Failed to add connection: " + response.data.message);

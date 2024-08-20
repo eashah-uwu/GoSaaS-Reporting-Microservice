@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { loginSchema } = require("../schemas/authSchema");
 const { StatusCodes } = require("http-status-codes");
-const { decrypt } = require("../config/encryption"); 
-
+const { decrypt } = require("../config/encryption");
+const { z } = require("zod"); 
 // Helper function to generate JWT
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });

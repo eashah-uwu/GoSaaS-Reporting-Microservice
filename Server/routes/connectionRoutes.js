@@ -11,7 +11,7 @@ const {
   getStoredProcedures
 } = require("../controllers/connectionController");
 const validateQuery = require("../middlewares/validateQuery");
-
+const verifyToken=require("../middlewares/auth")
 // Define routes
 router.post("/", createConnection);
 router.get("/", validateQuery, getConnections); // Validate query parameters

@@ -37,6 +37,7 @@ class Connection {
       })
       .returning("*");
     const {
+      username,
       alias,
       host,
       port,
@@ -48,6 +49,7 @@ class Connection {
       isdeleted,
     } = connection;
     return {
+      username,
       alias,
       host,
       port,
@@ -139,13 +141,25 @@ class Connection {
   }
 
   static async update(id, data) {
-    const { alias, username, host, port, database, type, isactive, isdeleted, password } =
+    let { alias="", username="", host="", port=-1, database="", type="", isactive, isdeleted, password="" } =
       data;
-
+    console.log("data",data)
     const [prevConnection] = await knex("connection").where({
       connectionid: id,
     });
-
+    if(port===-1){
+      alias=prevConnection.alias
+      username=prevConnection.username
+      host=prevConnection.host
+      port=prevConnection.port
+      database=prevConnection.database
+      type=prevConnection.type
+    }
+    else{
+      port=(parseInt(port, 10))
+    }
+    console.log(prevConnection)
+    console.log("here",alias,username,host,port,database,type)
     const encryptedPassword = password
       ? encrypt(password)
       : prevConnection.password;
@@ -154,8 +168,8 @@ class Connection {
       .where({ connectionid: id })
       .update(
         {
-          alias,
           username,
+          alias,
           host,
           port,
           database,
@@ -185,7 +199,7 @@ class Connection {
   }
 
   static async findByApplicationId({
-    applicationId,
+    applicationid,
     query,
     offset,
     limit,
@@ -203,7 +217,7 @@ class Connection {
         "isactive",
         "isdeleted"
       )
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid: applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
@@ -227,10 +241,10 @@ class Connection {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(applicationId, query, filters = {}) {
+  static async countSearchResults(applicationid, query, filters = {}) {
     let baseQuery = knex("connection")
       .count({ count: "*" })
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid: applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)

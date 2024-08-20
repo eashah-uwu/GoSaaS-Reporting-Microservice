@@ -13,13 +13,13 @@ const {
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken=require("../middlewares/auth")
 // Define routes
-router.post("/", createConnection);
-router.get("/", validateQuery, getConnections); // Validate query parameters
-router.post("/test-connection", testConnection);
+router.post("/",verifyToken, createConnection);
+router.get("/", validateQuery, getConnections);
+router.post("/test-connection",verifyToken, testConnection);
 router.post("/get-stored-procedures",getStoredProcedures);
-router.get("/get-con/:id", getConnectionById);
-router.put("/:id", updateConnection);
+router.get("/get-con/:connectionid",verifyToken, getConnectionById);
+router.put("/:connectionid",verifyToken, updateConnection);
 router.delete("/:id", deleteConnection);
-router.get("/:id", getConnectionsByApplicationId);
+router.get("/:applicationid",verifyToken,validateQuery, getConnectionsByApplicationId);
 
 module.exports = router;

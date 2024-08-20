@@ -3,13 +3,18 @@ import classes from "./Source.module.css";
 import axios from "axios";
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import AddSource from "../AddSource/AddSource";
+import { toast } from "react-toastify";
 interface SourceProps {
   applicationId: string;
 }
 
 const Source: React.FC<SourceProps> = ({ applicationId }) => {
+  const token = useSelector((state: RootState) => state.auth.token);
+
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +44,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         `${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`,
         {
           params: { page, pageSize, query, filters },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -63,17 +71,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
-  
+
       const requests = updatedItems.map((item) => {
         const {
           connectionid,
-          username,
-          password,
-          alias,
-          host,
-          port,
-          database,
-          type,
           isactive,
           isdeleted,
         } = item;
@@ -82,22 +83,20 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionid}`,
           {
             connectionid,
-            alias,
-            host,
-            username,
-            password,
-            port,
-            database,
-            type,
             isactive,
             isdeleted,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
       });
       await Promise.all(requests);
-      console.log("Updated Items", updatedItems);
+      toast.success("Updated Status");
     } catch (error) {
-      alert("Failed to update data");
+      toast.error("Failed to update status");
     }
   };
 
@@ -152,7 +151,11 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const handleUpdateSource = (updatedSource: any) => {
     setConnections((prevData) =>
       prevData.map((source) =>
-        source.connectionid === updatedSource.connectionid ? updatedSource : source
+        source.connectionid === updatedSource.connectionid ? {
+          ...updatedSource, status: updatedSource.isactive
+            ? "active"
+            : "inactive",
+        } : source
       )
     );
   };
@@ -161,7 +164,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setEditingSource(connection);
     setOpenAddSource(true);
   };
-  
+
 
   const handleConnectionDelete = async (connectionId: string | null) => {
     try {
@@ -176,7 +179,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
-  
+
     const sample = data[0];
     const columns = Object.keys(sample)
       .filter(
@@ -185,20 +188,21 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           key !== "applicationid" &&
           key !== "isactive" &&
           key !== "isdeleted" &&
+          key !== "username" &&
           key !== "status"
       )
       .map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1),
-        
+
       }));
 
-    
-   
-  
+
+
+
     return columns;
   };
-  
+
 
   const baseColumns = generateBaseColumns(connections);
 
@@ -310,7 +314,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         sourceToEdit={editingSource}
       />
 
-   
+
 
     </>
   );

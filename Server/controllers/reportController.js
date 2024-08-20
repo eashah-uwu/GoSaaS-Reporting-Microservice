@@ -6,7 +6,7 @@ const config = require("config");
 require("dotenv").config();
 const path = require("path");
 const Destination = require("../models/destinationModel");
-const { uploadFile } = require("../storage/cloudStorageService.js");
+const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
 
 const { v4: uuidv4 } = require("uuid");
 const createReport = async (req, res) => {
@@ -57,31 +57,33 @@ const createReport = async (req, res) => {
     report: newReport,
   });
 };
+const downloadXsl = async (req, res) => {
+  const { id } = req.params;
+  const reportId = parseInt(id, 10);
 
-const downloadReport = async (req, res) => {
-  const { reportId } = req.params;
-  try {
-    const report = await Report.findByPk(reportId);
-    if (!report) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Report not found" });
-    }
-
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: report.fileName,
-    };
-
-    const fileStream = s3.getObject(params).createReadStream();
-    res.attachment(path.basename(report.fileName));
-    fileStream.pipe(res);
-  } catch (error) {
-    console.error("Error downloading report:", error);
+  if (isNaN(reportId)) {
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
     return res
-      .status(500)
-      .json({ success: false, message: "Error downloading report" });
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid report ID" });
   }
+  const report = await Report.findById(reportId);
+  if (!report) {
+    logger.warn("Report not found", { id });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report not found" });
+  }
+  const destination_db = await Destination.findById(report.destinationid);
+  const file= await downloadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    "reportsdestination0",
+    report.filekey
+  );
+  res.setHeader('Content-Type', file.ContentType);
+  res.send(file.Body);
 };
 const getReports = async (req, res) => {
   const reports = await Report.findAll();
@@ -237,6 +239,8 @@ const getReportsByApplicationId = async (req, res) => {
   });
 };
 
+
+
 module.exports = {
   createReport,
   getReports,
@@ -245,5 +249,5 @@ module.exports = {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadReport,
+  downloadXsl
 };

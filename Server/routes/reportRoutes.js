@@ -13,8 +13,8 @@ const {
   getReportsByApplicationId,
   downloadXsl,
 } = require("../controllers/reportController");
-const validateQuery = require("../middlewares/validateQuery");
 const { generateReport } = require("../config/generateReport");
+const validateQuery = require("../middlewares/validateQuery");
 
 router.post("/", upload.single("file"), createReport);
 router.get("/", validateQuery, searchReports); // Validate query parameters using querySchema

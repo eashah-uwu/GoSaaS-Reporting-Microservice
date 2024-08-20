@@ -4,37 +4,86 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
+const path = require("path");
+const Destination = require("../models/destinationModel");
+const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
 
+const { v4: uuidv4 } = require("uuid");
 const createReport = async (req, res) => {
-  // Validate and parse request body using reportSchema
-  const data = reportSchema.parse(req.body);
+  const { buffer, originalname } = req.file;
+  const {
+    alias,
+    description,
+    source,
+    destination,
+    storedProcedure,
+    parameter,
+    userid,
+    applicationid,
+  } = req.body;
 
-  const existingReport = await Report.findByTitle(data.title);
-  if (existingReport) {
-    logger.warn("Report title must be unique", {
-      context: { traceid: req.traceId },
-    });
-    return res.status(StatusCodes.CONFLICT).json({
-      message: "Report title must be unique",
-    });
-  }
+  const uid = uuidv4(); // Generate a unique identifier
+  const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
+  const folderName = `user_${userid}`;
+  const key = `${folderName}/${fileName}`;
 
-  const report = await Report.create(data);
+  const destination_db = await Destination.findById(destination);
+  await uploadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    { key, buffer },
+    "reportsdestination0"
+  );
+
+  const newReport = await Report.create(
+    alias,
+    description,
+    parameter,
+    source,
+    destination,
+    applicationid,
+    storedProcedure,
+    userid,
+    key
+  );
 
   logger.info("Report created successfully", {
-    context: { traceid: req.traceId, report },
+    context: { traceid: req.traceId, newReport },
   });
+
   res.status(StatusCodes.CREATED).json({
     message: "Report created successfully!",
-    report: {
-      reportid: report.reportid,
-      createdat: report.createdat,
-      isactive: report.isactive,
-      isdeleted: report.isdeleted,
-      name: report.name,
-      status: "active",
-    },
+    report: newReport,
   });
+};
+const downloadXsl = async (req, res) => {
+  const { id } = req.params;
+  const reportId = parseInt(id, 10);
+
+  if (isNaN(reportId)) {
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid report ID" });
+  }
+  const report = await Report.findById(reportId);
+  if (!report) {
+    logger.warn("Report not found", { id });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report not found" });
+  }
+  const destination_db = await Destination.findById(report.destinationid);
+  const file= await downloadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    "reportsdestination0",
+    report.filekey
+  );
+  res.setHeader('Content-Type', file.ContentType);
+  res.send(file.Body);
 };
 const getReports = async (req, res) => {
   const reports = await Report.findAll();
@@ -190,6 +239,8 @@ const getReportsByApplicationId = async (req, res) => {
   });
 };
 
+
+
 module.exports = {
   createReport,
   getReports,
@@ -197,5 +248,6 @@ module.exports = {
   updateReport,
   deleteReport,
   searchReports,
-  getReportsByApplicationId
+  getReportsByApplicationId,
+  downloadXsl
 };

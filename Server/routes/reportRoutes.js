@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const multer = require('multer');
+const storage = multer.memoryStorage(); 
+const upload = multer({ storage });
 const {
   createReport,
   getReports,
@@ -7,12 +10,14 @@ const {
   updateReport,
   deleteReport,
   searchReports,
-  getReportsByApplicationId
+  getReportsByApplicationId,
+  downloadXsl
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 
-router.post("/", createReport);
+router.post("/", upload.single('file'),createReport);
 router.get("/", validateQuery, searchReports); // Validate query parameters using querySchema
+router.get("/download/:id",downloadXsl)
 router.get("/:id",   getReportsByApplicationId);
 router.put("/:id", updateReport);
 router.delete("/:id", deleteReport);

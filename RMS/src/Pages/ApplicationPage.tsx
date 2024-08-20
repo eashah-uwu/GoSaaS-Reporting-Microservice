@@ -13,6 +13,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useMediaQuery, useTheme } from "@mui/material";
+
 import classes from "./ApplicationPage.module.css";
 import Source from "../Components/Source/Source";
 import Destination from "../Components/Destination/Destination";
@@ -26,6 +28,8 @@ const ApplicationPage = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const fetchApplicationData = async () => {
@@ -105,36 +109,29 @@ const ApplicationPage = () => {
     <>
       <Navbar />
       <main className={classes.main_content}>
-        <Box display="flex">
-          <Typography
-            variant="h4"
-            sx={{
-              paddingLeft: "12rem",
-              paddingRight: "12rem",
-              marginTop: "3rem",
-              textAlign: "left",
-            }}
-          >
-            {applicationData && (
-              <div className={classes.appName}>
-                {name || applicationData.name}
-              </div>
-            )}
-            {applicationData && (
-              <div className={classes.appDes}>
-                {description || applicationData.description}
-              </div>
-            )}
-          </Typography>
+        <Box
+          sx={{
+            background: "rgb(255, 255, 255)",
+            padding: "1.3rem",
+            boxShadow: isSmallScreen
+              ? "rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px"
+              : "rgba(0, 0, 0, 0.2) 0px 2px 8px -1px, rgba(0, 0, 0, 0.14) 0px 2px 4px 0px",
+            borderRadius: "4px",
+            marginTop: isSmallScreen ? "1rem" : "2rem",
+            marginLeft: isSmallScreen ? "1rem" : "9.5rem",
+            marginRight: isSmallScreen ? "1rem" : "9.5rem",
+            position: "relative",
+            width: isSmallScreen ? "auto" : "auto",
+          }}
+        >
           <Button
-            fullWidth
             type="submit"
             onClick={handleAdd}
             sx={{
-              m: "1rem 0",
-              mt: "3rem",
-              px: "1rem",
-              width: "190px",
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+              width: "auto",
               height: "40px",
               backgroundColor: "#8B0000",
               color: "#FFFFFF",
@@ -142,13 +139,26 @@ const ApplicationPage = () => {
               "&:hover": {
                 backgroundColor: "#C70039",
               },
-              justifyContent: "flex-end",
             }}
           >
             <EditIcon />
             Edit Application
           </Button>
+          <Typography variant="h4" sx={{ textAlign: "left" }}>
+            {applicationData && (
+              <div>
+                <div className={classes.appName}>
+                  {name || applicationData.name}
+                </div>
+                <div className={classes.appDes}>
+                  {description || applicationData.description}
+                </div>
+              </div>
+            )}
+          </Typography>
         </Box>
+
+        {/* Rest of your code remains the same */}
         {applicationData && (
           <div className={classes.buttonDiv}>
             <Button

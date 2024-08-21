@@ -16,26 +16,29 @@ class Report {
         createdat: new Date(),
         updatedat: new Date(),
         createdby: userid_p,
-        filekey: key_p
+        filekey: key_p,
+        isdeleted: false,
       })
       .returning("*");
     const [report] = await knex("report")
-    .select(
-      "report.title",
-      "report.description",
-      knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
-      "report.sourceconnectionid",
-      "report.destinationid",
-      "report.storedprocedure as storedProcedure",
-      "report.applicationid",
-      "sc.alias as sourceConnection",
-      "d.alias as destination"
-    )
-    .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
-    .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-    .where({ "report.reportid": createdReport.reportid });
+      .select(
+        "report.title",
+        "report.reportid",
+        "report.description",
+        knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+        "report.sourceconnectionid",
+        "report.destinationid",
+        "report.storedprocedure as storedProcedure",
+        "report.applicationid",
+        "sc.alias as sourceConnection",
+        "d.alias as destination",
+        "report.filekey"
+      )
+      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .where({ "report.reportid": createdReport.reportid });
 
-     return report;
+    return report;
   }
 
   static async findById(id) {
@@ -73,7 +76,12 @@ class Report {
   }
 
   static async delete(id) {
-    return knex("report").where({ reportid: id }).del();
+    const [report] = await knex("report")
+      .where({ reportid: id })
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+
+    return report;
   }
   static async findByTitle(title) {
     return knex("report").select("*").where({ title }).first();
@@ -103,13 +111,16 @@ class Report {
 
     return baseQuery.offset(offset).limit(limit);
   }
+  static async findByName(title) {
+    return knex("report").where({ title, isdeleted: false }).first();
+  }
 
-  static async countSearchResults(applicationId, query, filters) {
+  static async countSearchResults(applicationid, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
       .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .where({ "report.applicationid": applicationId })
+      .where({ "report.applicationid": applicationid, "report.isdeleted": false })
       .where((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)
@@ -128,10 +139,11 @@ class Report {
     return parseInt(count.count, 10);
   }
 
-  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+  static async findByApplicationId({ applicationid, query, offset, limit, filters = {} }) {
     let baseQuery = knex("report")
       .select(
         "report.title",
+        "report.reportid",
         "report.description",
         knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
         "report.sourceconnectionid",
@@ -140,10 +152,11 @@ class Report {
         "report.applicationid",
         "sc.alias as sourceConnection",
         "d.alias as destination",
+        "report.filekey"
       )
       .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .where({ "report.applicationid": applicationId })
+      .where({ "report.applicationid": applicationid, "report.isdeleted": false })
       .andWhere((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)

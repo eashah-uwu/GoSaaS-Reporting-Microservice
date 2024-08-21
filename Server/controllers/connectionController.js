@@ -5,7 +5,6 @@ const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
 const ConnectionFactory = require("../config/db/connectionFactory");
 const Application = require("../models/applicationModel");
-const { decrypt } = require("../config/encryption");
 
 // Create a new connection
 const createConnection = async (req, res) => {
@@ -87,12 +86,8 @@ const testConnection = async (req, res) => {
 const getStoredProcedures = async (req, res) => {
   const { id } = req.body;
   const connection_db = await Connection.findById(id);
-  const password = decrypt(connection_db.password)
-  const connection = {
-    ...connection_db,
-    password: password
-  }
-  const connectedConnection = ConnectionFactory.createConnection(connection.type, { ...connection });
+  
+  const connectedConnection = ConnectionFactory.createConnection(connection_db.type, { ...connection_db });
   const storedProcedures = await connectedConnection.getStoredProceduresData();
   logger.info("Stored Procedures Retreived", {
     context: { traceid: req.traceId, storedProcedures },

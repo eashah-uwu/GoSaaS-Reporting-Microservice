@@ -6,9 +6,10 @@ const config = require("config");
 require("dotenv").config();
 const path = require("path");
 const Destination = require("../models/destinationModel");
+const Application = require("../models/applicationModel");
 const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
-
 const { v4: uuidv4 } = require("uuid");
+
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
   const {
@@ -18,9 +19,29 @@ const createReport = async (req, res) => {
     destination,
     storedProcedure,
     parameter,
-    userid,
     applicationid,
   } = req.body;
+
+  const userid = req.user.userid;
+  const application = await Application.findById(applicationid);
+
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+
+
+  const existingReport = await Report.findByName(alias);
+  if (existingReport) {
+    logger.warn("Title of report must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Title of report must be unique",
+    });
+  }
 
   const uid = uuidv4(); // Generate a unique identifier
   const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
@@ -58,8 +79,9 @@ const createReport = async (req, res) => {
   });
 };
 const downloadXsl = async (req, res) => {
-  const { id } = req.params;
-  const reportId = parseInt(id, 10);
+  const userid = req.user.userid;
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
 
   if (isNaN(reportId)) {
     logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
@@ -68,7 +90,7 @@ const downloadXsl = async (req, res) => {
       .json({ message: "Invalid report ID" });
   }
   const report = await Report.findById(reportId);
-  if (!report) {
+  if (!report && report.userid!=userid) {
     logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -82,7 +104,10 @@ const downloadXsl = async (req, res) => {
     "reportsdestination0",
     report.filekey
   );
-  res.setHeader('Content-Type', file.ContentType);
+  const fileName = report.filekey.split('/').pop()?.split('-').pop();
+  const fileType = fileName.split('.').pop();
+  res.setHeader('Content-Type', file.ContentType || `application/${fileType}`);
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
   res.send(file.Body);
 };
 const getReports = async (req, res) => {
@@ -118,17 +143,28 @@ const getReportById = async (req, res) => {
 };
 
 const updateReport = async (req, res) => {
-  const { id } = req.params;
-  const data = reportSchema.partial().parse(req.body);
-  const report = await Report.update(id, data);
-  if (!report) {
-    logger.warn("Report not found for update", {
-      context: { traceid: req.traceId },
-    });
+  const { reportid } = req.params;
+  const userid = req.user.userid;
+  const existingReport = await Report.findById(reportid);
+  if (!existingReport && existingReport.userid!=userid) {
+    logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
+  const data = reportSchema.partial().parse(req.body);
+
+  const otherReport = await Report.findByName(alias);
+  if (otherReport && otherReport.reportid != reportid) {
+    logger.warn("Title of report must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Title of report must be unique",
+    });
+  }
+
+  const report = await Report.update(reportid, data);
   logger.info("Report updated successfully", {
     context: { traceid: req.traceId, report },
   });
@@ -139,19 +175,27 @@ const updateReport = async (req, res) => {
 };
 
 const deleteReport = async (req, res) => {
-  const { id } = req.params;
-  const reportId = parseInt(id, 10);
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
+  const userid = req.user.userid;
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
+    logger.warn("Invalid report ID", { context: { traceid: req.traceId, reportid } });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
   }
+  const report = await Report.findById(reportId);
+  if (!report && report.userid!=userid) {
+    logger.warn("Report not found", { reportid });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report not found" });
+  }
 
   await Report.delete(reportId);
   logger.info("Report deleted successfully", {
-    context: { traceid: req.traceId, id },
+    context: { traceid: req.traceId, reportid },
   });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
 };
@@ -216,20 +260,30 @@ const getReportsByApplicationId = async (req, res) => {
     pageSize = config.get("pageSize"),
     filters = config.get("filters"),
   } = req.query;
-  const { id: applicationId } = req.params;
+  const { applicationid } = req.params;
+  const userid = req.user.userid;
+  const application = await Application.findById(applicationid);
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [reports, total] = await Promise.all([
     Report.findByApplicationId({
-      applicationId,
+      applicationid,
       query,
       offset,
       limit: parseInt(pageSize, 10),
       filters,
     }),
-    Report.countSearchResults(applicationId, query, filters),
+    Report.countSearchResults(applicationid, query, filters),
   ]);
   logger.info("Reports retrieved by application ID", {
-    context: { traceid: req.traceId, applicationId, reports },
+    context: { traceid: req.traceId, applicationid, reports },
   });
   res.status(StatusCodes.OK).json({
     data: reports,

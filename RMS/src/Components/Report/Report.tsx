@@ -5,6 +5,9 @@ import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import AddReport from "../AddReport/AddReport";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { RootState } from "../../State/store";
 
 interface ReportProps {
   applicationId: string;
@@ -14,6 +17,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const [openAddReport, setOpenAddReport] = useState<boolean>(false);
 
@@ -39,6 +43,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         `${import.meta.env.VITE_BACKEND_URL}/api/reports/${applicationId}`,
         {
           params: { page, pageSize, query, filters },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       console.log(data)
@@ -116,19 +123,29 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setReports((prevData) => [...prevData, { ...newReport }]);
   };
 
-  const handleReportDelete = async (destinationId: string | null) => {
+  const handleReportDelete = async (reportid: string | null) => {
     try {
-      // await axios.delete(
-      //   `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${destinationId}`
-      // );
+      console.log(reportid)
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports/${reportid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      // fetchDestinations(page, pageSize, searchQuery, filters);
+      fetchReports(page, pageSize, searchQuery, filters);
+      toast.success("Report Deleted Successfully")
+
     } catch (e) {
       console.log(e);
+      toast.error("Report Deletion Failed")
+
     }
   };
   const handleEdit = (connection: any) => {
-    
+
   };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -140,12 +157,18 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           key !== "applicationid" &&
           key !== "sourceconnectionid" &&
           key !== "storedprocedureid" &&
-          key !== "status"
+          key !== "status" &&
+          key !== "reportid" &&
+          key !== "description"
       )
-      .map((key) => ({
-        accessorKey: key,
-        header: key.charAt(0).toUpperCase() + key.slice(1),
-      }));
+      .map((key) =>
+        key === "filekey"
+          ? { accessorKey: key, header: "Xsl File" }
+          : {
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+          }
+      )
   };
 
   const baseColumns = generateBaseColumns(reports);
@@ -190,7 +213,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           <TableConfig
             data={reports}
             includeStatus={false}
-            includeEdit={false}
+            includeEdit={true}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
@@ -251,7 +274,6 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       <AddReport
         open={openAddReport}
         applicationId={applicationId}
-        //open={true}
         onClose={handleAddReportClose}
         onAdd={handleAddReport}
       />

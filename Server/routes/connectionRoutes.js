@@ -16,7 +16,7 @@ const verifyToken=require("../middlewares/auth")
 router.post("/",verifyToken, createConnection);
 router.get("/", validateQuery, getConnections);
 router.post("/test-connection",verifyToken, testConnection);
-router.post("/get-stored-procedures",getStoredProcedures);
+router.post("/get-stored-procedures",verifyToken,getStoredProcedures);
 router.get("/get-con/:connectionid",verifyToken, getConnectionById);
 router.put("/:connectionid",verifyToken, updateConnection);
 router.delete("/:connectionid",verifyToken, deleteConnection);

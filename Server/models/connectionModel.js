@@ -158,8 +158,6 @@ class Connection {
     else{
       port=(parseInt(port, 10))
     }
-    console.log(prevConnection)
-    console.log("here",alias,username,host,port,database,type)
     const encryptedPassword = password
       ? encrypt(password)
       : prevConnection.password;
@@ -195,7 +193,7 @@ class Connection {
   }
 
   static async findByName(alias) {
-    return knex("connection").where({ alias,isdeleted: true }).first();
+    return knex("connection").where({ alias,isdeleted: false }).first();
   }
 
   static async findByApplicationId({

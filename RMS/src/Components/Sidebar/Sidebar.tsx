@@ -44,8 +44,6 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, onClose }) => {
         <li className={styles.li}><Link to="/audit">Audit Trails</Link></li>
         <li className={styles.li}><Link to="/report">Reports</Link></li>
         {!token && <li className={styles.li}><Link to="/login">Login</Link></li>}
-        <li className={styles.li}><Link to="/audittrails">Audit Trails</Link></li>
-        <li className={styles.li}><Link to="/reports">Reports</Link></li>
       </ul>
     </div>
   );

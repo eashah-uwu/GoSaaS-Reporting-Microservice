@@ -63,8 +63,10 @@ class Destination {
 
     return destination;
   }
-  
-  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+  static async findByName(alias) {
+    return knex("destination").where({ alias,isdeleted: false }).first();
+  }
+  static async findByApplicationId({ applicationid, query, offset, limit, filters = {} }) {
     let baseQuery = knex("destination")
       .select(
         "alias",
@@ -75,7 +77,7 @@ class Destination {
         "isactive",
         "isdeleted"
       )
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
@@ -97,10 +99,10 @@ class Destination {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(applicationId, query, filters = {}) {
+  static async countSearchResults(applicationid, query, filters = {}) {
     let baseQuery = knex("destination")
       .count({ count: "*" })
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)

@@ -12,14 +12,15 @@ const {
   connectStorageDestination,
   addFileToDestination
 } = require("../controllers/destinationController");
+const verifyToken=require("../middlewares/auth")
 
-router.post("/", createDestination);
+router.post("/",verifyToken, createDestination);
 router.get("/", getAllDestinations);
-router.post("/connect", connectStorageDestination);
-router.post("/upload",upload.single('file'), addFileToDestination);
-router.get("/get-dest/:id", getDestinationById);
-router.get("/:id", getDestinationsByApplicationId);
-router.put("/:id", updateDestination);
-router.delete("/:id", deleteDestination);
+router.post("/connect",verifyToken, connectStorageDestination);
+router.post("/upload",verifyToken,upload.single('file'), addFileToDestination);
+router.get("/get-dest/:id",verifyToken, getDestinationById);
+router.get("/:applicationid",verifyToken, getDestinationsByApplicationId);
+router.put("/:destinationid",verifyToken, updateDestination);
+router.delete("/:destinationid",verifyToken, deleteDestination);
 
 module.exports = router;

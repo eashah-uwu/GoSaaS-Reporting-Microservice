@@ -29,6 +29,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const [parameters, setParameters] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const userid = useSelector((state: RootState) => state.auth.userId||"");
+  const token = useSelector((state: RootState) => state.auth.token);
   // const [saveDisabled, setSaveDisabled] = useState(true)
   const [formData, setFormData] = useState({
     alias: '',
@@ -44,8 +45,20 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
     const fetchDropdownData = async () => {
       try {
         const [sourcesResponse, destinationsResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`),
-          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`)
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, 
+              },
+            }
+          ),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, 
+              },
+            }
+          )
         ]);
 
         setSources(sourcesResponse.data.data);
@@ -67,7 +80,12 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       try {
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
-          { id: value }
+          { id: value },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
 
         if (response.data.success) {

@@ -195,7 +195,7 @@ class Connection {
   }
 
   static async findByName(alias) {
-    return knex("connection").where({ alias }).first();
+    return knex("connection").where({ alias,isdeleted: true }).first();
   }
 
   static async findByApplicationId({

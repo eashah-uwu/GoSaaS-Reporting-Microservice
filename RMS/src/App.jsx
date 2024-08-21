@@ -30,7 +30,6 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/application/:id" element={<ApplicationPage />} />
-            <Route path="/reports" element={<ReportPage />} />
           </Route>
           <Route path="/auth/callback" element={<OAuthCallback />} />
         </Routes>

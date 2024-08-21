@@ -8,4 +8,7 @@ router.post("/", AuditController.createAuditTrail);
 // Route to get all audit trails
 router.get("/", AuditController.getAuditTrails);
 
+// Route to get all unique Module...
+router.get("/unique", AuditController.getUniqueModulesAndEvents);
+
 module.exports = router;

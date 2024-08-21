@@ -41,6 +41,19 @@ class AuditController {
       });
     }
   }
+
+  // Gets unique modules and events
+  static async getUniqueModulesAndEvents(req, res) {
+    try {
+      const { modules, events } = await AuditModel.getUniqueModulesAndEvents();
+      return res.status(HttpStatus.OK).json({ modules, events });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        error: error.message,
+      });
+    }
+  }
+  
 }
 
 module.exports = AuditController;

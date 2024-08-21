@@ -54,6 +54,28 @@ class AuditModel {
       throw new Error(`Failed to retrieve audit trails: ${error.message}`);
     }
   }
+
+  // Retrieves unique modules and events from the AuditEvents table
+  static async getUniqueModulesAndEvents() {
+    try {
+      const [uniqueModules, uniqueEvents] = await Promise.all([
+        knex("auditevents")
+          .distinct("module")
+          .select("module"),
+        knex("auditevents")
+          .distinct("event")
+          .select("event")
+      ]);
+
+      return {
+        modules: uniqueModules.map(row => row.module),
+        events: uniqueEvents.map(row => row.event)
+      };
+    } catch (error) {
+      throw new Error(`Failed to retrieve unique modules and events: ${error.message}`);
+    }
+  }
+
 }
 
 module.exports = AuditModel;

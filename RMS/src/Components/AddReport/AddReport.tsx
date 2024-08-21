@@ -63,6 +63,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
 
         setSources(sourcesResponse.data.data);
         setDestinations(destinationsResponse.data.data);
+     
       } catch (error) {
         toast.error("Failed to load dropdown data");
       }
@@ -131,7 +132,12 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       formDataToSend.append("applicationid", applicationId);
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/reports`,
-        formDataToSend
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.status === 201) {

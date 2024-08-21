@@ -15,6 +15,9 @@ const Navbar = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen); // Toggle sidebar state
   };
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
   const token = useSelector((state) => state.auth.token);
    
   const handleLogout = () => {
@@ -53,7 +56,7 @@ const Navbar = () => {
         
         </div>
       </nav>
-      <Sidebar isOpen={isSidebarOpen} /> {/* Sidebar component */}
+      <Sidebar isOpen={isSidebarOpen}  onClose={closeSidebar} /> {/* Sidebar component */}
             <ul >
                
             

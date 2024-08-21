@@ -5,7 +5,10 @@ const { downloadFile } = require("../storage/cloudStorageService.js");
 const logger = require("../logger");
 const js2xmlparser = require("js2xmlparser");
 const { Xslt, XmlParser } = require("xslt-processor");
+const puppeteer = require("puppeteer");
+const { uploadFile } = require("../storage/cloudStorageService.js");
 const fs = require("fs");
+
 // Function to check report existence
 async function checkReportExistence(reportName) {
   const report = await knex("report").where({ title: reportName }).first();
@@ -209,22 +212,55 @@ async function generateReport(req, res, next) {
       data: result,
     });
 
-    // XSLT Transformation
     try {
-      const outXmlString = await performXsltTransformation(xmlData, xslContent);
+      const htmlContent = await performXsltTransformation(xmlData, xslContent);
 
-      // Send the HTML response
-      res.set("Content-Type", "text/html");
-      return res.status(200).send(outXmlString);
+      // Generate the PDF
+      const pdfBuffer = await generatePDF(htmlContent);
+      const pdfKey = `reports/${reportName}-${Date.now()}.pdf`; // Key for the S3 object
+
+      // Step 11: Upload the PDF to the destination
+      const uploadResult = await uploadFile(
+        "aws",
+        destinationDetails.url,
+        destinationDetails.apikey,
+        { key: pdfKey, buffer: pdfBuffer },
+        "reportsdestination0"
+      );
+
+      if (!uploadResult.success) {
+        return res.status(500).json({ message: uploadResult.message });
+      }
+
+      // Send success message with the URL
+      res.json({ message: "PDF uploaded successfully", url: uploadResult.url });
     } catch (error) {
       logger.error("Error generating report", { error: error.message });
-      return res
-        .status(500)
-        .json({ message: "XSLT Transformation failed", error: error.message });
+      return res.status(500).json({
+        message: "XSLT Transformation or PDF generation failed",
+        error: error.message,
+      });
     }
   } catch (err) {
     logger.error("Error generating report", { error: err });
     next(err);
+  }
+}
+
+// Function to generate PDF and return buffer
+async function generatePDF(htmlContent) {
+  try {
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({ format: "A4" });
+
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    throw error;
   }
 }
 

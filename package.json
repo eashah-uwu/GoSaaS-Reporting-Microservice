@@ -4,6 +4,7 @@
     "http-status-codes": "^2.3.0",
     "react-hook-form": "^7.52.2",
     "react-toastify": "^10.0.5",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "xslt-processor": "^3.0.1"
   }
 }

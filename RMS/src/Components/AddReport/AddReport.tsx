@@ -63,6 +63,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
 
         setSources(sourcesResponse.data.data);
         setDestinations(destinationsResponse.data.data);
+     
       } catch (error) {
         toast.error("Failed to load dropdown data");
       }

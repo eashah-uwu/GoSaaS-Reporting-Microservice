@@ -6,6 +6,8 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import OAuthCallback from './Components/OAuthCallback';
 import LoginPage from "./Pages/LoginPage.tsx"
 import ApplicationPage from "./Pages/ApplicationPage.tsx"
+import ReportPage from './Pages/ReportPage';
+import AuditPage from './Pages/AuditPage';
 import DashboardPage from "./Pages/Dashboard.tsx"
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,6 +31,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/application/:applicationid" element={<ApplicationPage />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/audit" element={<AuditPage />} />
           </Route>
           <Route path="/auth/callback" element={<OAuthCallback />} />
         </Routes>

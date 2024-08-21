@@ -8,7 +8,50 @@ const { Xslt, XmlParser } = require("xslt-processor");
 const puppeteer = require("puppeteer");
 const { uploadFile } = require("../storage/cloudStorageService.js");
 const fs = require("fs");
+const { timeStamp } = require("console");
 
+// Function to insert a new status record
+async function insertStatusRecord(reportid) {
+  try {
+    const [result] = await knex("reportstatushistory")
+      .insert({
+        reportid: reportid,
+        status: "In Progress",
+        timestamp: new Date(),
+        createdat: new Date(),
+      })
+      .returning("reportstatushistoryid"); // Ensure correct column name is returned
+
+    // Extract statusId from result object
+    const statusId = result.reportstatushistoryid;
+
+    // Ensure statusId is a number
+    if (typeof statusId !== "number") {
+      throw new Error(`Invalid statusId: ${statusId}. Expected a number.`);
+    }
+
+    return statusId;
+  } catch (error) {
+    console.error("Error inserting status record:", error);
+    throw error;
+  }
+}
+
+// Function to update status record
+async function updateStatusRecord(statusId, status, message = "") {
+  try {
+    await knex("reportstatushistory")
+      .where({ reportstatushistoryid: statusId })
+      .update({
+        status: status,
+        message: message,
+        updatedat: new Date(),
+      });
+  } catch (error) {
+    console.error("Error updating status record:", error);
+    throw error;
+  }
+}
 // Function to check report existence
 async function checkReportExistence(reportName) {
   const report = await knex("report").where({ title: reportName }).first();
@@ -145,6 +188,8 @@ async function performXsltTransformation(xmlData, xslContent) {
 async function generateReport(req, res, next) {
   const { reportName, parameters } = req.body;
 
+  let statusId;
+
   try {
     // Step 1: Check if the report name exists
     const reportExists = await checkReportExistence(reportName);
@@ -152,32 +197,41 @@ async function generateReport(req, res, next) {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Step 2: Get report details (connection, destination, etc.)
-    const reportDetails = await getReportDetails(reportName);
+    // Step 2: Insert a status record for the report
 
-    // Step 3: Get the connection details using sourceconnectionid
+    // Step 3: Get report details (connection, destination, etc.)
+    const reportDetails = await getReportDetails(reportName);
+    statusId = await insertStatusRecord(reportDetails.reportid);
+
+    // Step 4: Get the connection details using sourceconnectionid
     const connectionDetails = await getConnectionDetails(
       reportDetails.sourceconnectionid
     );
 
-    // Step 4: Check if the connection is working and get the Knex instance
+    // Step 5: Check if the connection is working and get the Knex instance
     const testKnex = await checkConnection(connectionDetails);
     if (!testKnex) {
+      await updateStatusRecord(
+        statusId,
+        "Failed",
+        "Failed to connect to the data source"
+      );
       return res
         .status(500)
         .json({ message: "Failed to connect to the data source" });
     }
 
-    // Step 5: Get the destination details using destinationid
+    // Step 6: Get the destination details using destinationid
     const destinationDetails = await getDestinationDetails(
       reportDetails.destinationid
     );
 
     if (!destinationDetails) {
+      await updateStatusRecord(statusId, "Failed", "Destination not found");
       return res.status(404).json({ message: "Destination not found" });
     }
 
-    // Step 6: Download the XSL file from the destination
+    // Step 7: Download the XSL file from the destination
     const file = await downloadFile(
       "aws", // Assuming AWS, modify as needed
       destinationDetails.url,
@@ -187,13 +241,18 @@ async function generateReport(req, res, next) {
     );
 
     if (!file) {
+      await updateStatusRecord(
+        statusId,
+        "Failed",
+        "Failed to download the file"
+      );
       return res.status(500).json({ message: "Failed to download the file" });
     }
 
-    // Step 7: Convert the Buffer to a string (XSL content)
+    // Step 8: Convert the Buffer to a string (XSL content)
     const xslContent = file.Body.toString("utf-8");
 
-    // Step 8: Generate SQL query using stored procedure and parameters
+    // Step 9: Generate SQL query using stored procedure and parameters
     const storedProcedure = reportDetails.storedprocedure;
     const parametersDefs = reportDetails.parameters; // Assuming this is a comma-separated list
     const query = generateQueryText(
@@ -202,11 +261,11 @@ async function generateReport(req, res, next) {
       parameters
     );
 
-    // Step 9: Execute the generated query
+    // Step 10: Execute the generated query
     const schemaName = "ETS"; // Assuming schema is part of reportDetails
     const result = await getProcedureRows(testKnex, query, schemaName);
 
-    // Step 10: Convert result to XML
+    // Step 11: Convert result to XML
     const xmlData = js2xmlparser.parse("ReportData", {
       message: "Report generated successfully",
       data: result,
@@ -219,7 +278,7 @@ async function generateReport(req, res, next) {
       const pdfBuffer = await generatePDF(htmlContent);
       const pdfKey = `reports/${reportName}-${Date.now()}.pdf`; // Key for the S3 object
 
-      // Step 11: Upload the PDF to the destination
+      // Step 12: Upload the PDF to the destination
       const uploadResult = await uploadFile(
         "aws",
         destinationDetails.url,
@@ -229,13 +288,22 @@ async function generateReport(req, res, next) {
       );
 
       if (!uploadResult.success) {
+        await updateStatusRecord(statusId, "Failed", uploadResult.message);
         return res.status(500).json({ message: uploadResult.message });
       }
+
+      // Update status record to successful
+      await updateStatusRecord(statusId, "Successful");
 
       // Send success message with the URL
       res.json({ message: "PDF uploaded successfully", url: uploadResult.url });
     } catch (error) {
       logger.error("Error generating report", { error: error.message });
+      await updateStatusRecord(
+        statusId,
+        "Failed",
+        "XSLT Transformation or PDF generation failed: " + error.message
+      );
       return res.status(500).json({
         message: "XSLT Transformation or PDF generation failed",
         error: error.message,
@@ -243,6 +311,9 @@ async function generateReport(req, res, next) {
     }
   } catch (err) {
     logger.error("Error generating report", { error: err });
+    if (statusId) {
+      await updateStatusRecord(statusId, "Failed", err.message);
+    }
     next(err);
   }
 }

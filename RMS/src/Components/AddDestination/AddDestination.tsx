@@ -7,6 +7,8 @@ import {
   TextField,
   Button,
   Tooltip,
+  Select,
+  MenuItem
 } from "@mui/material";
 import axios from "axios";
 import styles from "./AddDestination.module.css";
@@ -47,7 +49,8 @@ const AddDestination: FC<AddDestinationProps> = ({
 
   // Retrieve userId from Redux state
   const userId = useSelector((state: RootState) => state.auth.userId);
-  const [disabled,setDisabled] = useState(true);
+  const token = useSelector((state: RootState) => state.auth.token);
+  const [disabled, setDisabled] = useState(true);
   const [destination, setDestination] = useState<string>("");
 
   const {
@@ -55,13 +58,14 @@ const AddDestination: FC<AddDestinationProps> = ({
     control,
     reset,
     setValue,
+    setError,
     watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(destinationSchema),
     defaultValues: {
       alias: "",
-      destination: "",
+      destination: "aws",
       url: "",
       apiKey: "",
       ...initialData,
@@ -77,71 +81,63 @@ const AddDestination: FC<AddDestinationProps> = ({
       if (initialData) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/api/destinations/get-dest/${initialData.destinationid}`
+            `${import.meta.env.VITE_BACKEND_URL}/api/destinations/get-dest/${initialData.destinationid}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
           console.log(response.data);
-          const {  destination } = response.data;
+          const { destination } = response.data;
           setDestination(destination);
           reset({
             alias: initialData.alias || "",
-            destination: destination || "",
-            url:  initialData.url || "",
-             apiKey: initialData.apikey || "",
-         
+            destination: destination || "aws",
+            url: initialData.url || "",
+            apiKey: initialData.apikey || "",
           });
         } catch (error) {
           console.error("Failed to fetch connection data", error);
         }
       }
     };
-  
+
     fetch();
   }, [initialData, reset]);
 
-  // useEffect(() => {
-   
-  //   if (initialData) {
-  //     console.log(initialData);
-  //     cons
-  //     setValue("alias", initialData.alias || "");
-  //     setValue("destination", initialData.destination || "");
-  //     setValue("url", initialData.url || "");
-  //     setValue("apiKey", initialData.apikey || "");
-  //   } else {
-  //     reset({
-  //       alias: "",
-  //       destination: "",
-  //       url: "",
-  //       apiKey: "",
-  //     });
-  //   }
-  // }, [initialData, setValue, reset]);
 
   const onSubmit = async (data: any) => {
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${
-        isEditing ? `/${initialData.destinationid}` : ""
-      }`;
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${isEditing ? `/${initialData.destinationid}` : ""
+        }`;
       const method = isEditing ? "put" : "post";
       const saveResponse = await axios[method](url, {
         ...data,
         applicationId,
-        userId,
-      });
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (saveResponse.status === StatusCodes.OK) {
         toast.success(
           `Destination ${isEditing ? "updated" : "added"} successfully!`
         );
         onAddOrEdit(saveResponse.data.destination);
-        onClose();
+        handleClose();
       } else {
         toast.error(`Failed to ${isEditing ? "update" : "add"} destination.`);
       }
-    } catch (error) {
-      toast.error(
-        `Error ${isEditing ? "updating" : "adding"} destination. Please try again.`
-      );
+    } catch (error: any) {
+      if (error.response && error.response.status === StatusCodes.CONFLICT) {
+        setError("alias", { message: "Alias must be unique" });
+      } else {
+        toast.error(`Error ${isEditing ? "updating" : "adding"} destination. Please try again`);
+      }
     }
   };
 
@@ -149,7 +145,12 @@ const AddDestination: FC<AddDestinationProps> = ({
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations/connect`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (response.status === StatusCodes.OK) {
         toast.success("Connection successful!");
@@ -161,9 +162,19 @@ const AddDestination: FC<AddDestinationProps> = ({
       toast.error("Error connecting to destination. Please try again.");
     }
   };
+  const handleClose = () => {
+    reset({
+      alias: "",
+      destination: "aws",
+      url: "",
+      apiKey: "",
+    });
+    setDisabled(true);
+    onClose();
+  };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>
         {isEditing ? "Edit Destination" : "Add Destination"}
       </DialogTitle>
@@ -193,14 +204,19 @@ const AddDestination: FC<AddDestinationProps> = ({
                 control={control}
                 render={({ field }) => (
                   <TextField
-                    {...field}
                     margin="dense"
                     label="Destination"
-                    type="text"
+                    select
                     fullWidth
+                    {...field}
                     error={!!errors.destination}
-                    helperText={errors.destination?.message?.toString()}
-                  />
+                    onChange={(e) => {
+                      field.onChange(e); 
+                      setDisabled(true); 
+                    }}
+                  >
+                    <MenuItem value="aws">AWS</MenuItem>
+                  </TextField>
                 )}
               />
             </div>
@@ -219,6 +235,10 @@ const AddDestination: FC<AddDestinationProps> = ({
                     fullWidth
                     error={!!errors.url}
                     helperText={errors.url?.message?.toString()}
+                    onChange={(e) => {
+                      field.onChange(e); 
+                      setDisabled(true); 
+                    }}
                   />
                 )}
               />
@@ -236,6 +256,10 @@ const AddDestination: FC<AddDestinationProps> = ({
                     fullWidth
                     error={!!errors.apiKey}
                     helperText={errors.apiKey?.message?.toString()}
+                    onChange={(e) => {
+                      field.onChange(e); 
+                      setDisabled(true); 
+                    }}
                   />
                 )}
               />
@@ -259,7 +283,7 @@ const AddDestination: FC<AddDestinationProps> = ({
             </Button>
             <Button
               size="small"
-              onClick={onClose}
+              onClick={handleClose}
               sx={{
                 backgroundColor: "#7d0e0e",
                 color: "white",

@@ -14,6 +14,7 @@ interface TableProps {
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     flex: 1,
     textAlign: 'center',
+    overflow: 'hidden',
     [`&.${tableCellClasses.head}`]: {
         backgroundColor: "#7d0e0e",
         color: theme.palette.common.white,

@@ -5,6 +5,9 @@ import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import AddDestination from "../AddDestination/AddDestination";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { RootState } from "../../State/store";
 
 interface DestinationProps {
   applicationId: string;
@@ -17,6 +20,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
   const [openAddDestination, setOpenAddDestination] = useState<boolean>(false);
   const [editingDestination, setEditingDestination] = useState<any>(null);
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -40,6 +44,9 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`,
         {
           params: { page, pageSize, query, filters },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -77,13 +84,18 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
             apikey,
             isactive,
             isdeleted,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
       });
       await Promise.all(requests);
-      console.log("Updated Items", updatedItems);
+      toast.success("Updated Destinations");
     } catch (error) {
-      alert("Failed to update data");
+      toast.error("Failed to Update Destinations");
     }
   };
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +149,12 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const handleConnectionDelete = async (destinationId: string | null) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${destinationId}`
+        `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${destinationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       fetchDestinations(page, pageSize, searchQuery, filters);

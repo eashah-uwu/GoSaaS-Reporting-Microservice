@@ -129,6 +129,73 @@ CREATE TABLE AuditTrail (
     Details TEXT
 );
 
+ALTER TABLE "report"
+ADD COLUMN filekey VARCHAR(255);
+
+ALTER TABLE report RENAME COLUMN storedprocedureid TO storedprocedure;
+
+--Delete Previous Audit Table
+DROP TABLE IF EXISTS AuditTrail;
+DROP TABLE IF EXISTS AuditEvents;
+
+
+CREATE TABLE AuditEvents (
+	ID int8 GENERATED ALWAYS AS IDENTITY (INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
+	CreatedBy varchar(255) NULL,
+	CreatedDate timestamptz(6) NULL,
+	ModifiedBy varchar(255) NULL,
+	ModifiedDate timestamptz(6) NULL,
+	Event varchar(255) NOT NULL,
+	Description text NULL,
+	Module varchar(255) NOT NULL,
+	CONSTRAINT auditevents_pk PRIMARY KEY (ID)
+);
+
+
+CREATE TABLE AuditTrail (
+	ID int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
+	IsActive boolean NULL,
+	CreatedBy varchar(255) NULL,
+	ModifiedDate timestamptz(6) NULL,
+	Description text NULL,
+	CreatedDate timestamptz(6) NULL,
+	UserID int8 NULL,
+	AuditEventID int8 NULL,
+	CONSTRAINT audittrail_pk PRIMARY KEY (ID),
+	CONSTRAINT audittrail_event FOREIGN KEY (AuditEventID) REFERENCES AuditEvents(ID),
+	CONSTRAINT audittrail_user FOREIGN KEY (UserID) REFERENCES "User"(UserID)
+);
+
+
+INSERT INTO AuditEvents (CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, Event, Description, Module)
+VALUES 
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'User Login', 'User logged into the system', 'Authentication'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'User Logout', 'User logged out of the system', 'Authentication'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Creation', 'New data entry created', 'Data Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Update', 'Existing data entry updated', 'Data Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Deletion', 'Data entry deleted', 'Data Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Password Change', 'User changed their password', 'User Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Role Assignment', 'Assigned role to a user', 'User Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Permission Change', 'Changed user permissions', 'User Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Profile Update', 'User updated their profile', 'User Management'),
+('system', CURRENT_TIMESTAMP, NULL, NULL, 'Account Lockout', 'User account was locked due to multiple failed login attempts', 'Security');
+
+INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
+VALUES 
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'User logged in', CURRENT_TIMESTAMP, 1, 1),
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'User logged out', CURRENT_TIMESTAMP, 1, 2),
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'Created new data entry', CURRENT_TIMESTAMP, 2, 3),
+(TRUE, 'editor', CURRENT_TIMESTAMP, 'Updated existing data entry', CURRENT_TIMESTAMP, 2, 4),
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'Deleted a data entry', CURRENT_TIMESTAMP, 3, 5),
+(FALSE, 'user', CURRENT_TIMESTAMP, 'Changed password', CURRENT_TIMESTAMP, 10, 6),
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'Assigned role to user', CURRENT_TIMESTAMP, 11, 7),
+(TRUE, 'admin', CURRENT_TIMESTAMP, 'Changed user permissions', CURRENT_TIMESTAMP, 11, 8),
+(FALSE, 'user', CURRENT_TIMESTAMP, 'Updated profile information', CURRENT_TIMESTAMP, 10, 9),
+(FALSE, 'system', CURRENT_TIMESTAMP, 'User account locked after failed login attempts', CURRENT_TIMESTAMP, 10, 10);
+
+
+
+
 -- Create indexes if necessary
 CREATE INDEX idx_user_email ON "User" (Email);
 CREATE INDEX idx_application_userid ON Application (UserID);

@@ -20,6 +20,7 @@ const authRoutes = require("./routes/auth");
 const connectionRoutes = require("./routes/connectionRoutes");
 const destinationRoutes = require("./routes/destinationRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const auditRoutes = require("./routes/auditRoutes");
 const traceIdMiddleware = require("./middlewares/traceIdMiddleware");
 
 const app = express();
@@ -55,6 +56,9 @@ app.use("/api/connections", connectionRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/audit-trails", auditRoutes);
+
+
 
 // Error handling middleware
 app.use(errorHandler);

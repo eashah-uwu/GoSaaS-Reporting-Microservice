@@ -176,9 +176,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           },
         }
       );
+      toast.success("Connection Deleted Successfully")
       fetchConnections(page, pageSize, searchQuery, filters);
     } catch (e) {
       console.log(e);
+      toast.error("Connection Deletion Failed")
+
     }
   };
 

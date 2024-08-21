@@ -28,7 +28,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const [storedProcedures, setStoredProcedures] = useState<any[]>([]);
   const [parameters, setParameters] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const userid = useSelector((state: RootState) => state.auth.userId||"");
+  const userid = useSelector((state: RootState) => state.auth.userId || "");
   const token = useSelector((state: RootState) => state.auth.token);
   // const [saveDisabled, setSaveDisabled] = useState(true)
   const [formData, setFormData] = useState({
@@ -48,14 +48,14 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
               },
             }
           ),
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
               },
             }
           )
@@ -84,7 +84,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
           { id: value },
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -108,7 +108,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const handleProcedureSelect = (e: any) => {
     const selectedProc = storedProcedures.find(proc => proc.procedure_name === e.target.value);
     const { name, value } = e.target;
-    setFormData({...formData,[name]: value,parameter:selectedProc.parameter_list})
+    setFormData({ ...formData, [name]: value, parameter: selectedProc.parameter_list })
     setParameters(selectedProc.parameter_list);
   };
 
@@ -120,14 +120,14 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       return;
     }
 
-    try {const formDataToSend = new FormData();
+    try {
+      const formDataToSend = new FormData();
       formDataToSend.append("alias", formData.alias);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("source", formData.source);
       formDataToSend.append("destination", formData.destination);
       formDataToSend.append("storedProcedure", formData.storedProcedure);
       formDataToSend.append("parameter", formData.parameter);
-      formDataToSend.append("userid", userid);
       formDataToSend.append("file", file);
       formDataToSend.append("applicationid", applicationId);
       const response = await axios.post(
@@ -143,13 +143,24 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       if (response.status === 201) {
         toast.success("Report created successfully!");
         onAdd(response.data.report);
-        onClose();
+        handleClose();
       } else {
         toast.error("Failed to create report.");
       }
     } catch (error: any) {
       toast.error("Error creating report. Please try again.");
     }
+  };
+  const handleClose = () => {
+    setFormData({
+      alias: '',
+      description: '',
+      source: '',
+      destination: '',
+      storedProcedure: '',
+      parameter: ''
+    });
+    onClose();
   };
 
 

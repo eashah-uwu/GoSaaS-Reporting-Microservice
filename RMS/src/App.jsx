@@ -9,7 +9,6 @@ import ApplicationPage from "./Pages/ApplicationPage.tsx"
 import DashboardPage from "./Pages/Dashboard.tsx"
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ReportPage from "./Pages/ReportPage.tsx";
 
 function App() {
   const dispatch = useDispatch();

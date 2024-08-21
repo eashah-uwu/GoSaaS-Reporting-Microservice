@@ -127,6 +127,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       console.log(e);
     }
   };
+  const handleEdit = (connection: any) => {
+    
+  };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
@@ -187,12 +190,14 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           <TableConfig
             data={reports}
             includeStatus={false}
+            includeEdit={false}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
-            rowIdAccessor="destinationid"
+            rowIdAccessor="reportid"
             onDelete={handleReportDelete}
             onAddData={handleAddReportOpen}
+            onEdit={handleEdit}
           />
         )}
         {!loading && !error && (

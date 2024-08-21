@@ -28,26 +28,23 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             header: 'Status',
             cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original[rowIdAccessor]} handleStatusChange={handleStatusChange} />,
         });
-        if (includeEdit) {
-            columns.push({
-                accessorKey: "edit",
-                header: "Edit",
-                cell: ({ row }: any) => (
-                    <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
+        columns.push({
+            accessorKey: "edit",
+            header: "Actions",
+            cell: ({ row }: any) => (
+                <span style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-0.5rem" }}>
+                    {includeEdit && <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
                         <Edit />
-                    </IconButton>
-                ),
-            });
-        }
+                    </IconButton>}
+
+                    <DeleteIcon
+                        sx={{ color: "#7d0e0e", cursor: "pointer" }}
+                        onClick={() => handleDeleteClick(row.original[rowIdAccessor])} />
+                </span>
+            ),
+        });
+
     }
-    columns.push({
-        accessorKey: 'actions',
-        header: 'Actions',
-        cell: (info: any) => <DeleteIcon
-            sx={{ color: "#7d0e0e", cursor: "pointer" }}
-            onClick={() => handleDeleteClick(info.row.original[rowIdAccessor])} 
-        />,
-    });
     return columns;
 };
 

@@ -79,6 +79,8 @@ const ApplicationPage = () => {
   };
 
   const handleClose = () => {
+    setName("");
+    setDescription("")
     setOpen(false);
   };
 

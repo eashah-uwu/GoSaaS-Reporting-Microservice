@@ -49,14 +49,14 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
             {
               headers: {
                 Authorization: `Bearer ${token}`, 
-              }
+              },
             }
           ),
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`, 
-              }
+              },
             }
           )
         ]);
@@ -84,7 +84,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
           { id: value },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token}`, 
             },
           }
         );

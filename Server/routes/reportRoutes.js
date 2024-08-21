@@ -12,8 +12,8 @@ const {
   searchReports,
   getReportsByApplicationId,
   downloadXsl,
+  reportGeneration,
 } = require("../controllers/reportController");
-const { generateReport } = require("../config/generateReport");
 const validateQuery = require("../middlewares/validateQuery");
 
 router.post("/", upload.single("file"), createReport);
@@ -22,6 +22,6 @@ router.get("/download/:id", downloadXsl);
 router.get("/:id", getReportsByApplicationId);
 router.put("/:id", updateReport);
 router.delete("/:id", deleteReport);
-router.post("/generateReport", generateReport);
+router.post("/generateReport", reportGeneration);
 
 module.exports = router;

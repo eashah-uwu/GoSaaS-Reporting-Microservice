@@ -4,9 +4,13 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
-const path = require("path");
 const Destination = require("../models/destinationModel");
-const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
+const { generateReport } = require("../services/generateReport");
+
+const {
+  uploadFile,
+  downloadFile,
+} = require("../storage/cloudStorageService.js");
 
 const { v4: uuidv4 } = require("uuid");
 const createReport = async (req, res) => {
@@ -75,14 +79,14 @@ const downloadXsl = async (req, res) => {
       .json({ message: "Report not found" });
   }
   const destination_db = await Destination.findById(report.destinationid);
-  const file= await downloadFile(
+  const file = await downloadFile(
     "aws",
     destination_db.url,
     destination_db.apikey,
     "reportsdestination0",
     report.filekey
   );
-  res.setHeader('Content-Type', file.ContentType);
+  res.setHeader("Content-Type", file.ContentType);
   res.send(file.Body);
 };
 const getReports = async (req, res) => {
@@ -238,8 +242,26 @@ const getReportsByApplicationId = async (req, res) => {
     pageSize: parseInt(pageSize, 10),
   });
 };
+const reportGeneration = async (req, res) => {
+  const { reportName, parameters } = req.body;
 
-
+  return generateReport(reportName, parameters)
+    .then((result) => {
+      logger.info("Report generated successfully", {
+        context: { traceid: req.traceId, reportName },
+      });
+      res.status(StatusCodes.OK).json(result);
+    })
+    .catch((err) => {
+      logger.error("Error generating report", {
+        context: { traceid: req.traceId, reportName, error: err.message },
+      });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Error generating report",
+        error: err.message,
+      });
+    });
+};
 
 module.exports = {
   createReport,
@@ -249,5 +271,6 @@ module.exports = {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadXsl
+  downloadXsl,
+  reportGeneration,
 };

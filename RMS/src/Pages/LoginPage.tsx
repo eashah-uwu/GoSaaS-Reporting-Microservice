@@ -44,6 +44,7 @@ function LoginPage() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    console.log(window.location.search)
     const errorParam = urlParams.get("error");
 
     if (errorParam === "UnauthorizedDomain") {

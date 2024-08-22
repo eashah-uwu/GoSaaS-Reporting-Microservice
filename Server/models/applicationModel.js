@@ -116,6 +116,8 @@ class Application {
     if (filters.sortField && filters.sortField !== "None") {
       const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
       baseQuery.orderBy(filters.sortField, sortOrder);
+    }else{
+      baseQuery.orderBy("createdat", "desc");
     }
 
     return baseQuery.offset(offset).limit(limit);

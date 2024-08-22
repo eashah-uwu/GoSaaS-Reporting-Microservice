@@ -121,8 +121,8 @@ const Dashboard = () => {
   const handleAddApplicationClose = () => {
     setOpenAddApplication(false);
   };
-  const handleAddApplication = (newApplication: any) => {
-    setApplications((prevData) => [newApplication, ...prevData]);
+  const handleAddApplication = () => {
+    fetchApplications(page, pageSize, searchQuery, filters);
   };
 
   const handleApplicationDelete = async (applicationid: string | null) => {

@@ -41,7 +41,7 @@ const connectionSchema = z.object({
 interface AddSourceProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newSource: any) => void;
+  onAdd: () => void;
   onEdit?: (updatedSource: any) => void;
   applicationId: string;
   sourceToEdit?: any;
@@ -157,7 +157,7 @@ const AddSource: FC<AddSourceProps> = ({
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
           console.log(response)
-          onAdd(response.data.connection);
+          onAdd();
         } else {
           toast.error("Failed to add connection: " + response.data.message);
         }

@@ -18,7 +18,7 @@ import { RootState } from "../../State/store";
 interface AddReportProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newReport: any) => void;
+  onAdd: () => void;
   applicationId: string;
 }
 
@@ -142,7 +142,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
 
       if (response.status === 201) {
         toast.success("Report created successfully!");
-        onAdd(response.data.report);
+        onAdd();
         handleClose();
       } else {
         toast.error("Failed to create report.");

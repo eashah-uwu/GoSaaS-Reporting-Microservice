@@ -94,6 +94,8 @@ class Destination {
     // Apply sorting if sortField is provided
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }else{
+      baseQuery.orderBy("alias", "asc");
     }
 
     return baseQuery.offset(offset).limit(limit);
@@ -115,6 +117,7 @@ class Destination {
       if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
       if (filters.status === "deleted") baseQuery.andWhere("isdeleted", true);
     }
+    
 
     const [{ count }] = await baseQuery;
     return count;

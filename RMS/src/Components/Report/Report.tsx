@@ -119,8 +119,8 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const handleAddReportClose = () => {
     setOpenAddReport(false);
   };
-  const handleAddReport = (newReport: any) => {
-    setReports((prevData) => [...prevData, { ...newReport }]);
+  const handleAddReport = () => {
+    fetchReports(page, pageSize, searchQuery, filters);
   };
 
   const handleReportDelete = async (reportid: string | null) => {

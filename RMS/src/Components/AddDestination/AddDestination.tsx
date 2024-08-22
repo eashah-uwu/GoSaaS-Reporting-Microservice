@@ -20,7 +20,6 @@ import { StatusCodes } from "http-status-codes";
 import { useForm, Controller, set } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DisabledByDefaultSharp } from "@mui/icons-material";
 
 const destinationSchema = z.object({
   alias: z.string().max(255).nonempty("Alias is required"),
@@ -33,7 +32,7 @@ const destinationSchema = z.object({
 interface AddDestinationProps {
   open: boolean;
   onClose: () => void;
-  onAddOrEdit: (destination: any) => void;
+  onAddOrEdit: () => void;
   applicationId: string;
   initialData?: any;
 }
@@ -127,7 +126,7 @@ const AddDestination: FC<AddDestinationProps> = ({
         toast.success(
           `Destination ${isEditing ? "updated" : "added"} successfully!`
         );
-        onAddOrEdit(saveResponse.data.destination);
+        onAddOrEdit();
         handleClose();
       } else {
         toast.error(`Failed to ${isEditing ? "update" : "add"} destination.`);

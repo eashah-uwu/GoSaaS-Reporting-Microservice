@@ -206,6 +206,9 @@ class Report {
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
     }
+    else{
+      baseQuery.orderBy("r.generationdate", "desc");
+    }
 
     return baseQuery.offset(offset).limit(limit);
   }

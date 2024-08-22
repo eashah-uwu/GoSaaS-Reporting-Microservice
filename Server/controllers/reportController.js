@@ -36,7 +36,7 @@ const createReport = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingReport = await Report.findByName(alias);
+  const existingReport = await Report.findByName(alias,userid);
   if (existingReport) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -211,7 +211,7 @@ const updateReport = async (req, res) => {
   }
   const data = reportSchema.partial().parse(req.body);
 
-  const otherReport = await Report.findByName(alias);
+  const otherReport = await Report.findByName(alias,userid);
   if (otherReport && otherReport.reportid != reportid) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },

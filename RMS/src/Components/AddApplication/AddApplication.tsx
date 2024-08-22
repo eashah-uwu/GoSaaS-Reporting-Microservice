@@ -18,8 +18,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required").max(255, "Name must be at most 255 characters"),
-  description: z.string().optional(),
+  name: z.string().min(3, "Name must be at least 3 characters").max(25, "Name must be at most 25 characters")
+  .refine((value) => !/^\d/.test(value), {
+    message: "Name cannot start with a number",
+  }),
+  description: z.string().min(5, "Description must be at least 5 characters").max(100, "Description must be at most 100 characters")
+  .refine((value) => !/^\d/.test(value), {
+    message: "Description cannot start with a number",
+  }),
 });
 
 interface AddApplicationProps {
@@ -103,6 +109,7 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
                   label="Name"
                   type="text"
                   fullWidth
+                  required
                   variant="standard"
                   error={!!errors.name}
                   helperText={errors.name?.message?.toString()}
@@ -121,6 +128,7 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
                   label="Description"
                   type="text"
                   fullWidth
+                  required
                   variant="standard"
                   error={!!errors.description}
                   helperText={errors.description?.message?.toString()}

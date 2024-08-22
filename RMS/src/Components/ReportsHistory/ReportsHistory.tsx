@@ -76,8 +76,10 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPageSize(Number(event.target.value));
-    setPage(1);
+    if(Number(event.target.value)!=0){
+      setPageSize(Number(event.target.value));
+      setPage(1);
+    }
   };
 
   const handleFilterChange = (newFilters: any) => {

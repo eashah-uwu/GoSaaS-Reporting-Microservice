@@ -191,10 +191,12 @@ class Connection {
     return connection;
   }
 
-  static async findByName(alias) {
-    return knex("connection").where({ alias,isdeleted: false }).first();
+  static async findByName(alias,userid) {
+    return knex("connection")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("alias", "ilike", alias)
+          .first();
   }
-
   static async findByApplicationId({
     applicationid,
     query,

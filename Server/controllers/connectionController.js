@@ -33,7 +33,7 @@ const createConnection = async (req, res) => {
 
   const { username, alias, host, port, database, type, password, applicationid, createdby, updatedby } = data;
 
-  const existingConnection = await Connection.findByName(alias);
+  const existingConnection = await Connection.findByName(alias,userid);
   if (existingConnection) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -183,7 +183,7 @@ const updateConnection = async (req, res) => {
     }
   }
   if(alias!=""){
-    const otherConnection = await Connection.findByName(req.body.alias);
+    const otherConnection = await Connection.findByName(req.body.alias,userid);
     if (otherConnection && otherConnection.connectionid!=connectionid) {
       logger.warn("Connection alias must be unique", {
         context: { traceid: req.traceId },

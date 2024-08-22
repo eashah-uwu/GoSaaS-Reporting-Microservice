@@ -41,8 +41,11 @@ class Application {
   static async findAll() {
     return knex("application").select("*").where({ isdeleted: false });
   }
-  static async findByName(name) {
-    return knex("application").where({ name }).first();
+  static async findByName(name,userid) {
+    return knex("application")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("name", "ilike", name)
+          .first();
   }
 
   static async findById(id) {
@@ -95,7 +98,7 @@ class Application {
         "name",
         "isactive",
         "isdeleted",
-        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`)
+        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "creationdate"`)
       )
       .where({ userid: userid, isdeleted: false })
       .andWhere((builder) => {

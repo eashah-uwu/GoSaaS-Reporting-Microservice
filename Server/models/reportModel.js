@@ -111,10 +111,13 @@ class Report {
 
     return baseQuery.offset(offset).limit(limit);
   }
-  static async findByName(title) {
-    return knex("report").where({ title, isdeleted: false }).first();
-  }
 
+  static async findByName(title,userid) {
+    return knex("report")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("title", "ilike", title)
+          .first();
+  }
   static async countSearchResults(applicationid, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })

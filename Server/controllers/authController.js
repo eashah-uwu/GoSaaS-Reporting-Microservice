@@ -8,7 +8,7 @@ const { decrypt } = require("../config/encryption");
 const { z } = require("zod"); 
 // Helper function to generate JWT
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "2h" });
 };
 
 const login = async (req, res, next) => {

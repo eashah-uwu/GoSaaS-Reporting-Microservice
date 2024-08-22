@@ -182,10 +182,10 @@ class Report {
     let baseQuery = knex("reportstatushistory")
       .select(
         "reportstatushistory.reportid",
-        "reportstatushistory.status",
         "r.title",
         knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
-        "r.description"
+        "r.description",
+        "reportstatushistory.status",
       )
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
       .where({ "reportstatushistory.UserID": userid })

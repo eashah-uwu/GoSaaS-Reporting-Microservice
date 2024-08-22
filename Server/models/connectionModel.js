@@ -143,7 +143,6 @@ class Connection {
   static async update(id, data) {
     let { alias="", username="", host="", port=-1, database="", type="", isactive, isdeleted, password="" } =
       data;
-    console.log("data",data)
     const [prevConnection] = await knex("connection").where({
       connectionid: id,
     });

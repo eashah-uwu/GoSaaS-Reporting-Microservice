@@ -102,7 +102,6 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
     return Object.keys(sample)
       .filter(
         (key) =>
-          key !== "status" &&
           key !== "reportid" 
       )
       .map((key) =>

@@ -40,16 +40,16 @@ const ApplicationPage = () => {
     const fetchApplicationData = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/api/applications/${applicationid}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
         setApplicationData(response.data);
-        console.log(applicationData)
-        console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch application data", error);
       }
@@ -57,8 +57,6 @@ const ApplicationPage = () => {
 
     fetchApplicationData();
   }, [applicationid]);
-
-  console.log(applicationid)
 
   if (!applicationData) return <div>Loading...</div>;
 
@@ -80,7 +78,7 @@ const ApplicationPage = () => {
 
   const handleClose = () => {
     setName("");
-    setDescription("")
+    setDescription("");
     setOpen(false);
   };
 
@@ -98,7 +96,7 @@ const ApplicationPage = () => {
         updatedData,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -112,7 +110,9 @@ const ApplicationPage = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response && error.response.status === 409) {
-          toast.error("Application name already exists. Please choose another name.");
+          toast.error(
+            "Application name already exists. Please choose another name."
+          );
         } else {
           toast.error("An error occurred. Please try again later.");
         }
@@ -234,9 +234,15 @@ const ApplicationPage = () => {
         )}
 
         <div className={classes.component_content}>
-          {activeButton === "source" && <Source applicationId={applicationid} />}
-          {activeButton === "destination" && <Destination applicationId={applicationid} />}
-          {activeButton === "reports" && <Report applicationId={applicationid} />}
+          {activeButton === "source" && (
+            <Source applicationId={applicationid} />
+          )}
+          {activeButton === "destination" && (
+            <Destination applicationId={applicationid} />
+          )}
+          {activeButton === "reports" && (
+            <Report applicationId={applicationid} />
+          )}
         </div>
       </main>
       <Dialog open={open} onClose={handleClose}>

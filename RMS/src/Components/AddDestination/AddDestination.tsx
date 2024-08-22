@@ -8,7 +8,7 @@ import {
   Button,
   Tooltip,
   Select,
-  MenuItem
+  MenuItem,
 } from "@mui/material";
 import axios from "axios";
 import styles from "./AddDestination.module.css";
@@ -27,7 +27,6 @@ const destinationSchema = z.object({
   url: z.string().max(255).optional(),
   apiKey: z.string().max(255).optional(),
 });
-
 
 interface AddDestinationProps {
   open: boolean;
@@ -73,21 +72,20 @@ const AddDestination: FC<AddDestinationProps> = ({
 
   const formData = watch();
 
-
   useEffect(() => {
-    console.log(initialData);
     const fetch = async () => {
       if (initialData) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/api/destinations/get-dest/${initialData.destinationid}`,
+            `${import.meta.env.VITE_BACKEND_URL}/api/destinations/get-dest/${
+              initialData.destinationid
+            }`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-          console.log(response.data);
           const { destination } = response.data;
           setDestination(destination);
           reset({
@@ -105,16 +103,18 @@ const AddDestination: FC<AddDestinationProps> = ({
     fetch();
   }, [initialData, reset]);
 
-
   const onSubmit = async (data: any) => {
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${isEditing ? `/${initialData.destinationid}` : ""
-        }`;
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/destinations${
+        isEditing ? `/${initialData.destinationid}` : ""
+      }`;
       const method = isEditing ? "put" : "post";
-      const saveResponse = await axios[method](url, {
-        ...data,
-        applicationId,
-      },
+      const saveResponse = await axios[method](
+        url,
+        {
+          ...data,
+          applicationId,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -135,7 +135,11 @@ const AddDestination: FC<AddDestinationProps> = ({
       if (error.response && error.response.status === StatusCodes.CONFLICT) {
         setError("alias", { message: "Alias must be unique" });
       } else {
-        toast.error(`Error ${isEditing ? "updating" : "adding"} destination. Please try again`);
+        toast.error(
+          `Error ${
+            isEditing ? "updating" : "adding"
+          } destination. Please try again`
+        );
       }
     }
   };
@@ -210,8 +214,8 @@ const AddDestination: FC<AddDestinationProps> = ({
                     {...field}
                     error={!!errors.destination}
                     onChange={(e) => {
-                      field.onChange(e); 
-                      setDisabled(true); 
+                      field.onChange(e);
+                      setDisabled(true);
                     }}
                   >
                     <MenuItem value="aws">AWS</MenuItem>
@@ -235,8 +239,8 @@ const AddDestination: FC<AddDestinationProps> = ({
                     error={!!errors.url}
                     helperText={errors.url?.message?.toString()}
                     onChange={(e) => {
-                      field.onChange(e); 
-                      setDisabled(true); 
+                      field.onChange(e);
+                      setDisabled(true);
                     }}
                   />
                 )}
@@ -256,8 +260,8 @@ const AddDestination: FC<AddDestinationProps> = ({
                     error={!!errors.apiKey}
                     helperText={errors.apiKey?.message?.toString()}
                     onChange={(e) => {
-                      field.onChange(e); 
-                      setDisabled(true); 
+                      field.onChange(e);
+                      setDisabled(true);
                     }}
                   />
                 )}

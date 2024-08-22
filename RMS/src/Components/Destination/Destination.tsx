@@ -29,7 +29,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [filters, setFilters] = useState<{
     sortField?: string;
     sortOrder?: string;
-  status?: string;
+    status?: string;
   }>({});
 
   const fetchDestinations = async (
@@ -50,7 +50,6 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         }
       );
 
-      console.log(data);
       const processedData = data.data.map((app: any) => ({
         ...app,
         status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
@@ -157,7 +156,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
       fetchDestinations(page, pageSize, searchQuery, filters);
     } catch (e) {
-      console.log(e);
+      throw e;
     }
   };
   const generateBaseColumns = (data: any[]) => {
@@ -180,12 +179,15 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(destinations);
 
-
   return (
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true}/>
+          <Filter
+            columns={baseColumns}
+            onFilterChange={handleFilterChange}
+            showStatusFilter={true}
+          />
         </Box>
         <Box
           sx={{
@@ -207,8 +209,10 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
           <Button
             onClick={handleSearchSubmit}
             size="medium"
-            sx={{backgroundColor: "#7d0e0e",color: "white",
-              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            sx={{
+              backgroundColor: "#7d0e0e",
+              color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" },
             }}
           >
             Search
@@ -279,7 +283,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         onClose={onClose}
         onAddOrEdit={handleAddOrEditDestination}
         applicationId={applicationId}
-        initialData={editingDestination} 
+        initialData={editingDestination}
       />
     </>
   );

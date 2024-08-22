@@ -17,6 +17,7 @@ async function insertStatusRecord(reportid, userid) {
         reportid: reportid,
         status: "Pending",
         userid: userid,
+        filekey: "Pending",
         createdat: new Date(),
       })
       .returning("reportstatushistoryid");

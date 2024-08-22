@@ -3,9 +3,18 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
 import TableConfig from "../TableConfig/TableConfig";
-import { Pagination, FormControl } from '@mui/material';
-import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import classes from "./Dashboard.module.css"
+import { Pagination, FormControl } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import classes from "./Dashboard.module.css";
 import Filter from "../Filter/Filter";
 import { toast } from "react-toastify";
 import AddApplication from "../AddApplication/AddApplication";
@@ -41,7 +50,7 @@ const Dashboard = () => {
         {
           params: { page, pageSize, query, filters },
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -67,7 +76,9 @@ const Dashboard = () => {
       const requests = updatedItems.map((item) => {
         const { applicationid, name, createdat, isactive, isdeleted } = item;
         return axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/api/applications/${applicationid}`,
           {
             name,
             createdat,
@@ -76,7 +87,7 @@ const Dashboard = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -133,14 +144,14 @@ const Dashboard = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       fetchApplications(page, pageSize, searchQuery, filters);
     } catch (e) {
-      console.log(e);
+      throw e;
     }
   };
   const generateBaseColumns = (data: any[]) => {
@@ -158,9 +169,9 @@ const Dashboard = () => {
         key === "creationdate"
           ? { accessorKey: key, header: "Date Registered" }
           : {
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-          }
+              accessorKey: key,
+              header: key.charAt(0).toUpperCase() + key.slice(1),
+            }
       );
   };
 
@@ -169,7 +180,11 @@ const Dashboard = () => {
   return (
     <div className={classes.dashboard_main}>
       <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-        <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true} />
+        <Filter
+          columns={baseColumns}
+          onFilterChange={handleFilterChange}
+          showStatusFilter={true}
+        />
       </Box>
       <Box
         sx={{
@@ -192,8 +207,9 @@ const Dashboard = () => {
           onClick={handleSearchSubmit}
           size="medium"
           sx={{
-            backgroundColor: "#7d0e0e", color: "white",
-            ":hover": { backgroundColor: "#7d0e0e", color: "white" }
+            backgroundColor: "#7d0e0e",
+            color: "white",
+            ":hover": { backgroundColor: "#7d0e0e", color: "white" },
           }}
         >
           Search
@@ -210,9 +226,12 @@ const Dashboard = () => {
           onSave={handleSave}
           rowIdAccessor="applicationid"
           onDelete={handleApplicationDelete}
-          onAddData={handleAddApplicationOpen} includeEdit={false} onEdit={function (item: any): void {
+          onAddData={handleAddApplicationOpen}
+          includeEdit={false}
+          onEdit={function (item: any): void {
             throw new Error("Function not implemented.");
-          } }        />
+          }}
+        />
       )}
       {!loading && !error && (
         <Box

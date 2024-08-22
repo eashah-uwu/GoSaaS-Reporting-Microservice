@@ -50,7 +50,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         }
       );
 
-      console.log(data);
       const processedData = data.data.map((app: any) => ({
         ...app,
         status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
@@ -71,14 +70,8 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
-
       const requests = updatedItems.map((item) => {
-        const {
-          connectionid,
-          isactive,
-          isdeleted,
-        } = item;
-        console.log(item)
+        const { connectionid, isactive, isdeleted } = item;
         return axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionid}`,
           {
@@ -136,6 +129,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setEditingSource(null);
     setOpenAddSource(false);
   };
+
   const handleAddSource = () => {
     fetchConnections(page, pageSize, searchQuery, filters);
   };
@@ -143,11 +137,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const handleUpdateSource = (updatedSource: any) => {
     setConnections((prevData) =>
       prevData.map((source) =>
-        source.connectionid === updatedSource.connectionid ? {
-          ...updatedSource, status: updatedSource.isactive
-            ? "active"
-            : "inactive",
-        } : source
+        source.connectionid === updatedSource.connectionid
+          ? {
+              ...updatedSource,
+              status: updatedSource.isactive ? "active" : "inactive",
+            }
+          : source
       )
     );
   };
@@ -156,7 +151,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setEditingSource(connection);
     setOpenAddSource(true);
   };
-
 
   const handleConnectionDelete = async (connectionId: string | null) => {
     try {
@@ -168,12 +162,11 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           },
         }
       );
-      toast.success("Connection Deleted Successfully")
+      toast.success("Connection Deleted Successfully");
       fetchConnections(page, pageSize, searchQuery, filters);
     } catch (e) {
-      console.log(e);
-      toast.error("Connection Deletion Failed")
-
+      throw e;
+      toast.error("Connection Deletion Failed");
     }
   };
 
@@ -194,15 +187,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       .map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1),
-
       }));
-
-
-
 
     return columns;
   };
-
 
   const baseColumns = generateBaseColumns(connections);
 
@@ -313,9 +301,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         onEdit={handleUpdateSource}
         sourceToEdit={editingSource}
       />
-
-
-
     </>
   );
 };

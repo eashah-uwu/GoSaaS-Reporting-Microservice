@@ -13,6 +13,7 @@ const {
 const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
 const ReportStatusHistory = require("../models/reportStatusHistory.js");
+const reportQueue = require("../queues/reportQueue");
 
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
@@ -115,10 +116,7 @@ const downloadXsl = async (req, res) => {
 };
 const downloadReport = async (req, res) => {
   const userid = req.user.userid;
-  console.log("heree ",userid)
   const { reporthistoryid } = req.params;
-  console.log(reporthistoryid)
-
 
   const reportHistory = await ReportStatusHistory.findById(reporthistoryid);
   if (!reportHistory) {
@@ -143,7 +141,6 @@ const downloadReport = async (req, res) => {
   res.send(file.Body);
 };
 
-
 const getReports = async (req, res) => {
   const {
     query = config.get("query"),
@@ -152,7 +149,7 @@ const getReports = async (req, res) => {
     filters = config.get("filters"),
   } = req.query;
   const userid = req.user.userid;
-  
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [reports, total] = await Promise.all([
     Report.findAll({
@@ -330,27 +327,38 @@ const getReportsByApplicationId = async (req, res) => {
     pageSize: parseInt(pageSize, 10),
   });
 };
-const reportGeneration = async (req, res) => {
-  const { reportName, parameters } = req.body;
 
-  return generateReport(reportName, parameters)
-    .then((result) => {
-      logger.info("Report generated successfully", {
-        context: { traceid: req.traceId, reportName },
-      });
-      res.status(StatusCodes.OK).json(result);
-    })
-    .catch((err) => {
-      logger.error("Error generating report", {
-        context: { traceid: req.traceId, reportName, error: err.message },
-      });
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Error generating report",
-        error: err.message,
-      });
+const reportGeneration = async (req, res, next) => {
+  const { reportName, userid, parameters } = req.body;
+
+  try {
+    // Add job to the queue
+    const job = await reportQueue.add("generateReport", {
+      reportName,
+      userid,
+      parameters,
     });
-};
 
+    if (!job) {
+      logger.error("Failed to add job to the queue");
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Error adding job to the queue",
+      });
+    }
+
+    // Respond with job information
+    res.status(StatusCodes.ACCEPTED).json({
+      message: "Report generation job added to the queue",
+      jobId: job.id,
+    });
+  } catch (err) {
+    logger.error(`Error in reportGeneration: ${err.message}`);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error processing report generation",
+      error: err.message,
+    });
+  }
+};
 module.exports = {
   createReport,
   getReports,
@@ -361,5 +369,5 @@ module.exports = {
   getReportsByApplicationId,
   downloadXsl,
   reportGeneration,
-  downloadReport
+  downloadReport,
 };

@@ -92,6 +92,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                     {
                         rowIdAccessor !== "reportstatushistoryid" &&
                         <>
+
                             {data.length > 0 &&
                                 <span className={classes.save_button_span}>
                                     <Button
@@ -118,8 +119,6 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                 title="Confirm Deletion"
                 message="Are you sure you want to delete this application?"
             />
-
-
         </>
     );
 };

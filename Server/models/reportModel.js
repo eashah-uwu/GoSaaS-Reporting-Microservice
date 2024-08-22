@@ -181,11 +181,13 @@ class Report {
   static async findAll({ userid, query, offset, limit, filters = {} }) {
     let baseQuery = knex("reportstatushistory")
       .select(
+        "reportstatushistory.reportstatushistoryid",
         "reportstatushistory.reportid",
         "r.title",
         knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
         "r.description",
         "reportstatushistory.status",
+        "reportstatushistory.filekey",
       )
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
       .where({ "reportstatushistory.UserID": userid })

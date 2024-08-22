@@ -12,6 +12,7 @@ const {
 } = require("../storage/cloudStorageService.js");
 const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
+const ReportStatusHistory = require("../models/reportStatusHistory.js");
 
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
@@ -105,6 +106,35 @@ const downloadXsl = async (req, res) => {
     destination_db.apikey,
     "reportsdestination0",
     report.filekey
+  );
+  const fileName = report.filekey.split("/").pop()?.split("-").pop();
+  const fileType = fileName.split(".").pop();
+  res.setHeader("Content-Type", file.ContentType || `application/${fileType}`);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  res.send(file.Body);
+};
+const downloadReport = async (req, res) => {
+  const userid = req.user.userid;
+  console.log("heree ",userid)
+  const { reporthistoryid } = req.params;
+  console.log(reporthistoryid)
+
+
+  const reportHistory = await ReportStatusHistory.findById(reporthistoryid);
+  if (!reportHistory) {
+    logger.warn("Report History not found", { id });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report History not found" });
+  }
+  const report = await Report.findById(reportHistory.reportid);
+  const destination_db = await Destination.findById(report.destinationid);
+  const file = await downloadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    "reportsdestination0",
+    reportHistory.filekey
   );
   const fileName = report.filekey.split("/").pop()?.split("-").pop();
   const fileType = fileName.split(".").pop();
@@ -331,4 +361,5 @@ module.exports = {
   getReportsByApplicationId,
   downloadXsl,
   reportGeneration,
+  downloadReport
 };

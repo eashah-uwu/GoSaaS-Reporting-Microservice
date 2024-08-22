@@ -36,7 +36,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
                     e.preventDefault();
                     try {
                         const response = await axios.get(
-                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download/${info.row.original[rowIdAccessor]}`,
+                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download-xsl/${info.row.original[rowIdAccessor]}`,
                             {
                                 responseType: "blob",
                                 headers: {
@@ -66,42 +66,44 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
                     </a>
                 );
             }
-            // if (col.accessorKey === 'status' && rowIdAccessor === "reportstatushistoryid") {
-            //     const status = info.getValue();
-            //     const handleDownload = async (e: any) => {
-            //         e.preventDefault();
-            //         try {
-            //             const response = await axios.get(
-            //                 `${import.meta.env.VITE_BACKEND_URL}/api/reports/download/${info.row.original[rowIdAccessor]}`,
-            //                 {
-            //                     responseType: "blob",
-            //                     headers: {
-            //                         Authorization: `Bearer ${token}`,
-            //                     },
-            //                 }
-            //             );
+            if (col.accessorKey === 'filekey' && rowIdAccessor === "reportstatushistoryid") {
+                const filekey = info.getValue();
+                const fileName = filekey.split('/').pop()?.split('-').pop();
+                const status = info.row.original["status"];
+                const handleReportDownload = async (e: any) => {
+                    e.preventDefault();
+                    try {
+                        const response = await axios.get(
+                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download-report/${info.row.original[rowIdAccessor]}`,
+                            {
+                                responseType: "blob",
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        );
 
-            //             // Create a URL for the downloaded file
-            //             const url = window.URL.createObjectURL(new Blob([response.data]));
-            //             const link = document.createElement("a");
-            //             link.href = url;
-            //             link.setAttribute("download", fileName || "downloaded_file.xsl");
-            //             document.body.appendChild(link);
-            //             link.click();
-            //             document.body.removeChild(link);
-            //         } catch (error) {
-            //             console.error("Error downloading file", error);
-            //         }
-            //     };
+                        // Create a URL for the downloaded file
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.setAttribute("download", fileName || "downloaded_file.pdf");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (error) {
+                        console.error("Error downloading file", error);
+                    }
+                };
 
-            //     return (
-            //         <a style={{ color: "#bc1a1a", fontWeight: "bold", textDecoration: "none", display: "flex", justifyContent: "center" }} href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download/${info.row.original[rowIdAccessor]}`} download onClick={handleDownload}>
-            //             {`${fileName}  `}
-            //             <CloudDownloadIcon sx={{ marginLeft: "0.5rem", marginTop: "-0.2rem" }}>
-            //             </CloudDownloadIcon>
-            //         </a>
-            //     );
-            // }
+                return (
+                    <a style={{ color: status === "Generated" ? "#bc1a1a" : "#ccc", fontWeight: "bold", textDecoration: "none", display: "flex", justifyContent: "center",pointerEvents: status === "Generated" ? "auto" : "none" }} href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download-report/${info.row.original[rowIdAccessor]}`} download onClick={handleReportDownload}>
+                        {`${fileName}  `}
+                        <CloudDownloadIcon sx={{ marginLeft: "0.5rem", marginTop: "-0.2rem" }}>
+                        </CloudDownloadIcon>
+                    </a>
+                );
+            }
 
             return info.getValue();
         }

@@ -4,10 +4,13 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
-const path = require("path");
 const Destination = require("../models/destinationModel");
 const Application = require("../models/applicationModel");
-const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
+const {
+  uploadFile,
+  downloadFile,
+} = require("../storage/cloudStorageService.js");
+const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
 
 const createReport = async (req, res) => {
@@ -31,7 +34,6 @@ const createReport = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Application not found" });
   }
-
 
   const existingReport = await Report.findByName(alias);
   if (existingReport) {
@@ -90,24 +92,24 @@ const downloadXsl = async (req, res) => {
       .json({ message: "Invalid report ID" });
   }
   const report = await Report.findById(reportId);
-  if (!report && report.userid!=userid) {
+  if (!report && report.userid != userid) {
     logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
   const destination_db = await Destination.findById(report.destinationid);
-  const file= await downloadFile(
+  const file = await downloadFile(
     "aws",
     destination_db.url,
     destination_db.apikey,
     "reportsdestination0",
     report.filekey
   );
-  const fileName = report.filekey.split('/').pop()?.split('-').pop();
-  const fileType = fileName.split('.').pop();
-  res.setHeader('Content-Type', file.ContentType || `application/${fileType}`);
-  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  const fileName = report.filekey.split("/").pop()?.split("-").pop();
+  const fileType = fileName.split(".").pop();
+  res.setHeader("Content-Type", file.ContentType || `application/${fileType}`);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
   res.send(file.Body);
 };
 
@@ -171,7 +173,7 @@ const updateReport = async (req, res) => {
   const { reportid } = req.params;
   const userid = req.user.userid;
   const existingReport = await Report.findById(reportid);
-  if (!existingReport && existingReport.userid!=userid) {
+  if (!existingReport && existingReport.userid != userid) {
     logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -205,13 +207,15 @@ const deleteReport = async (req, res) => {
   const userid = req.user.userid;
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { context: { traceid: req.traceId, reportid } });
+    logger.warn("Invalid report ID", {
+      context: { traceid: req.traceId, reportid },
+    });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
   }
   const report = await Report.findById(reportId);
-  if (!report && report.userid!=userid) {
+  if (!report && report.userid != userid) {
     logger.warn("Report not found", { reportid });
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -275,7 +279,6 @@ const getReportsByApplicationId = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [reports, total] = await Promise.all([
     Report.findByApplicationId({
@@ -297,8 +300,26 @@ const getReportsByApplicationId = async (req, res) => {
     pageSize: parseInt(pageSize, 10),
   });
 };
+const reportGeneration = async (req, res) => {
+  const { reportName, parameters } = req.body;
 
-
+  return generateReport(reportName, parameters)
+    .then((result) => {
+      logger.info("Report generated successfully", {
+        context: { traceid: req.traceId, reportName },
+      });
+      res.status(StatusCodes.OK).json(result);
+    })
+    .catch((err) => {
+      logger.error("Error generating report", {
+        context: { traceid: req.traceId, reportName, error: err.message },
+      });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Error generating report",
+        error: err.message,
+      });
+    });
+};
 
 module.exports = {
   createReport,
@@ -308,5 +329,6 @@ module.exports = {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadXsl
+  downloadXsl,
+  reportGeneration,
 };

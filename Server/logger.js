@@ -4,11 +4,22 @@ const { combine, timestamp, printf, errors } = format;
 // Define the log format for detailed error messages
 const logFormat = printf(({ timestamp, level, message, stack, context }) => {
   const traceId = context && context.traceid ? context.traceid : "N/A";
-  const errorDetails = stack
-    ? `at ${stack.split("\n")[1].split(":").slice(1, 3).join(":")}`
-    : "";
+
+  let errorDetails = "";
+  if (stack) {
+    const stackLines = stack.split("\n");
+    if (stackLines.length > 1) {
+      const stackTrace = stackLines[1];
+      const stackParts = stackTrace.split(":");
+      if (stackParts.length >= 3) {
+        errorDetails = `at ${stackParts.slice(1, 3).join(":")}`;
+      }
+    }
+  }
+
   const internalServerError =
     level === "error" ? "Internal server error: " : "";
+
   return `[${timestamp}] [${level.toUpperCase()}] [${traceId}] ${internalServerError}${message} ${errorDetails}`;
 });
 

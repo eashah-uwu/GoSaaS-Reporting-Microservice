@@ -1,9 +1,10 @@
 .sidebar {
-  position: fixed;
+  position:absolute ;
   top: 60px;
   left: -300px;
   width: 250px;
-  height: calc(100% - 60px);
+  height: 200%;
+  /* height: calc(100% - 60px); */
   background-color: #ffffff;
   border-right: 1px solid #ffffff;
   color: #333333;

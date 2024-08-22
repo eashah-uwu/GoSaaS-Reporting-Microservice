@@ -9,18 +9,18 @@ import AddButton from "../AddButton/AddButton";
 interface TableConfigProps {
     data: any[];
     includeStatus: boolean;
-    includeEdit:boolean;
+    includeEdit: boolean;
     baseColumns: any[];
     pageSize: number;
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
-    onDelete: (selectedDataId:string | null) => void;
+    onDelete: (selectedDataId: string | null) => void;
     onAddData: () => void;
     onEdit: (item: any) => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor,onDelete,onAddData, includeEdit, onEdit
- }) => {
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor, onDelete, onAddData, includeEdit, onEdit
+}) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -53,10 +53,10 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         setSelectedDataId(id);
         setOpenDialog(true);
     };
-    const handleDeleteConfirm =  () => {
-            onDelete(selectedDataId); 
-            setOpenDialog(false);
-            setSelectedDataId(null);
+    const handleDeleteConfirm = () => {
+        onDelete(selectedDataId);
+        setOpenDialog(false);
+        setSelectedDataId(null);
     };
 
     const handleDeleteCancel = () => {
@@ -64,9 +64,9 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         setSelectedDataId(null);
     };
 
-    
 
-    const columns = setColumns(baseColumns, includeStatus,includeEdit, handleStatusChange, rowIdAccessor,onEdit,handleDeleteClick);
+
+    const columns = setColumns(baseColumns, includeStatus, includeEdit, handleStatusChange, rowIdAccessor, onEdit, handleDeleteClick);
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,
@@ -84,28 +84,33 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     const filteredData = tableData
         .filter((app: any) => app.status !== "delete")
     return (
-        <>  
+        <>
             <Box padding={6} sx={{ width: "90%", margin: "0 auto" }}>
-            {data.length==0 && <p>No Data Found. Add using + Icon</p>}
-                {filteredData && data.length>0 && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
+                {data.length == 0 && <p>No Data Found. Add using + Icon</p>}
+                {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    {data.length>0 &&
-                    <span className={classes.save_button_span}>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
-                            onClick={handleSave}
-                            disabled={!isSaveEnabled}
-                        >
-                            Save Changes
-                        </Button>
-                    </span>
+                    {rowIdAccessor != "reportstatushistoryid" &&
+                        <>
+
+                            {data.length > 0 &&
+                                <span className={classes.save_button_span}>
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        size="small"
+                                        onClick={handleSave}
+                                        disabled={!isSaveEnabled}
+                                    >
+                                        Save Changes
+                                    </Button>
+                                </span>
+                            }
+                            <AddButton onClick={onAddData} />
+                        </>
                     }
-                    <AddButton onClick={onAddData} />
                 </Box>
             </Box>
-           
+
             <Confirmation
                 open={openDialog}
                 onClose={handleDeleteCancel}
@@ -113,8 +118,6 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                 title="Confirm Deletion"
                 message="Are you sure you want to delete this application?"
             />
-
-           
         </>
     );
 };

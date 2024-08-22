@@ -39,11 +39,10 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <div ref={sidebarRef} className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <ul className={styles.ul}>
-        <li className={styles.li}><Link to="/">Dashboard</Link></li>
+        {token && <li className={styles.li}><Link to="/">Dashboard</Link></li>}
         {!token && <li className={styles.li}><Link to="/login">Login</Link></li> }
-        <li className={styles.li}><Link to="/audit">Audit Trails</Link></li>
-        <li className={styles.li}><Link to="/report">Reports</Link></li>
-        {!token && <li className={styles.li}><Link to="/login">Login</Link></li>}
+        {token && <li className={styles.li}><Link to="/audit">Audit Trails</Link></li>}
+        {token && <li className={styles.li}><Link to="/report">Reports</Link></li>}
       </ul>
     </div>
   );

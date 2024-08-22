@@ -15,7 +15,7 @@ async function insertStatusRecord(reportid) {
     const [result] = await knex("reportstatushistory")
       .insert({
         reportid: reportid,
-        status: "In Progress",
+        status: "Pending",
         createdat: new Date(),
       })
       .returning("reportstatushistoryid");

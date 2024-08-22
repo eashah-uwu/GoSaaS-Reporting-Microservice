@@ -113,7 +113,7 @@ async function generateReport(reportName, parameters) {
     }
 
     // Update status record to successful
-    await updateStatusRecord(statusId, "Successful");
+    await updateStatusRecord(statusId, "Generated");
     return { message: "PDF uploaded successfully", url: uploadResult.url };
   } catch (err) {
     if (statusId) {

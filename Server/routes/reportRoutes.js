@@ -13,14 +13,15 @@ const {
   getReportsByApplicationId,
   downloadXsl,
   reportGeneration,
-  
+  downloadReport
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken = require("../middlewares/auth");
 
 router.post("/", verifyToken, upload.single("file"), createReport);
 router.get("/", validateQuery, searchReports); // Validate query parameters using querySchema
-router.get("/download/:reportid",verifyToken,downloadXsl)
+router.get("/download-xsl/:reportid",verifyToken,downloadXsl)
+router.get("/download-report/:reporthistoryid",verifyToken,downloadReport)
 router.get("/history",verifyToken, getReports);
 router.get("/:applicationid",verifyToken, getReportsByApplicationId);
 router.put("/:applicationid",verifyToken, updateReport);

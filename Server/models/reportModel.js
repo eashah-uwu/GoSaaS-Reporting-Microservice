@@ -177,6 +177,56 @@ class Report {
 
     return baseQuery.offset(offset).limit(limit);
   }
+
+  static async findAll({ userid, query, offset, limit, filters = {} }) {
+    let baseQuery = knex("reportstatushistory")
+      .select(
+        "reportstatushistory.reportid",
+        "reportstatushistory.status",
+        "r.title",
+        knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+        "r.description"
+      )
+      .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .where({ "reportstatushistory.UserID": userid })
+      .andWhere((builder) => {
+        builder
+          .where("reportstatushistory.status", "ilike", `%${query}%`)
+          .orWhere("r.title", "ilike", `%${query}%`)
+          .orWhere("r.description", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
+      });
+
+    if (filters.sortField && filters.sortField !== "None") {
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }
+
+    return baseQuery.offset(offset).limit(limit);
+  }
+  static async countSearchReportsHistory(userid, query, filters) {
+    let baseQuery = knex("reportstatushistory")
+      .count({ count: "*" })
+      .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .where({ "reportstatushistory.UserID": userid })
+      .where((builder) => {
+        builder
+        .where("reportstatushistory.status", "ilike", `%${query}%`)
+        .orWhere("r.title", "ilike", `%${query}%`)
+        .orWhere("r.description", "ilike", `%${query}%`)
+        .orWhere(
+          knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
+          "ilike",
+          `%${query}%`
+          );
+      });
+
+    const [count] = await baseQuery;
+    return parseInt(count.count, 10);
+  }
 }
 
 module.exports = Report;

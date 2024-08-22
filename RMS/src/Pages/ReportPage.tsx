@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from "../Components/Navbar/Navbar";
 import WidgetWrapper from "../Components/WidgetWrapper";
 import { Box, Typography } from "@mui/material";
-
+import ReportHistory from '../Components/ReportsHistory/ReportsHistory';
 function ReportPage() {
   return (
     <>   
@@ -73,9 +73,7 @@ function ReportPage() {
         </WidgetWrapper>
       </Box>
       <Box sx={{ marginTop: "2rem", textAlign: "center" }}>
-        <Typography variant="body1">
-          Detailed report statistics will be available soon. Stay tuned!
-        </Typography>
+        <ReportHistory/>
       </Box>
     </>
   );

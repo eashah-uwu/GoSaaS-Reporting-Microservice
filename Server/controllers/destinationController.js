@@ -21,7 +21,7 @@ const createDestination = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingDestination = await Destination.findByName(alias);
+  const existingDestination = await Destination.findByName(alias,userid);
   if (existingDestination) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -93,7 +93,7 @@ const updateDestination = async (req, res) => {
     }
   }
 
-  const otherDestination = await Destination.findByName(req.body.alias);
+  const otherDestination = await Destination.findByName(req.body.alias,userid);
   if (otherDestination && otherDestination.destinationid != destinationid) {
     logger.warn("Destination alias must be unique", {
       context: { traceid: req.traceId },

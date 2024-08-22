@@ -63,8 +63,12 @@ class Destination {
 
     return destination;
   }
-  static async findByName(alias) {
-    return knex("destination").where({ alias,isdeleted: false }).first();
+
+  static async findByName(alias,userid) {
+    return knex("destination")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("alias", "ilike", alias)
+          .first();
   }
   static async findByApplicationId({ applicationid, query, offset, limit, filters = {} }) {
     let baseQuery = knex("destination")

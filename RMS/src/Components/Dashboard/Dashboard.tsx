@@ -116,8 +116,10 @@ const Dashboard = () => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPageSize(Number(event.target.value));
-    setPage(1);
+    if(Number(event.target.value)!=0){
+      setPageSize(Number(event.target.value));
+      setPage(1);
+    }
   };
 
   const handleFilterChange = (newFilters: any) => {
@@ -164,7 +166,7 @@ const Dashboard = () => {
           key !== "status"
       )
       .map((key) =>
-        key === "createdat"
+        key === "creationdate"
           ? { accessorKey: key, header: "Date Registered" }
           : {
               accessorKey: key,

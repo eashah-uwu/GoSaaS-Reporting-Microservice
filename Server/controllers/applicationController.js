@@ -9,7 +9,7 @@ const createApplication = async (req, res) => {
   const userid=req.user.userid;
   const data = applicationSchema.parse(req.body);
 
-  const existingApplication = await Application.findByName(data.name);
+  const existingApplication = await Application.findByName(data.name,userid);
   if (existingApplication) {
     logger.warn("Application name must be unique", {
       context: { traceid: req.traceId },
@@ -101,7 +101,7 @@ const updateApplication = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Application not found" });
   }
-  const otherApplication = await Application.findByName(data.name);
+  const otherApplication = await Application.findByName(data.name,userid);
   if (otherApplication && otherApplication.applicationid != applicationid) {
     logger.warn("Application name must be unique", {
       context: { traceid: req.traceId },

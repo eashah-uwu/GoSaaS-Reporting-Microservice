@@ -25,7 +25,7 @@ const schema = z.object({
 interface AddApplicationProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newApplication: any) => void;
+  onAdd: () => void;
 }
 
 const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
@@ -59,14 +59,7 @@ const AddApplication: FC<AddApplicationProps> = ({ open, onClose, onAdd }) => {
         const createdApplication = response.data.application;
         const { applicationid, name, createdat, isactive, isdeleted, status } =
           createdApplication;
-        onAdd({
-          applicationid,
-          name,
-          createdat,
-          isactive,
-          isdeleted,
-          status,
-        });
+        onAdd();
         onClose();
       } else {
         toast.error("Failed to add Application");

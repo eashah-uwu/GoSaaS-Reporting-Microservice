@@ -7,7 +7,8 @@ class ReportStatusHistory {
     static async findById(id) {
         return knex("reportstatushistory")
           .where({ reportstatushistoryid: id })
-          .first();
+          .first()
+          .orderBy("timestamp")
     }
 }
 

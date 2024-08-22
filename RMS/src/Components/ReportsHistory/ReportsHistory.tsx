@@ -91,7 +91,10 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
-      .filter((key) => key !== "reportid" && key !== "reportstatushistoryid")
+      .filter(
+        (key) =>
+          key !== "reportid" && key!=="reportstatushistoryid"
+      )
       .map((key) =>
         key === "filekey"
           ? { accessorKey: key, header: "Download Report" }

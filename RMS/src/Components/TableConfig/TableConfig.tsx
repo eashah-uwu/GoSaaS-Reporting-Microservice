@@ -89,7 +89,8 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                 {data.length == 0 && <p>No Data Found. Add using + Icon</p>}
                 {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    {rowIdAccessor != "reportstatushistoryid" &&
+                    {
+                        rowIdAccessor !== "reportstatushistoryid" &&
                         <>
 
                             {data.length > 0 &&

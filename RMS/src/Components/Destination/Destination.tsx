@@ -131,13 +131,11 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     setEditingDestination(null);
     setOpenAddDestination(false);
   };
-  // const handleAddDestination = (newDestination: any) => {
-  //   setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
-  // };
 
-  const handleAddOrEditDestination = (newOrUpdatedDestination: any) => {
+
+  const handleAddOrEditDestination = () => {
     setEditingDestination(null);
-    fetchDestinations();
+    fetchDestinations(page, pageSize, searchQuery, filters);
   };
 
   const handleEdit = (destination: any) => {

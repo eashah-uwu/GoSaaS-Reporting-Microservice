@@ -127,15 +127,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setEditingSource(null);
     setOpenAddSource(false);
   };
-  const handleAddSource = (newSource: any) => {
 
-    setConnections((prevData) => [
-      {
-        ...newSource,
-        status: newSource.isactive ? "active" : "inactive",
-      },
-      ...prevData,
-    ]);
+  const handleAddSource = () => {
+    fetchConnections(page, pageSize, searchQuery, filters);
   };
 
   const handleUpdateSource = (updatedSource: any) => {

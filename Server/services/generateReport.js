@@ -16,7 +16,7 @@ const {
 } = require("../utils/reportUtils"); // Import utility functions
 const js2xmlparser = require("js2xmlparser");
 
-async function generateReport(reportName, parameters) {
+async function generateReport(reportName, userid, parameters) {
   let statusId;
 
   try {
@@ -28,7 +28,7 @@ async function generateReport(reportName, parameters) {
 
     // Step 3: Get report details (connection, destination, etc.)
     const reportDetails = await getReportDetails(reportName);
-    statusId = await insertStatusRecord(reportDetails.reportid);
+    statusId = await insertStatusRecord(reportDetails.reportid, userid);
 
     // Step 4: Get the connection details using sourceconnectionid
     const connectionDetails = await getConnectionDetails(
@@ -41,6 +41,7 @@ async function generateReport(reportName, parameters) {
       await updateStatusRecord(
         statusId,
         "Failed",
+        "Failed",
         "Failed to connect to the data source"
       );
       throw new Error("Failed to connect to the data source");
@@ -52,7 +53,12 @@ async function generateReport(reportName, parameters) {
     );
 
     if (!destinationDetails) {
-      await updateStatusRecord(statusId, "Failed", "Destination not found");
+      await updateStatusRecord(
+        statusId,
+        "Failed",
+        "Failed",
+        "Destination not found"
+      );
       throw new Error("Destination not found");
     }
 
@@ -67,6 +73,7 @@ async function generateReport(reportName, parameters) {
     if (!file) {
       await updateStatusRecord(
         statusId,
+        "Failed",
         "Failed",
         "Failed to download the file"
       );
@@ -108,16 +115,21 @@ async function generateReport(reportName, parameters) {
       "reportsdestination0"
     );
     if (!uploadResult.success) {
-      await updateStatusRecord(statusId, "Failed", uploadResult.message);
+      await updateStatusRecord(
+        statusId,
+        "Failed",
+        "Failed",
+        uploadResult.message
+      );
       throw new Error(uploadResult.message);
     }
 
     // Update status record to successful
-    await updateStatusRecord(statusId, "Successful");
+    await updateStatusRecord(statusId, pdfKey, "Generated");
     return { message: "PDF uploaded successfully", url: uploadResult.url };
   } catch (err) {
     if (statusId) {
-      await updateStatusRecord(statusId, "Failed", err.message);
+      await updateStatusRecord(statusId, "Failed", "Failed", err.message);
     }
     throw err;
   }

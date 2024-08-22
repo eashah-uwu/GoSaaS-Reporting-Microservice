@@ -9,9 +9,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { RootState } from "../../State/store";
 
-interface ReportHistoryProps {
-
-}
+interface ReportHistoryProps {}
 
 const ReportHistory: React.FC<ReportHistoryProps> = () => {
   const [reports, setReports] = useState<any[]>([]);
@@ -85,33 +83,23 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
     setPage(1);
   };
 
-  
-  const handleAddReport = (newReport: any) => {
-    
-  };
+  const handleAddReport = (newReport: any) => {};
 
-  const handleReportDelete = async (reportid: string | null) => {
-    
-  };
-  const handleEdit = (connection: any) => {
-
-  };
+  const handleReportDelete = async (reportid: string | null) => {};
+  const handleEdit = (connection: any) => {};
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
-      .filter(
-        (key) =>
-          key !== "reportid" 
-      )
+      .filter((key) => key !== "reportid")
       .map((key) =>
         key === "filekey"
-          ? { accessorKey: key, header: "Xsl File" }
+          ? { accessorKey: key, header: "Download Report" }
           : {
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-          }
-      )
+              accessorKey: key,
+              header: key.charAt(0).toUpperCase() + key.slice(1),
+            }
+      );
   };
 
   const baseColumns = generateBaseColumns(reports);
@@ -120,7 +108,11 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={false} />
+          <Filter
+            columns={baseColumns}
+            onFilterChange={handleFilterChange}
+            showStatusFilter={false}
+          />
         </Box>
         <Box
           sx={{
@@ -143,8 +135,9 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             onClick={handleSearchSubmit}
             size="medium"
             sx={{
-              backgroundColor: "#7d0e0e", color: "white",
-              ":hover": { backgroundColor: "#7d0e0e", color: "white" }
+              backgroundColor: "#7d0e0e",
+              color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" },
             }}
           >
             Search
@@ -159,11 +152,11 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             includeEdit={false}
             baseColumns={baseColumns}
             pageSize={pageSize}
-            onSave={()=>{}}
+            onSave={() => {}}
             rowIdAccessor="reportstatushistoryid"
-            onDelete={()=>{}}
-            onAddData={()=>{}}
-            onEdit={()=>{}}
+            onDelete={() => {}}
+            onAddData={() => {}}
+            onEdit={() => {}}
           />
         )}
         {!loading && !error && (
@@ -208,9 +201,7 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
               </Box>
             </FormControl>
           </Box>
-
         )}
-        
       </div>
     </>
   );

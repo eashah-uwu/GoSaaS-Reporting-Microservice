@@ -115,10 +115,7 @@ const downloadXsl = async (req, res) => {
 };
 const downloadReport = async (req, res) => {
   const userid = req.user.userid;
-  console.log("heree ",userid)
   const { reporthistoryid } = req.params;
-  console.log(reporthistoryid)
-
 
   const reportHistory = await ReportStatusHistory.findById(reporthistoryid);
   if (!reportHistory) {
@@ -143,7 +140,6 @@ const downloadReport = async (req, res) => {
   res.send(file.Body);
 };
 
-
 const getReports = async (req, res) => {
   const {
     query = config.get("query"),
@@ -152,7 +148,7 @@ const getReports = async (req, res) => {
     filters = config.get("filters"),
   } = req.query;
   const userid = req.user.userid;
-  
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [reports, total] = await Promise.all([
     Report.findAll({
@@ -331,9 +327,9 @@ const getReportsByApplicationId = async (req, res) => {
   });
 };
 const reportGeneration = async (req, res) => {
-  const { reportName, parameters } = req.body;
+  const { reportName, userid, parameters } = req.body;
 
-  return generateReport(reportName, parameters)
+  return generateReport(reportName, userid, parameters)
     .then((result) => {
       logger.info("Report generated successfully", {
         context: { traceid: req.traceId, reportName },
@@ -361,5 +357,5 @@ module.exports = {
   getReportsByApplicationId,
   downloadXsl,
   reportGeneration,
-  downloadReport
+  downloadReport,
 };

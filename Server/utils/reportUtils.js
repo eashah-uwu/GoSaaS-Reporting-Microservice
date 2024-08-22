@@ -10,12 +10,13 @@ const { Xslt, XmlParser } = require("xslt-processor");
 const puppeteer = require("puppeteer");
 
 // Function to insert a new status record
-async function insertStatusRecord(reportid) {
+async function insertStatusRecord(reportid, userid) {
   try {
     const [result] = await knex("reportstatushistory")
       .insert({
         reportid: reportid,
-        status: "In Progress",
+        status: "Pending",
+        userid: userid,
         createdat: new Date(),
       })
       .returning("reportstatushistoryid");
@@ -34,13 +35,14 @@ async function insertStatusRecord(reportid) {
 }
 
 // Function to update status record
-async function updateStatusRecord(statusId, status, message = "") {
+async function updateStatusRecord(statusId, pdfkey, status, message = "") {
   try {
     await knex("reportstatushistory")
       .where({ reportstatushistoryid: statusId })
       .update({
         status: status,
         message: message,
+        filekey: pdfkey,
         updatedat: new Date(),
       });
   } catch (error) {

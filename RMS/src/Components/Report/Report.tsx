@@ -48,7 +48,6 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           },
         }
       );
-      console.log(data)
       setReports(data.data);
       setTotal(data.total);
     } catch (err) {
@@ -125,7 +124,6 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
   const handleReportDelete = async (reportid: string | null) => {
     try {
-      console.log(reportid)
       await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}/api/reports/${reportid}`,
         {
@@ -136,17 +134,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       );
 
       fetchReports(page, pageSize, searchQuery, filters);
-      toast.success("Report Deleted Successfully")
-
+      toast.success("Report Deleted Successfully");
     } catch (e) {
-      console.log(e);
-      toast.error("Report Deletion Failed")
-
+      throw e;
+      toast.error("Report Deletion Failed");
     }
   };
-  const handleEdit = (connection: any) => {
-
-  };
+  const handleEdit = (connection: any) => {};
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
@@ -165,10 +159,10 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         key === "filekey"
           ? { accessorKey: key, header: "Xsl File" }
           : {
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-          }
-      )
+              accessorKey: key,
+              header: key.charAt(0).toUpperCase() + key.slice(1),
+            }
+      );
   };
 
   const baseColumns = generateBaseColumns(reports);
@@ -177,7 +171,11 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={false} />
+          <Filter
+            columns={baseColumns}
+            onFilterChange={handleFilterChange}
+            showStatusFilter={false}
+          />
         </Box>
         <Box
           sx={{
@@ -200,8 +198,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             onClick={handleSearchSubmit}
             size="medium"
             sx={{
-              backgroundColor: "#7d0e0e", color: "white",
-              ":hover": { backgroundColor: "#7d0e0e", color: "white" }
+              backgroundColor: "#7d0e0e",
+              color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" },
             }}
           >
             Search
@@ -265,7 +264,6 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
               </Box>
             </FormControl>
           </Box>
-
         )}
         {/* <a href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download/11`} download>
           <button>Download File</button>

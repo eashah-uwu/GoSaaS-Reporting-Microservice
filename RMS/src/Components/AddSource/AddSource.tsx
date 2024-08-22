@@ -22,20 +22,39 @@ import * as z from "zod";
 import { Source } from "@mui/icons-material";
 
 const connectionSchema = z.object({
-  alias: z.string().max(255, "Alias should not exceed 255 characters").optional(),
-  username: z.string().max(255, "Username should not exceed 255 characters").optional(),
+  alias: z
+    .string()
+    .max(255, "Alias should not exceed 255 characters")
+    .optional(),
+  username: z
+    .string()
+    .max(255, "Username should not exceed 255 characters")
+    .optional(),
   host: z.string().max(255, "Host should not exceed 255 characters").optional(),
-  port: z
-  .preprocess((val) => {
-    if (typeof val === "string") val = parseInt(val, 10);
-    return val;
-  }, z.number().int().positive().max(65535).or(z.nan()).refine(
-      (val) => !isNaN(val),
-      { message: "Port must be a valid integer between 1 and 65535" }
-    )),
-  database: z.string().max(255, "Database should not exceed 255 characters").optional(),
+  port: z.preprocess(
+    (val) => {
+      if (typeof val === "string") val = parseInt(val, 10);
+      return val;
+    },
+    z
+      .number()
+      .int()
+      .positive()
+      .max(65535)
+      .or(z.nan())
+      .refine((val) => !isNaN(val), {
+        message: "Port must be a valid integer between 1 and 65535",
+      })
+  ),
+  database: z
+    .string()
+    .max(255, "Database should not exceed 255 characters")
+    .optional(),
   type: z.string().max(50, "Type should not exceed 50 characters").optional(),
-  password: z.string().max(255, "Password should not exceed 255 characters").optional(),
+  password: z
+    .string()
+    .max(255, "Password should not exceed 255 characters")
+    .optional(),
 });
 
 interface AddSourceProps {
@@ -68,7 +87,7 @@ const AddSource: FC<AddSourceProps> = ({
     resolver: zodResolver(connectionSchema),
     defaultValues: {
       alias: "",
-      username:"",
+      username: "",
       host: "",
       port: "",
       database: "",
@@ -80,24 +99,25 @@ const AddSource: FC<AddSourceProps> = ({
   const [saveDisabled, setSaveDisabled] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-   
 
   useEffect(() => {
     const fetch = async () => {
       if (sourceToEdit) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`,
+            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${
+              sourceToEdit.connectionid
+            }`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
               },
             }
           );
           const { username, password } = response.data;
           setUsername(username);
           setPassword(password);
-  
+
           reset({
             alias: sourceToEdit.alias || "",
             username: username || "",
@@ -112,10 +132,9 @@ const AddSource: FC<AddSourceProps> = ({
         }
       }
     };
-  
+
     fetch();
   }, [sourceToEdit, reset]);
-  
 
   const onSubmit = async (formData: any) => {
     if (saveDisabled) {
@@ -124,15 +143,17 @@ const AddSource: FC<AddSourceProps> = ({
     }
 
     try {
-      const payload = { ...formData,  applicationId };
+      const payload = { ...formData, applicationId };
 
       if (sourceToEdit) {
         const response = await axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${sourceToEdit.connectionid}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${
+            sourceToEdit.connectionid
+          }`,
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -149,14 +170,13 @@ const AddSource: FC<AddSourceProps> = ({
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
 
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
-          console.log(response)
           onAdd(response.data.connection);
         } else {
           toast.error("Failed to add connection: " + response.data.message);
@@ -181,7 +201,7 @@ const AddSource: FC<AddSourceProps> = ({
         data,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -201,10 +221,10 @@ const AddSource: FC<AddSourceProps> = ({
 
   const handleClose = () => {
     reset({
-      alias:  "",
-      username:  "",
+      alias: "",
+      username: "",
       host: "",
-      port:  "",
+      port: "",
       database: "",
       type: "",
       password: "",

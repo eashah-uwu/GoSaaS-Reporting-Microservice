@@ -110,12 +110,37 @@ const downloadXsl = async (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
   res.send(file.Body);
 };
+
+
 const getReports = async (req, res) => {
-  const reports = await Report.findAll();
-  logger.info("Retrieved all reports", {
-    context: { traceid: req.traceId, reports },
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
+  const userid = req.user.userid;
+  
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [reports, total] = await Promise.all([
+    Report.findAll({
+      userid,
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Report.countSearchReportsHistory(userid, query, filters),
+  ]);
+  logger.info("Reports retrieved by user ID", {
+    context: { traceid: req.traceId, userid, reports },
   });
-  res.status(StatusCodes.OK).json(reports);
+  res.status(StatusCodes.OK).json({
+    data: reports,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 const getReportById = async (req, res) => {
@@ -198,26 +223,6 @@ const deleteReport = async (req, res) => {
     context: { traceid: req.traceId, reportid },
   });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
-};
-
-const paginateReports = async (req, res) => {
-  const { page = 1, pageSize = 10 } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-  const [reports, total] = await Promise.all([
-    Report.paginate({ offset, limit: parseInt(pageSize) }),
-    Report.countAll(),
-  ]);
-
-  logger.info("Paginated reports retrieved", {
-    context: { traceid: req.traceId, reports },
-  });
-  res.status(StatusCodes.OK).json({
-    data: reports,
-    total,
-    page: parseInt(page),
-    pageSize: parseInt(pageSize),
-  });
 };
 
 const searchReports = async (req, res) => {

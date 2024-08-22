@@ -11,7 +11,8 @@ const {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadXsl
+  downloadXsl,
+  getReportHistory
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken=require("../middlewares/auth")
@@ -20,8 +21,10 @@ const verifyToken=require("../middlewares/auth")
 router.post("/",verifyToken, upload.single('file'),createReport);
 router.get("/", validateQuery, searchReports); // Validate query parameters using querySchema
 router.get("/download/:reportid",verifyToken,downloadXsl)
+router.get("/history",verifyToken, getReports);
 router.get("/:applicationid",verifyToken, getReportsByApplicationId);
 router.put("/:applicationid",verifyToken, updateReport);
 router.delete("/:reportid",verifyToken, deleteReport);
+
 
 module.exports = router;

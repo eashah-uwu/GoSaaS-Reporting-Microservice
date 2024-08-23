@@ -55,7 +55,7 @@ async function updateStatusRecord(statusId, pdfkey, status, message = "") {
 // Function to check report existence
 async function checkReportExistence(reportName, userid) {
   const report = await knex("report")
-    .where({ title: reportName, createdby: userid })
+    .where({ title: reportName, createdby: userid, isdeleted: false })
     .first();
   return !!report;
 }
@@ -63,7 +63,7 @@ async function checkReportExistence(reportName, userid) {
 // Function to get report details
 async function getReportDetails(reportName, userid) {
   const report = await knex("report")
-    .where({ title: reportName, createdby: userid })
+    .where({ title: reportName, createdby: userid, isdeleted: false })
     .first();
   return report;
 }
@@ -71,7 +71,7 @@ async function getReportDetails(reportName, userid) {
 // Function to get connection details
 async function getConnectionDetails(connectionId) {
   const connection = await knex("connection")
-    .where({ connectionid: connectionId })
+    .where({ connectionid: connectionId, isdeleted: false })
     .first();
   return connection;
 }
@@ -79,7 +79,7 @@ async function getConnectionDetails(connectionId) {
 // Function to get destination details
 async function getDestinationDetails(destinationId) {
   const destination = await knex("destination")
-    .where({ destinationid: destinationId })
+    .where({ destinationid: destinationId, isdeleted: false })
     .first();
   return destination;
 }
@@ -123,33 +123,49 @@ const generateQueryText = (
   parameterDefs,
   parameterValues
 ) => {
-  let query = `SELECT * FROM ${stored_procedure}(`;
+  try {
+    let query = `SELECT * FROM ${stored_procedure}(`;
 
-  const parameter_list = parameterDefs.split(", ").map((paramWithType) => {
-    const [name, type] = paramWithType.split(" ");
-    return { name, type };
-  });
+    const parameter_list = parameterDefs.split(", ").map((paramWithType) => {
+      const [name, type] = paramWithType.split(" ");
+      if (!name || !type) {
+        throw new Error(`Invalid parameter definition: ${paramWithType}`);
+      }
+      return { name, type };
+    });
 
-  const parameterClauses = parameter_list
-    .map((paramObj) => {
-      if (parameterValues[paramObj.name] !== undefined) {
-        if (paramObj.type === "text" || paramObj.type === "varchar") {
-          return `${paramObj.name} := '${parameterValues[paramObj.name]}' :: ${
+    const parameterClauses = parameter_list
+      .map((paramObj) => {
+        if (parameterValues[paramObj.name] !== undefined) {
+          if (paramObj.type === "text" || paramObj.type === "varchar") {
+            return `${paramObj.name} := '${
+              parameterValues[paramObj.name]
+            }' :: ${paramObj.type}`;
+          }
+          return `${paramObj.name} := ${parameterValues[paramObj.name]} :: ${
             paramObj.type
           }`;
         }
-        return `${paramObj.name} := ${parameterValues[paramObj.name]} :: ${
-          paramObj.type
-        }`;
-      }
-      return null;
-    })
-    .filter((clause) => clause !== null);
+        return null;
+      })
+      .filter((clause) => clause !== null);
 
-  query += parameterClauses.join(", ");
-  query += ")";
+    query += parameterClauses.join(", ");
+    query += ")";
 
-  return query;
+    return query;
+  } catch (error) {
+    logger.error("Error generating SQL query", {
+      message: error.message,
+      stack: error.stack,
+      context: {
+        stored_procedure,
+        parameterDefs,
+        parameterValues,
+      },
+    });
+    throw new Error(`Failed to generate SQL query: ${error.message}`);
+  }
 };
 
 // Function to execute the query with schema

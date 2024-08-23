@@ -21,13 +21,13 @@ async function generateReport(reportName, userid, parameters) {
 
   try {
     // Step 1: Check if the report name exists
-    const reportExists = await checkReportExistence(reportName);
+    const reportExists = await checkReportExistence(reportName, userid);
     if (!reportExists) {
       throw new Error("Report not found");
     }
 
     // Step 3: Get report details (connection, destination, etc.)
-    const reportDetails = await getReportDetails(reportName);
+    const reportDetails = await getReportDetails(reportName, userid);
     statusId = await insertStatusRecord(reportDetails.reportid, userid);
 
     // Step 4: Get the connection details using sourceconnectionid
@@ -92,7 +92,7 @@ async function generateReport(reportName, userid, parameters) {
     );
 
     // Step 10: Execute the generated query
-    const schemaName = connectionDetails.schema;
+    const schemaName = connectionDetails.schema || "public";
     const result = await getProcedureRows(testKnex, query, schemaName);
 
     // Step 11: Convert result to XML

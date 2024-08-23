@@ -192,7 +192,6 @@ const AddSource: FC<AddSourceProps> = ({
             },
           }
         );
-
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
           onAdd();
@@ -204,8 +203,25 @@ const AddSource: FC<AddSourceProps> = ({
       setSaveDisabled(true);
       handleClose();
     } catch (error: any) {
-      if (error.response && error.response.status === StatusCodes.CONFLICT) {
-        setError("alias", { message: "Alias must be unique" });
+      if (error.response) {
+        const { status, data } = error.response;
+
+        // Check for specific status codes or messages
+        if (status === StatusCodes.CONFLICT) {
+          if (data.message === "Alias name must be unique") {
+            setError("alias", { message: "Alias must be unique" });
+          } else if (
+            data.message === "A connection with the same details already exists"
+          ) {
+            toast.error(
+              "Failed to save connection: Duplicate connection details found."
+            );
+          } else {
+            toast.error("Failed to save connection: " + data.message);
+          }
+        } else {
+          toast.error("Failed to save connection: " + error.message);
+        }
       } else {
         toast.error("Failed to save connection: " + error.message);
       }
@@ -246,6 +262,7 @@ const AddSource: FC<AddSourceProps> = ({
       database: "",
       type: "",
       password: "",
+      schema: "",
     });
     setSaveDisabled(true); // Ensure Save button is disabled on close
 
@@ -269,10 +286,6 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.alias}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.alias?.message}
                   />
                 )}

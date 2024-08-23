@@ -49,6 +49,9 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
             );
         }
     };
+    const handleDeleteSelected = (selectedIds: string[]) => {
+        selectedIds.forEach(id => onDelete(id));
+      };
     const handleDeleteClick = (id: string) => {
         setSelectedDataId(id);
         setOpenDialog(true);
@@ -87,7 +90,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         <>
             <Box padding={6} sx={{ width: "90%", margin: "0 auto" }}>
                 {data.length == 0 && <p>No Data Found. Add using + Icon</p>}
-                {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} />}
+                {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} onDeleteSelected={handleDeleteSelected} rowIdAccessor={rowIdAccessor} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                     {
                         rowIdAccessor !== "reportstatushistoryid" &&

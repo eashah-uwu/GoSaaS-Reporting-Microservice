@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMediaQuery, useTheme } from "@mui/material";
+import EditApplication from "../Components/EditApplication/EditApplication";
 
 import classes from "./ApplicationPage.module.css";
 import Source from "../Components/Source/Source";
@@ -40,8 +41,7 @@ const ApplicationPage = () => {
     const fetchApplicationData = async () => {
       try {
         const response = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND_URL
+          `${import.meta.env.VITE_BACKEND_URL
           }/api/applications/${applicationid}`,
           {
             headers: {
@@ -245,42 +245,13 @@ const ApplicationPage = () => {
           )}
         </div>
       </main>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit Application</DialogTitle>
-        <form onSubmit={handleEdit}>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              id="description"
-              label="Description"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button type="submit" color="primary">
-              Save
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <EditApplication
+        open={open}
+        onClose={handleClose}
+        applicationId={applicationid || ""}
+        initialData={{ name, description }}
+        onEditSuccess={(updatedData) => setApplicationData(updatedData)}
+      />
     </>
   );
 };

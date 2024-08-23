@@ -1,14 +1,17 @@
 import React, { FC, useState } from 'react';
-import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, TablePagination, TableContainer } from "@mui/material";
+import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, TablePagination, TableContainer,Checkbox, IconButton } from "@mui/material";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
+import DeleteIcon from '@mui/icons-material/Delete';
 import classes from "./Table.module.css";
 
 interface TableProps {
     data: any[];
     columns: ColumnDef<any>[];
     pageSize:number;
+    onDeleteSelected: (selectedIds: string[]) => void;
+    rowIdAccessor: string;  
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -34,47 +37,112 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-const Table: FC<TableProps> = ({ data, columns,pageSize }) => {
+const Table: FC<TableProps> = ({ data, columns,pageSize, onDeleteSelected, rowIdAccessor }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(pageSize);
+    const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
     const { getHeaderGroups, getRowModel } = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
+    const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.checked) {
+          const newSelecteds = data.map((row) => row[rowIdAccessor]);
+          setSelectedRows(newSelecteds);
+          return;
+        }
+        setSelectedRows([]);
+      };
 
-    return (
+      const handleClick = (id: string) => {
+        const selectedIndex = selectedRows.indexOf(id);
+        let newSelected: string[] = [];
+    
+        if (selectedIndex === -1) {
+          newSelected = newSelected.concat(selectedRows, id);
+        } else if (selectedIndex === 0) {
+          newSelected = newSelected.concat(selectedRows.slice(1));
+        } else if (selectedIndex === selectedRows.length - 1) {
+          newSelected = newSelected.concat(selectedRows.slice(0, -1));
+        } else if (selectedIndex > 0) {
+          newSelected = newSelected.concat(
+            selectedRows.slice(0, selectedIndex),
+            selectedRows.slice(selectedIndex + 1),
+          );
+        }
+    
+        setSelectedRows(newSelected);
+      };
+    
+      const handleDeleteSelected = () => {
+        onDeleteSelected(selectedRows);
+        setSelectedRows([]);
+      };
+
+      return (
         <div className={classes.main_body}>
-            <TableContainer component={Paper}>
-                <MuiTable sx={{ minWidth: 700 }} aria-label="customized table">
-                    <TableHead>
-                        {getHeaderGroups().map((headerGroup, index) => (
-                            <StyledTableRow key={index}>
-                                {headerGroup.headers.map((header, index) => (
-                                    <StyledTableCell key={index}>
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                    </StyledTableCell>
-                                ))}
-                            </StyledTableRow>
-                        ))}
-                    </TableHead>
-                    <TableBody>
-                        {getRowModel().rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-                            <StyledTableRow key={index}>
-                                {row.getVisibleCells().map((cell, index) => (
-                                    <StyledTableCell key={index}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </StyledTableCell>
-                                ))}
-                            </StyledTableRow>
-                        ))}
-                    </TableBody>
-                </MuiTable>
-                
-            </TableContainer>
+          <TableContainer component={Paper}>
+            <MuiTable sx={{ minWidth: 700 }} aria-label="customized table">
+              <TableHead>
+                {getHeaderGroups().map((headerGroup, index) => (
+                  <StyledTableRow key={index}>
+                    <StyledTableCell padding="checkbox">
+                      <Checkbox
+                        indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
+                        checked={data.length > 0 && selectedRows.length === data.length}
+                        onChange={handleSelectAllClick}
+                      />
+                    </StyledTableCell>
+                    {headerGroup.headers.map((header, index) => (
+                      <StyledTableCell key={index}>
+                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      </StyledTableCell>
+                    ))}
+                  </StyledTableRow>
+                ))}
+              </TableHead>
+              <TableBody>
+                {getRowModel().rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                  const isItemSelected = selectedRows.indexOf(row.original[rowIdAccessor]) !== -1;
+                  return (
+                    <StyledTableRow
+                      key={index}
+                      hover
+                      onClick={() => handleClick(row.original[rowIdAccessor])}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      selected={isItemSelected}
+                    >
+                      <StyledTableCell padding="checkbox">
+                        <Checkbox
+                          checked={isItemSelected}
+                        />
+                      </StyledTableCell>
+                      {row.getVisibleCells().map((cell, index) => (
+                        <StyledTableCell key={index}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </StyledTableCell>
+                      ))}
+                    </StyledTableRow>
+                  );
+                })}
+              </TableBody>
+            </MuiTable>
+          </TableContainer>
+    
+          {selectedRows.length > 0 && (
+            <IconButton
+              color="primary"
+              onClick={handleDeleteSelected}
+              style={{ marginTop: '16px',float:"left" }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
         </div>
-    );
+      );
 };
 
 export default Table;

@@ -234,6 +234,8 @@ const AddSource: FC<AddSourceProps> = ({
       type: "",
       password: "",
     });
+    setSaveDisabled(true); // Ensure Save button is disabled on close
+
     onClose();
   };
 
@@ -254,6 +256,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.alias}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.alias?.message}
                   />
                 )}
@@ -270,6 +276,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.username}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.username?.message}
                   />
                 )}
@@ -286,6 +296,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.host}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.host?.message}
                   />
                 )}
@@ -302,9 +316,15 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Port"
                     fullWidth
+                    type="number" // Ensure only numeric values can be input
                     {...field}
                     error={!!errors.port}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.port?.message}
+                    InputProps={{ inputProps: { min: 1, max: 65535 } }} // Optional: restrict range
                   />
                 )}
               />
@@ -320,6 +340,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.database}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.database?.message}
                   />
                 )}
@@ -338,6 +362,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.schema}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.schema?.message}
                   />
                 )}
@@ -355,6 +383,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.type}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.type?.message}
                   >
                     <MenuItem value="">Select Type</MenuItem>
@@ -378,6 +410,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.password}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.password?.message}
                   />
                 )}

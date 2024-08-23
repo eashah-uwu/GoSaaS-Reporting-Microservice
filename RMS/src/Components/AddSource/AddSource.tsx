@@ -24,13 +24,19 @@ import { Source } from "@mui/icons-material";
 const connectionSchema = z.object({
   alias: z
     .string()
-    .max(255, "Alias should not exceed 255 characters")
+    .min(3, "Alias must be at least 3 characters")
+    .max(25, "Alias should not exceed 25 characters")
     .optional(),
   username: z
     .string()
-    .max(255, "Username should not exceed 255 characters")
+    .min(1, "Username is required")
+    .max(50, "Username should not exceed 50 characters")
     .optional(),
-  host: z.string().max(255, "Host should not exceed 255 characters").optional(),
+  host: z
+    .string()
+    .min(1, "Host is required")
+    .max(255, "Host should not exceed 255 characters")
+    .optional(),
   port: z.preprocess(
     (val) => {
       if (typeof val === "string") val = parseInt(val, 10);
@@ -48,16 +54,23 @@ const connectionSchema = z.object({
   ),
   database: z
     .string()
-    .max(255, "Database should not exceed 255 characters")
+    .min(1, "Database name is required")
+    .max(50, "Database name should not exceed 50 characters")
     .optional(),
-  type: z.string().max(50, "Type should not exceed 50 characters").optional(),
+  type: z
+    .string()
+    .min(1, "Type is required")
+    .max(50, "Type should not exceed 50 characters")
+    .optional(),
   password: z
     .string()
-    .max(255, "Password should not exceed 255 characters")
+    .min(8, "Password should be at least 8 characters")
+    .max(50, "Password should not exceed 50 characters")
     .optional(),
   schema: z
     .string()
-    .max(255, "Schema Name should not exceed 255 characters")
+    .min(1, "Schema Name is required")
+    .max(50, "Schema Name should not exceed 50 characters")
     .optional(), // Add the new field here
 });
 

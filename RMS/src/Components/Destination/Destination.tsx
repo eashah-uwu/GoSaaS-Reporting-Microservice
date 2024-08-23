@@ -145,21 +145,38 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     setOpenAddDestination(true);
   };
 
-  const handleConnectionDelete = async (destinationId: string | null) => {
+  const handleDestinationsDelete = async (selectedIds: string[]) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${destinationId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      if(selectedIds.length==1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${selectedIds[0]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        toast.success("Successfully Deleted Destination")
+      }
+      else if(selectedIds.length>1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/destinations/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              ids: selectedIds,
+            },
+          }
+        );
+        toast.success("Successfully Deleted Destinations")
+      }
       fetchDestinations(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      throw e;
-    }
+      } catch (e) {
+        toast.error("Error Deleting Destinations")
+        throw e;
+      }
   };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -231,7 +248,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="destinationid"
-            onDelete={handleConnectionDelete}
+            onDelete={handleDestinationsDelete}
             onAddData={handleAddDestinationOpen}
             onEdit={handleEdit}
           />

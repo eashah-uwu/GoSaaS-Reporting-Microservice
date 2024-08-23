@@ -83,9 +83,9 @@ class Destination {
 
   static async findByName(alias, userid) {
     return knex("destination")
-      .where({ createdby: userid, isdeleted: false })
-      .andWhere("alias", "ilike", alias)
-      .first();
+          .where({ createdby: userid, isdeleted: false })
+          .andWhere("alias", "ilike", alias)
+          .first();
   }
   static async findByApplicationId({
     applicationid,
@@ -148,6 +148,21 @@ class Destination {
     const [{ count }] = await baseQuery;
     return count;
   }
+  static async findByIds(ids) {
+    return knex("destination")
+      .whereIn("destinationid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
+  }
+
+  static async deleteMultiple(ids) {
+    const destinations = await knex("destination")
+      .whereIn("destinationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return destinations;
+  }
+
 }
 
 module.exports = Destination;

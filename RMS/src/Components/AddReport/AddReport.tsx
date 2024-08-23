@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import styles from "./AddReport.module.css";
 import { toast } from "react-toastify";
+import { StatusCodes } from "http-status-codes";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
@@ -148,7 +149,12 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
         toast.error("Failed to create report.");
       }
     } catch (error: any) {
-      toast.error("Error creating report. Please try again.");
+      if (error.response && error.response.status === StatusCodes.CONFLICT) {
+        toast.error("Alias must be unique" );
+      } else {
+        toast.error("Error creating report. Please try again.");
+      }
+      
     }
   };
   const handleClose = () => {
@@ -160,6 +166,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       storedProcedure: '',
       parameter: ''
     });
+    setParameters("")
     onClose();
   };
 

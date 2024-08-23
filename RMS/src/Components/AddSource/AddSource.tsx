@@ -281,6 +281,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.username?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -301,6 +305,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.host?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -324,6 +332,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.port?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                     InputProps={{ inputProps: { min: 1, max: 65535 } }} // Optional: restrict range
                   />
                 )}
@@ -345,6 +357,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.database?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -388,6 +404,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.type?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   >
                     <MenuItem value="">Select Type</MenuItem>
                     <MenuItem value="Oracle">Oracle</MenuItem>
@@ -415,6 +435,10 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.password?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />

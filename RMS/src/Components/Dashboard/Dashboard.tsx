@@ -138,19 +138,36 @@ const Dashboard = () => {
     fetchApplications(page, pageSize, searchQuery, filters);
   };
 
-  const handleApplicationDelete = async (applicationid: string | null) => {
+  const handleApplicationDelete = async (selectedIds: string[]) => {
     try {
+    if(selectedIds.length==1){
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${applicationid}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/${selectedIds[0]}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      toast.success("Successfully Deleted Application")
+    }
+    else if(selectedIds.length>1){
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/api/applications/delete`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          data: {
+            ids: selectedIds,
+          },
         }
       );
-
+      toast.success("Successfully Deleted Applications")
+    }
       fetchApplications(page, pageSize, searchQuery, filters);
     } catch (e) {
+      toast.error("Error Deleting Applications")
       throw e;
     }
   };

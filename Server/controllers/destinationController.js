@@ -143,6 +143,42 @@ const deleteDestination = async (req, res) => {
     message: "Destination deleted successfully!",
   });
 };
+
+
+const deleteMultipleDestinations = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids } = req.body;
+
+  const existingDestinations = await Destination.findByIds(ids);
+  if (existingDestinations.length !== ids.length) {
+    logger.warn("Some Destinations not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Destinations not found for deletion!",
+    });
+  }
+
+  const applicationIds = existingDestinations.map(dest => dest.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some(app => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized deletion attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized deletion attempt!",
+    });
+  }
+  
+  await Destination.deleteMultiple(ids);
+  logger.info("Destinations deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Destinations deleted successfully!" });
+};
+
 // Get destinations by application ID
 const getDestinationsByApplicationId = async (req, res) => {
   const {
@@ -214,5 +250,6 @@ module.exports = {
   deleteDestination,
   getDestinationsByApplicationId,
   connectStorageDestination,
-  addFileToDestination
+  addFileToDestination,
+  deleteMultipleDestinations
 };

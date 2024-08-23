@@ -141,6 +141,34 @@ const deleteApplication = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Application deleted successfully!" });
 };
+const deleteMultipleApplications = async (req, res) => {
+  const userid=req.user.userid;
+  const { ids } = req.body;
+  const existingApplications = await Application.findByIds(ids);
+  if (existingApplications.length !== ids.length) {
+    logger.warn("Some Applications not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Applications not found for deletion!",
+    });
+  }
+
+  if (existingApplications.some(app => app.userid !== userid)) {
+    logger.warn("Some applications found unauthorized for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Some applications found unauthorized for deletion!"
+    });
+  }
+  await Application.deleteMultiple(ids);
+  logger.info("Applications deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Applications deleted successfully!" });
+};
+
 
 module.exports = {
   createApplication,
@@ -148,4 +176,6 @@ module.exports = {
   getApplicationById,
   updateApplication,
   deleteApplication,
+  deleteMultipleApplications
 };
+

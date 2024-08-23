@@ -116,6 +116,7 @@ class Connection {
     return baseQuery.offset(offset).limit(limit);
   }
   static async findById(id) {
+
     const connection = await knex("connection")
       .select(
         "alias",
@@ -211,6 +212,7 @@ class Connection {
     return updatedConnection;
   }
 
+
   static async delete(id) {
     const [connection] = await knex("connection")
       .where({ connectionid: id })
@@ -292,6 +294,20 @@ class Connection {
 
     const [{ count }] = await baseQuery;
     return count;
+  }
+  static async findByIds(ids) {
+    return knex("connection")
+      .whereIn("connectionid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
+  }
+
+  static async deleteMultiple(ids) {
+    const connections = await knex("connection")
+      .whereIn("connectionid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
   }
 }
 

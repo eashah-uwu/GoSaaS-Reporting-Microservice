@@ -151,22 +151,38 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setOpenAddSource(true);
   };
 
-  const handleConnectionDelete = async (connectionId: string | null) => {
+  const handleConnectionDelete = async (selectedIds: string[]) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success("Connection Deleted Successfully");
+      if(selectedIds.length==1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${selectedIds[0]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        toast.success("Successfully Deleted Source Connection")
+      }
+      else if(selectedIds.length>1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              ids: selectedIds,
+            },
+          }
+        );
+        toast.success("Successfully Deleted Source Connections")
+      }
       fetchConnections(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      throw e;
-      toast.error("Connection Deletion Failed");
-    }
+      } catch (e) {
+        toast.error("Error Deleting Connections")
+        throw e;
+      }
   };
 
   const generateBaseColumns = (data: any[]) => {

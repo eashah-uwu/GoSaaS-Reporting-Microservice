@@ -49,7 +49,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           },
         }
       );
-
       const processedData = data.data.map((app: any) => ({
         ...app,
         status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
@@ -110,7 +109,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(Number(event.target.value)!=0){
+    if (Number(event.target.value) != 0) {
       setPageSize(Number(event.target.value));
       setPage(1);
     }

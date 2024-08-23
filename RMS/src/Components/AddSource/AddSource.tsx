@@ -55,6 +55,10 @@ const connectionSchema = z.object({
     .string()
     .max(255, "Password should not exceed 255 characters")
     .optional(),
+  schema: z
+    .string()
+    .max(255, "Schema Name should not exceed 255 characters")
+    .optional(), // Add the new field here
 });
 
 interface AddSourceProps {
@@ -93,6 +97,7 @@ const AddSource: FC<AddSourceProps> = ({
       database: "",
       type: "",
       password: "",
+      schema: "", // Add the default value here
     },
   });
 
@@ -117,7 +122,6 @@ const AddSource: FC<AddSourceProps> = ({
           const { username, password } = response.data;
           setUsername(username);
           setPassword(password);
-
           reset({
             alias: sourceToEdit.alias || "",
             username: username || "",
@@ -126,6 +130,7 @@ const AddSource: FC<AddSourceProps> = ({
             database: sourceToEdit.database || "",
             type: sourceToEdit.type || "",
             password: password || "",
+            schema: sourceToEdit.schema || "", // Add this line
           });
         } catch (error) {
           console.error("Failed to fetch connection data", error);
@@ -229,6 +234,8 @@ const AddSource: FC<AddSourceProps> = ({
       type: "",
       password: "",
     });
+    setSaveDisabled(true); // Ensure Save button is disabled on close
+
     onClose();
   };
 
@@ -249,6 +256,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.alias}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.alias?.message}
                   />
                 )}
@@ -265,6 +276,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.username}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.username?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -285,6 +300,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.host}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.host?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -305,13 +324,19 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Port"
                     fullWidth
+                    type="number" // Ensure only numeric values can be input
                     {...field}
                     error={!!errors.port}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.port?.message}
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
                     }}
+                    InputProps={{ inputProps: { min: 1, max: 65535 } }} // Optional: restrict range
                   />
                 )}
               />
@@ -327,6 +352,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.database}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.database?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -340,6 +369,26 @@ const AddSource: FC<AddSourceProps> = ({
           <div className={styles.formContainer}>
             <div className={styles.formItem}>
               <Controller
+                name="schema"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Schema Name"
+                    fullWidth
+                    {...field}
+                    error={!!errors.schema}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
+                    helperText={errors.schema?.message}
+                  />
+                )}
+              />
+            </div>
+            <div className={styles.formItem}>
+              <Controller
                 name="type"
                 control={control}
                 render={({ field }) => (
@@ -350,6 +399,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.type}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.type?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -377,6 +430,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.password}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.password?.message}
                     onChange={(e) => {
                       field.onChange(e);

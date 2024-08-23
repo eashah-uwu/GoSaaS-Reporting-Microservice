@@ -53,14 +53,18 @@ async function updateStatusRecord(statusId, pdfkey, status, message = "") {
 }
 
 // Function to check report existence
-async function checkReportExistence(reportName) {
-  const report = await knex("report").where({ title: reportName }).first();
+async function checkReportExistence(reportName, userid) {
+  const report = await knex("report")
+    .where({ title: reportName, createdby: userid })
+    .first();
   return !!report;
 }
 
 // Function to get report details
-async function getReportDetails(reportName) {
-  const report = await knex("report").where({ title: reportName }).first();
+async function getReportDetails(reportName, userid) {
+  const report = await knex("report")
+    .where({ title: reportName, createdby: userid })
+    .first();
   return report;
 }
 

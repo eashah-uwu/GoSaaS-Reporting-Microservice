@@ -284,12 +284,25 @@ class Connection {
     // Return null if no match is found
     return null;
   }
+  // In Connection model
   static async delete(id) {
-    const [connection] = await knex("connection")
-      .where({ connectionid: id })
-      .update({ isdeleted: true, updatedat: new Date() })
-      .returning("*");
-    return connection;
+    // Start a transaction to ensure both operations succeed or fail together
+    return await knex.transaction(async (trx) => {
+      // Perform soft delete on the connection
+      const [connection] = await trx("connection")
+        .where({ connectionid: id })
+        .update({ isdeleted: true, updatedat: new Date() })
+        .returning("*");
+
+      if (connection) {
+        // Perform soft delete on associated report templates
+        await trx("report")
+          .where({ sourceconnectionid: id })
+          .update({ isdeleted: true, updatedat: new Date() });
+      }
+
+      return connection;
+    });
   }
 
   static async findByName(alias, userid) {

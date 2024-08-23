@@ -55,6 +55,10 @@ const connectionSchema = z.object({
     .string()
     .max(255, "Password should not exceed 255 characters")
     .optional(),
+  schema: z
+    .string()
+    .max(255, "Schema Name should not exceed 255 characters")
+    .optional(), // Add the new field here
 });
 
 interface AddSourceProps {
@@ -93,6 +97,7 @@ const AddSource: FC<AddSourceProps> = ({
       database: "",
       type: "",
       password: "",
+      schema: "", // Add the default value here
     },
   });
 
@@ -126,6 +131,7 @@ const AddSource: FC<AddSourceProps> = ({
             database: sourceToEdit.database || "",
             type: sourceToEdit.type || "",
             password: password || "",
+            schema: sourceToEdit.schema || "", // Add this line
           });
         } catch (error) {
           console.error("Failed to fetch connection data", error);
@@ -322,6 +328,22 @@ const AddSource: FC<AddSourceProps> = ({
             </div>
           </div>
           <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="schema"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Schema Name"
+                    fullWidth
+                    {...field}
+                    error={!!errors.schema}
+                    helperText={errors.schema?.message}
+                  />
+                )}
+              />
+            </div>
             <div className={styles.formItem}>
               <Controller
                 name="type"

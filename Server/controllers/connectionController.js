@@ -31,9 +31,21 @@ const createConnection = async (req, res) => {
   // Validate and parse the transformed data with connectionSchema
   const validatedData = connectionSchema.parse(data);
 
-  const { username, alias, host, port, database, type, password, applicationid, createdby, updatedby } = data;
+  const {
+    username,
+    alias,
+    host,
+    port,
+    database,
+    type,
+    password,
+    applicationid,
+    createdby,
+    updatedby,
+    schema,
+  } = data;
 
-  const existingConnection = await Connection.findByName(alias,userid);
+  const existingConnection = await Connection.findByName(alias, userid);
   if (existingConnection) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -43,7 +55,19 @@ const createConnection = async (req, res) => {
     });
   }
   // Call the model method to create a new connection
-  const connection = await Connection.create(username, alias, host, port, database, type, password, applicationid, createdby, updatedby);
+  const connection = await Connection.create(
+    username,
+    alias,
+    host,
+    port,
+    database,
+    schema,
+    type,
+    password,
+    applicationid,
+    createdby,
+    updatedby
+  );
 
   // Log the successful creation
   logger.info("Connection created successfully", {
@@ -53,9 +77,8 @@ const createConnection = async (req, res) => {
   // Send a response with the created connection
   res.status(StatusCodes.CREATED).json({
     message: "Connection created successfully!",
-    connection
+    connection,
   });
-
 };
 
 //test connection
@@ -85,8 +108,11 @@ const testConnection = async (req, res) => {
 const getStoredProcedures = async (req, res) => {
   const { id } = req.body;
   const connection_db = await Connection.findById(id);
-  
-  const connectedConnection = ConnectionFactory.createConnection(connection_db.type, { ...connection_db });
+
+  const connectedConnection = ConnectionFactory.createConnection(
+    connection_db.type,
+    { ...connection_db }
+  );
   const storedProcedures = await connectedConnection.getStoredProceduresData();
   logger.info("Stored Procedures Retreived", {
     context: { traceid: req.traceId, storedProcedures },
@@ -160,9 +186,8 @@ const updateConnection = async (req, res) => {
   // Parse the ID to an integer
   const parsedId = parseInt(connectionid, 10);
 
-
   const data = req.body;
-  const {alias=""}=req.body;
+  const { alias = "" } = req.body;
   const existingConnection = await Connection.findById(parsedId);
 
   if (!existingConnection) {
@@ -172,19 +197,22 @@ const updateConnection = async (req, res) => {
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
-  }
-  else {
-    const application = await Application.findById(existingConnection.applicationid);
+  } else {
+    const application = await Application.findById(
+      existingConnection.applicationid
+    );
     if (!application || application.userid != userid) {
-      logger.warn("Application not found for connection", { context: { traceid: req.traceId } });
+      logger.warn("Application not found for connection", {
+        context: { traceid: req.traceId },
+      });
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Application not found" });
     }
   }
-  if(alias!=""){
-    const otherConnection = await Connection.findByName(req.body.alias,userid);
-    if (otherConnection && otherConnection.connectionid!=connectionid) {
+  if (alias != "") {
+    const otherConnection = await Connection.findByName(req.body.alias, userid);
+    if (otherConnection && otherConnection.connectionid != connectionid) {
       logger.warn("Connection alias must be unique", {
         context: { traceid: req.traceId },
       });
@@ -193,10 +221,6 @@ const updateConnection = async (req, res) => {
       });
     }
   }
- 
-
-
-
 
   // Validate and parse the data using connectionSchema
   const validatedData = connectionSchema.partial().parse(data);
@@ -214,7 +238,6 @@ const updateConnection = async (req, res) => {
   });
 };
 
-
 // Delete a connection (soft delete)
 const deleteConnection = async (req, res) => {
   const { connectionid } = req.params;
@@ -228,10 +251,14 @@ const deleteConnection = async (req, res) => {
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Connection not found" });
-  }else{
-    const application = await Application.findById(existingConnection.applicationid);
+  } else {
+    const application = await Application.findById(
+      existingConnection.applicationid
+    );
     if (!application || application.userid != userid) {
-      logger.warn("Application not found for connection", { context: { traceid: req.traceId } });
+      logger.warn("Application not found for connection", {
+        context: { traceid: req.traceId },
+      });
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Application not found" });
@@ -264,7 +291,6 @@ const getConnectionsByApplicationId = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Application not found" });
   }
-
 
   const [connections, total] = await Promise.all([
     Connection.findByApplicationId({

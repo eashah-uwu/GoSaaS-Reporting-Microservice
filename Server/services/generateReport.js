@@ -92,7 +92,7 @@ async function generateReport(reportName, userid, parameters) {
     );
 
     // Step 10: Execute the generated query
-    const schemaName = "ETS";
+    const schemaName = connectionDetails.schema;
     const result = await getProcedureRows(testKnex, query, schemaName);
 
     // Step 11: Convert result to XML

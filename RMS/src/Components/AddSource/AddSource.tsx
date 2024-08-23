@@ -266,6 +266,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.username}
                     helperText={errors.username?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -282,6 +286,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.host}
                     helperText={errors.host?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -300,6 +308,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.port}
                     helperText={errors.port?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -316,6 +328,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.database}
                     helperText={errors.database?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -335,6 +351,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.type}
                     helperText={errors.type?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   >
                     <MenuItem value="">Select Type</MenuItem>
                     <MenuItem value="Oracle">Oracle</MenuItem>
@@ -358,6 +378,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.password}
                     helperText={errors.password?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />

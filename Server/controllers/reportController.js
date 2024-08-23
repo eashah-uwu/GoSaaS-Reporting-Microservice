@@ -9,6 +9,7 @@ const Application = require("../models/applicationModel");
 const {
   uploadFile,
   downloadFile,
+  deleteFile
 } = require("../storage/cloudStorageService.js");
 const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
@@ -38,6 +39,7 @@ const createReport = async (req, res) => {
   }
 
   const existingReport = await Report.findByName(alias,userid);
+  console.log(existingReport)
   if (existingReport) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -248,12 +250,63 @@ const deleteReport = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
+  const destination_db = await Destination.findById(report.destinationid);
+
+    await deleteFile(
+      "aws",
+      destination_db.url,
+      destination_db.apikey,
+      "reportsdestination0",
+      report.filekey
+    );
+  
 
   await Report.delete(reportId);
   logger.info("Report deleted successfully", {
     context: { traceid: req.traceId, reportid },
   });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
+};
+
+const deleteMultipleReports = async (req, res) => {
+  const userid=req.user.userid;
+  const { ids } = req.body;
+  const existingReports = await Report.findByIds(ids);
+  if (existingReports.length !== ids.length) {
+    logger.warn("Some Reports not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Applications not found for deletion!",
+    });
+  }
+
+  if (existingReports.some(report => report.userid !== userid)) {
+    logger.warn("Some Reports found unauthorized for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Some Reports found unauthorized for deletion!"
+    });
+  }
+  console.log("existingReports",existingReports)
+  for (const report of existingReports) {
+    const destination_db = await Destination.findById(report.destinationid);
+    await deleteFile(
+        "aws",
+        destination_db.url,
+        destination_db.apikey,
+        "reportsdestination0",
+        report.filekey
+    );
+    console.log("deell11")
+  }
+
+  await Report.deleteMultiple(ids);
+  logger.info("Reports deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Reports deleted successfully!" });
 };
 
 const searchReports = async (req, res) => {
@@ -370,4 +423,5 @@ module.exports = {
   downloadXsl,
   reportGeneration,
   downloadReport,
+  deleteMultipleReports
 };

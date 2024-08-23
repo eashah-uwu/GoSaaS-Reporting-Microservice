@@ -53,6 +53,19 @@ class Application {
       .where({ applicationid: id, isdeleted: false })
       .first();
   }
+  static async findByIds(ids) {
+    return knex("application")
+    .whereIn("applicationid", ids)
+    .andWhere({isdeleted: false})
+    .returning("*");
+  }
+  static async deleteMultiple(ids) {
+    const applications = await knex("application")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return applications;
+  }
 
   static async update(id, data) {
     let { name, isactive, isdeleted, description = "" } = data;
@@ -83,6 +96,7 @@ class Application {
       .returning("*");
     return application;
   }
+  
 
   static async countAll() {
     const [{ count }] = await knex("application")

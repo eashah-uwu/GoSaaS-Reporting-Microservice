@@ -74,8 +74,25 @@ const downloadFile = async (destination, url, apiKey,bucketName, fileKey) => {
         return file;
     }
   };
+  const deleteFile = async (destination, url, apiKey, bucketName, fileKey) => {
+    if (destination === 'aws') {
+      const s3 = new AWS.S3({
+        accessKeyId: url,
+        secretAccessKey: apiKey,
+        region: 'eu-north-1',
+      });
+      const deleteParams = {
+        Bucket: bucketName,
+        Key: fileKey,
+      };
+      await s3.deleteObject(deleteParams).promise();
+      return { success: true, message: 'File deleted from AWS' };
+    } 
+    // Add similar logic for GCP and Azure if needed
+  };
 module.exports = {
     connectToDestination,
     uploadFile,
-    downloadFile
+    downloadFile,
+    deleteFile
 };

@@ -123,23 +123,38 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     fetchReports(page, pageSize, searchQuery, filters);
   };
 
-  const handleReportDelete = async (reportid: string | null) => {
+  const handleReportDelete = async (selectedIds: string[]) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/reports/${reportid}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      if(selectedIds.length==1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reports/${selectedIds[0]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        toast.success("Successfully Deleted Reports")
+      }
+      else if(selectedIds.length>1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reports/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              ids: selectedIds,
+            },
+          }
+        );
+        toast.success("Successfully Deleted Reports")
+      }
       fetchReports(page, pageSize, searchQuery, filters);
-      toast.success("Report Deleted Successfully");
-    } catch (e) {
-      throw e;
-      toast.error("Report Deletion Failed");
-    }
+      } catch (e) {
+        toast.error("Error Deleting Reports")
+        throw e;
+      }
   };
   const handleEdit = (connection: any) => {};
   const generateBaseColumns = (data: any[]) => {

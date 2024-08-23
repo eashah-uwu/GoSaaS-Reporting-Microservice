@@ -103,6 +103,7 @@ class Report {
     return knex("report").select("*").where({ title }).first();
   }
 
+
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
       .select("*")
@@ -274,6 +275,19 @@ class Report {
 
     const [count] = await baseQuery;
     return parseInt(count.count, 10);
+  }
+  static async findByIds(ids) {
+    return knex("report")
+    .whereIn("reportid", ids)
+    .andWhere({isdeleted: false})
+    .returning("*");
+  }
+  static async deleteMultiple(ids) {
+    const reports = await knex("report")
+      .whereIn("reportid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return reports;
   }
 }
 

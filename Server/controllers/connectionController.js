@@ -288,6 +288,40 @@ const getConnectionsByApplicationId = async (req, res) => {
   });
 };
 
+const deleteMultipleConnections = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids } = req.body;
+
+  const existingConnections = await Connection.findByIds(ids);
+  if (existingConnections.length !== ids.length) {
+    logger.warn("Some Connections not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Connections not found for deletion!",
+    });
+  }
+
+  const applicationIds = existingConnections.map(conn => conn.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some(app => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized deletion attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized deletion attempt!",
+    });
+  }
+
+  await Connection.deleteMultiple(ids);
+  logger.info("Connections deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Connections deleted successfully!" });
+};
+
 module.exports = {
   createConnection,
   getConnectionById,
@@ -297,4 +331,5 @@ module.exports = {
   getConnectionsByApplicationId,
   testConnection,
   getStoredProcedures,
+  deleteMultipleConnections
 };

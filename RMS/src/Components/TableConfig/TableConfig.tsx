@@ -14,7 +14,7 @@ interface TableConfigProps {
     pageSize: number;
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
-    onDelete: (selectedDataId: string | null) => void;
+    onDelete: (selectedIds: string[]) => void;
     onAddData: () => void;
     onEdit: (item: any) => void;
 }
@@ -24,7 +24,8 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
-    const [selectedDataId, setSelectedDataId] = useState<string | null>(null);
+    const [selectedDataId, setSelectedDataId] = useState<string>("");
+    const [selectedDataIds, setSelectedDataIds] = useState<any[]>([]);
     const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false);
 
     useEffect(() => {
@@ -50,21 +51,28 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         }
     };
     const handleDeleteSelected = (selectedIds: string[]) => {
-        selectedIds.forEach(id => onDelete(id));
+        setSelectedDataIds(selectedIds)
+        setOpenDialog(true)
       };
     const handleDeleteClick = (id: string) => {
         setSelectedDataId(id);
         setOpenDialog(true);
     };
     const handleDeleteConfirm = () => {
-        onDelete(selectedDataId);
+        if(selectedDataId==""){
+            onDelete(selectedDataIds);
+        }
+        else{
+            onDelete([selectedDataId]);
+        }
         setOpenDialog(false);
-        setSelectedDataId(null);
+        setSelectedDataId("");
+        setSelectedDataIds([]);
     };
 
     const handleDeleteCancel = () => {
         setOpenDialog(false);
-        setSelectedDataId(null);
+        setSelectedDataId("");
     };
 
 

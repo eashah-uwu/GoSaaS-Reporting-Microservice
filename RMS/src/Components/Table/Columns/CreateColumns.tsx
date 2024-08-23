@@ -99,7 +99,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
                 return (
                     <a style={{ color: status === "Generated" ? "#bc1a1a" : "#ccc", fontWeight: "bold", textDecoration: "none", display: "flex", justifyContent: "center",pointerEvents: status === "Generated" ? "auto" : "none" }} href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download-report/${info.row.original[rowIdAccessor]}`} download onClick={handleReportDownload}>
                         {`${fileName}  `}
-                        <CloudDownloadIcon sx={{ marginLeft: "0.5rem", marginTop: "-0.2rem" }}>
+                        <CloudDownloadIcon sx={{ marginLeft: "0.5rem" }}>
                         </CloudDownloadIcon>
                     </a>
                 );
@@ -121,7 +121,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             accessorKey: "edit",
             header: "Actions",
             cell: ({ row }: any) => (
-                <span style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-0.5rem" }}>
+                <span style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     {includeEdit && <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
                         <Edit />
                     </IconButton>}

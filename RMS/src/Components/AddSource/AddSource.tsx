@@ -276,10 +276,6 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.username}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.username?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -300,10 +296,6 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.host}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.host?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -327,10 +319,6 @@ const AddSource: FC<AddSourceProps> = ({
                     type="number" // Ensure only numeric values can be input
                     {...field}
                     error={!!errors.port}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.port?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -352,10 +340,6 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.database}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.database?.message}
                     onChange={(e) => {
                       field.onChange(e);
@@ -404,10 +388,6 @@ const AddSource: FC<AddSourceProps> = ({
                       setSaveDisabled(true); // Re-disables the save button on field change
                     }}
                     helperText={errors.type?.message}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true);
-                    }}
                   >
                     <MenuItem value="">Select Type</MenuItem>
                     <MenuItem value="Oracle">Oracle</MenuItem>
@@ -430,10 +410,6 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.password}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
-                    }}
                     helperText={errors.password?.message}
                     onChange={(e) => {
                       field.onChange(e);

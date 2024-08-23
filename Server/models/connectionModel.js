@@ -8,6 +8,7 @@ class Connection {
     host_p,
     port_p,
     database_p,
+    schema_p,
     type_p,
     password_p,
     applicationid_p,
@@ -25,6 +26,7 @@ class Connection {
         host: host_p,
         port: port_p,
         database: database_p,
+        schema: schema_p,
         type: type_p,
         isactive: true,
         isdeleted: false,
@@ -72,6 +74,7 @@ class Connection {
         "username",
         "applicationid",
         "connectionid",
+        "schema",
         "database",
         "type",
         "host",
@@ -113,13 +116,14 @@ class Connection {
     return baseQuery.offset(offset).limit(limit);
   }
   static async findById(id) {
- 
+
     const connection = await knex("connection")
       .select(
         "alias",
         "applicationid",
         "connectionid",
         "database",
+        "schema",
         "type",
         "host",
         "port",
@@ -141,30 +145,40 @@ class Connection {
   }
 
   static async update(id, data) {
-    let { alias="", username="", host="", port=-1, database="", type="", isactive, isdeleted, password="" } =
-      data;
-    console.log("data",data)
+    let {
+      alias = "",
+      username = "",
+      host = "",
+      port = -1,
+      database = "",
+      schema = "", // Add schema to the destructuring
+      type = "",
+      isactive,
+      isdeleted,
+      password = "",
+    } = data;
+
     const [prevConnection] = await knex("connection").where({
       connectionid: id,
     });
-    if(port===-1){
-      alias=prevConnection.alias
-      username=prevConnection.username
-      host=prevConnection.host
-      port=prevConnection.port
-      database=prevConnection.database
-      type=prevConnection.type
+
+    if (port === -1) {
+      alias = prevConnection.alias;
+      username = prevConnection.username;
+      host = prevConnection.host;
+      port = prevConnection.port;
+      database = prevConnection.database;
+      schema = prevConnection.schema; // Default to the previous schema if not provided
+      type = prevConnection.type;
+    } else {
+      port = parseInt(port, 10);
     }
-    else{
-      port=(parseInt(port, 10))
-    }
-    console.log(prevConnection)
-    console.log("here",alias,username,host,port,database,type)
+
     const encryptedPassword = password
       ? encrypt(password)
       : prevConnection.password;
 
-      const [updatedConnection] = await knex("connection")
+    const [updatedConnection] = await knex("connection")
       .where({ connectionid: id })
       .update(
         {
@@ -173,18 +187,31 @@ class Connection {
           host,
           port,
           database,
+          schema, // Include schema in the update
           type,
           isactive,
           isdeleted,
           password: encryptedPassword,
           updatedat: new Date(),
         },
-        ["alias", "host", "username", "port", "applicationid", "connectionid", "database", "type", "isactive", "isdeleted"]
+        [
+          "alias",
+          "host",
+          "username",
+          "port",
+          "applicationid",
+          "connectionid",
+          "database",
+          "schema", // Include schema in the return columns
+          "type",
+          "isactive",
+          "isdeleted",
+        ]
       );
-  
+
     return updatedConnection;
   }
-  
+
 
   static async delete(id) {
     const [connection] = await knex("connection")
@@ -194,10 +221,12 @@ class Connection {
     return connection;
   }
 
-  static async findByName(alias) {
-    return knex("connection").where({ alias,isdeleted: true }).first();
+  static async findByName(alias, userid) {
+    return knex("connection")
+      .where({ createdby: userid, isdeleted: false })
+      .andWhere("alias", "ilike", alias)
+      .first();
   }
-
   static async findByApplicationId({
     applicationid,
     query,
@@ -211,6 +240,7 @@ class Connection {
         "applicationid",
         "connectionid",
         "database",
+        "schema",
         "type",
         "host",
         "port",
@@ -235,7 +265,9 @@ class Connection {
 
     // Apply sorting if sortField is provided
     if (filters.sortField && filters.sortField !== "None") {
-       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    } else {
+      baseQuery.orderBy("alias", "asc");
     }
 
     return baseQuery.offset(offset).limit(limit);
@@ -262,6 +294,20 @@ class Connection {
 
     const [{ count }] = await baseQuery;
     return count;
+  }
+  static async findByIds(ids) {
+    return knex("connection")
+      .whereIn("connectionid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
+  }
+
+  static async deleteMultiple(ids) {
+    const connections = await knex("connection")
+      .whereIn("connectionid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
   }
 }
 

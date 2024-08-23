@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './Sidebar.module.css';
-import { Link } from 'react-router-dom';
+import { Link,useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../State/store';
 import { FC } from 'react';
@@ -10,16 +10,18 @@ interface SidebarProps {
   onClose: () => void; // Function to close the sidebar
 }
 
-const Sidebar: FC<SidebarProps> = ({ isOpen, onClose }) => {
+const Sidebar: FC<SidebarProps> = ({ isOpen, onClose}) => {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const token = useSelector((state: RootState) => state.auth.token);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
       if (
-        sidebarRef.current && 
-        !sidebarRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('.navbar') // Ensure navbar clicks don't close sidebar
+        sidebarRef.current &&
+        !sidebarRef.current.contains(target) &&
+        !(target.closest('.menuButton') || target.closest('.navbar'))
       ) {
         onClose();
       }
@@ -39,11 +41,10 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <div ref={sidebarRef} className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <ul className={styles.ul}>
-        <li className={styles.li}><Link to="/">Dashboard</Link></li>
-        {!token && <li className={styles.li}><Link to="/login">Login</Link></li> }
-        <li className={styles.li}><Link to="/audit">Audit Trails</Link></li>
-        <li className={styles.li}><Link to="/report">Reports</Link></li>
-        {!token && <li className={styles.li}><Link to="/login">Login</Link></li>}
+        {token &&  location.pathname !== '/login' && <li className={styles.li}><Link to="/">Dashboard</Link></li>}
+        {(!token || location.pathname === '/login') && <li className={styles.li}><Link to="/login">Login</Link></li> }
+        {token && location.pathname !== '/login' && <li className={styles.li}><Link to="/audit">Audit Trails</Link></li>}
+        {token && location.pathname !== '/login' && <li className={styles.li}><Link to="/report">Reports</Link></li>}
       </ul>
     </div>
   );

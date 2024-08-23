@@ -21,7 +21,7 @@ const createDestination = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingDestination = await Destination.findByName(alias);
+  const existingDestination = await Destination.findByName(alias,userid);
   if (existingDestination) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -55,7 +55,6 @@ const getAllDestinations = async (req, res) => {
 // Get destination by ID
 const getDestinationById = async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   const destination = await Destination.findById(id);
   if (!destination) {
     logger.warn("Destination not found", {
@@ -94,7 +93,7 @@ const updateDestination = async (req, res) => {
     }
   }
 
-  const otherDestination = await Destination.findByName(req.body.alias);
+  const otherDestination = await Destination.findByName(req.body.alias,userid);
   if (otherDestination && otherDestination.destinationid != destinationid) {
     logger.warn("Destination alias must be unique", {
       context: { traceid: req.traceId },
@@ -144,6 +143,42 @@ const deleteDestination = async (req, res) => {
     message: "Destination deleted successfully!",
   });
 };
+
+
+const deleteMultipleDestinations = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids } = req.body;
+
+  const existingDestinations = await Destination.findByIds(ids);
+  if (existingDestinations.length !== ids.length) {
+    logger.warn("Some Destinations not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Destinations not found for deletion!",
+    });
+  }
+
+  const applicationIds = existingDestinations.map(dest => dest.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some(app => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized deletion attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized deletion attempt!",
+    });
+  }
+  
+  await Destination.deleteMultiple(ids);
+  logger.info("Destinations deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Destinations deleted successfully!" });
+};
+
 // Get destinations by application ID
 const getDestinationsByApplicationId = async (req, res) => {
   const {
@@ -215,5 +250,6 @@ module.exports = {
   deleteDestination,
   getDestinationsByApplicationId,
   connectStorageDestination,
-  addFileToDestination
+  addFileToDestination,
+  deleteMultipleDestinations
 };

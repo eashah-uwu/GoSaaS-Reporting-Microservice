@@ -8,7 +8,7 @@ const { decrypt } = require("../config/encryption");
 const { z } = require("zod"); 
 // Helper function to generate JWT
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "2h" });
 };
 
 const login = async (req, res, next) => {
@@ -44,15 +44,24 @@ const login = async (req, res, next) => {
 
 const authenticate = (req, res) => {
   if (req.user) {
-    const token = generateToken(req.user.userid); // Use req.user.userid here
-    // Redirect with token and userId
-    res.redirect(
-      `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}&userId=${req.user.userid}` // Use req.user.userid here
-    );
+    const userEmail = req.user.email;
+    const domain = userEmail.split('@')[1]; // Extract domain
+
+    if (domain === 'gosaas.io') {
+      const token = generateToken(req.user.userid); 
+      res.redirect(
+        `${process.env.DEPLOY_FRONTEND_URL}/auth/callback?token=${token}&userId=${req.user.userid}` // Use req.user.userid here
+      );
+    } else {
+      res.redirect(
+        `${process.env.DEPLOY_FRONTEND_URL}/login?error=UnauthorizedDomain`
+      );
+    }
   } else {
     res.status(StatusCodes.UNAUTHORIZED).json({ message: "User not authenticated" });
   }
 };
+
 
 module.exports = {
   login,

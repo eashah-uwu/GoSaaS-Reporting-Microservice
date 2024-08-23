@@ -74,6 +74,7 @@ class Connection {
         "username",
         "applicationid",
         "connectionid",
+        "schema",
         "database",
         "type",
         "host",
@@ -121,14 +122,14 @@ class Connection {
         "applicationid",
         "connectionid",
         "database",
+        "schema",
         "type",
         "host",
         "port",
         "isactive",
         "isdeleted",
         "password",
-        "username",
-        "schema"
+        "username"
       )
       .where({ connectionid: id, isdeleted: false })
       .first();
@@ -149,24 +150,29 @@ class Connection {
       host = "",
       port = -1,
       database = "",
+      schema = "", // Add schema to the destructuring
       type = "",
       isactive,
       isdeleted,
       password = "",
     } = data;
+
     const [prevConnection] = await knex("connection").where({
       connectionid: id,
     });
+
     if (port === -1) {
       alias = prevConnection.alias;
       username = prevConnection.username;
       host = prevConnection.host;
       port = prevConnection.port;
       database = prevConnection.database;
+      schema = prevConnection.schema; // Default to the previous schema if not provided
       type = prevConnection.type;
     } else {
       port = parseInt(port, 10);
     }
+
     const encryptedPassword = password
       ? encrypt(password)
       : prevConnection.password;
@@ -180,6 +186,7 @@ class Connection {
           host,
           port,
           database,
+          schema, // Include schema in the update
           type,
           isactive,
           isdeleted,
@@ -194,6 +201,7 @@ class Connection {
           "applicationid",
           "connectionid",
           "database",
+          "schema", // Include schema in the return columns
           "type",
           "isactive",
           "isdeleted",
@@ -230,6 +238,7 @@ class Connection {
         "applicationid",
         "connectionid",
         "database",
+        "schema",
         "type",
         "host",
         "port",

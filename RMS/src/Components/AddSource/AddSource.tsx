@@ -122,7 +122,6 @@ const AddSource: FC<AddSourceProps> = ({
           const { username, password } = response.data;
           setUsername(username);
           setPassword(password);
-
           reset({
             alias: sourceToEdit.alias || "",
             username: username || "",

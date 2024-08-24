@@ -22,49 +22,44 @@ const AuditPage = () => {
   const [events, setEvents] = useState<string[]>([]);
 
   useEffect(() => {
-    // Fetch users, modules, and events for dropdowns
     const fetchFilters = async () => {
       try {
-        const usersResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const [usersResponse, modulesResponse, eventsResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/users`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/modules`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/events`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+
         setUsers(usersResponse.data);
-    
-        const modulesResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/modules`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
         setModules(modulesResponse.data);
-    
-        const eventsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/events`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
         setEvents(eventsResponse.data);
       } catch (error) {
         console.error("Failed to fetch filter data", error);
       }
     };
-    
-    fetchFilters();    
+
+    fetchFilters();
   }, [token]);
-  interface FilterType {
-    user?: string;
-    module?: string;
-    event?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }
-  const handleFilterChange = (newFilters: Partial<FilterType>) => {
-    setFilters((prevFilters: FilterType) => ({
+
+  const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+    setFilters((prevFilters: typeof filters) => ({
       ...prevFilters,
       ...newFilters,
     }));
   };
+  
 
   return (
     <>
@@ -72,7 +67,7 @@ const AuditPage = () => {
       <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
         Audit Overview
       </Typography>
-      
+
       <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", marginTop: "1rem", marginLeft: "10%", marginRight: "10%" }}>
         <Select
           label="User"
@@ -133,10 +128,9 @@ const AuditPage = () => {
           sx={{ minWidth: 150 }}
         />
       </Box>
-      
-      {/* <Audit filters={filters} /> */}
+      <Audit filters={filters} />
     </>
   );
-}
+};
 
 export default AuditPage;

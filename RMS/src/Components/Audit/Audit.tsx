@@ -30,8 +30,8 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
           },
         }
       );
-      setAuditData(data.data);
-      setTotal(data.total);
+      setAuditData(data);
+      setTotal(data.length); // Assuming the backend returns the full set
     } catch (error) {
       console.error("Error fetching audit data:", error);
     } finally {
@@ -63,7 +63,23 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
           <TableConfig
             data={auditData}
             includeStatus={false}
-            baseColumns={[]} // Define your columns here
+            baseColumns={[{
+              field: 'createdby',
+              headerName: 'Created By',
+              flex: 1,
+            }, {
+              field: 'description',
+              headerName: 'Description',
+              flex: 1,
+            }, {
+              field: 'Module-Event',
+              headerName: 'Module-Event',
+              flex: 1,
+            }, {
+              field: 'createddate',
+              headerName: 'Created Date',
+              flex: 1,
+            }]} 
             pageSize={pageSize}
             onSave={() => {}}
             onDelete={() => {}}

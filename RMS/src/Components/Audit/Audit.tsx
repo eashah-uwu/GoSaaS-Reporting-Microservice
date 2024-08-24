@@ -83,7 +83,7 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
             pageSize={pageSize}
             onSave={() => {}}
             onDelete={() => {}}
-            rowIdAccessor="auditId"
+            rowIdAccessor="id"
             includeEdit={false}
             onAddData={() => {}}
             onEdit={() => {}}

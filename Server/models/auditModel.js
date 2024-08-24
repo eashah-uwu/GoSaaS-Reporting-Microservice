@@ -39,6 +39,7 @@ class AuditModel {
       .join("auditevents as ae", "at.auditeventid", "=", "ae.id")
       .join("User as u", "at.userid", "=", "u.userid")
       .select(
+        "at.id",
         "at.createdby",
         "at.description",
         knex.raw(`CONCAT(ae.module, '-', ae.event) AS "Module-Event"`),

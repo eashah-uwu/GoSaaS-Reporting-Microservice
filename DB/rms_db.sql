@@ -212,19 +212,8 @@ VALUES
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Updated', 'Report details were updated', 'Report'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Deleted', 'Report was deleted', 'Report'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Restored', 'Report was restored from deletion', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Generation Triggered', 'A report generation was triggered', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Parameters Modified', 'Parameters for the report were modified', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Exported', 'Report was exported to an external format', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Shared', 'Report was shared with another user', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Access Revoked', 'Access to the report was revoked', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Access Granted', 'Access to the report was granted to a user', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Parameters Modified', 'Parameters for the report were modified', 'Report')
 
--- Audit Module Events
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Audit Log Created', 'New audit log entry was created', 'Audit'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Audit Log Exported', 'Audit logs were exported', 'Audit'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Audit Log Cleared', 'Audit logs were cleared', 'Audit'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Audit Settings Updated', 'Audit settings were updated', 'Audit'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Audit Report Generated', 'Audit report was generated', 'Audit')
 ;
 
 

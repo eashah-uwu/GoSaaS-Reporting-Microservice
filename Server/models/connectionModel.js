@@ -116,7 +116,6 @@ class Connection {
     return baseQuery.offset(offset).limit(limit);
   }
   static async findById(id) {
-
     const connection = await knex("connection")
       .select(
         "alias",
@@ -211,14 +210,99 @@ class Connection {
 
     return updatedConnection;
   }
+  static async findDuplicateUpdate({
+    username,
+    host,
+    port,
+    database,
+    schema,
+    password, // This is the plain text password from the request
+    applicationid,
+    userid,
+    excludeId, // Add excludeId to exclude the current connection
+  }) {
+    // Find all connections with the matching details except for the password,
+    // and where isdeleted is false, excluding the current connection by ID
+    const connections = await knex("connection")
+      .where({
+        username,
+        host,
+        port,
+        database,
+        schema,
+        applicationid,
+        createdby: userid,
+        isdeleted: false, // Ensure isdeleted is false
+      })
+      .whereNot({ connectionid: excludeId }) // Exclude the current connection
+      .select("password"); // Only select the password field
 
+    // Iterate through the retrieved connections and compare the passwords
+    for (const connection of connections) {
+      const decryptedPassword = decrypt(connection.password);
+      if (decryptedPassword === password) {
+        return connection; // Return the first matching connection
+      }
+    }
 
+    // Return null if no match is found
+    return null;
+  }
+
+  static async findDuplicate({
+    username,
+    host,
+    port,
+    database,
+    schema,
+    password, // This is the plain text password from the request
+    applicationid,
+    userid,
+  }) {
+    // Find all connections with the matching details except for the password
+    const connections = await knex("connection")
+      .where({
+        username,
+        host,
+        port,
+        database,
+        schema,
+        applicationid,
+        createdby: userid,
+        isdeleted: false, // Ensure isdeleted is false
+      })
+      .select("password"); // Only select the password field
+
+    // Iterate through the retrieved connections and compare the passwords
+    for (const connection of connections) {
+      const decryptedPassword = decrypt(connection.password);
+      if (decryptedPassword === password) {
+        return connection; // Return the first matching connection
+      }
+    }
+
+    // Return null if no match is found
+    return null;
+  }
+  // In Connection model
   static async delete(id) {
-    const [connection] = await knex("connection")
-      .where({ connectionid: id })
-      .update({ isdeleted: true, updatedat: new Date() })
-      .returning("*");
-    return connection;
+    // Start a transaction to ensure both operations succeed or fail together
+    return await knex.transaction(async (trx) => {
+      // Perform soft delete on the connection
+      const [connection] = await trx("connection")
+        .where({ connectionid: id })
+        .update({ isdeleted: true, updatedat: new Date() })
+        .returning("*");
+
+      if (connection) {
+        // Perform soft delete on associated report templates
+        await trx("report")
+          .where({ sourceconnectionid: id })
+          .update({ isdeleted: true, updatedat: new Date() });
+      }
+
+      return connection;
+    });
   }
 
   static async findByName(alias, userid) {

@@ -1,4 +1,3 @@
-// services/generateReport.js
 const {
   checkReportExistence,
   getReportDetails,
@@ -26,16 +25,16 @@ async function generateReport(reportName, userid, parameters) {
       throw new Error("Report not found");
     }
 
-    // Step 3: Get report details (connection, destination, etc.)
+    // Step 2: Get report details (connection, destination, etc.)
     const reportDetails = await getReportDetails(reportName, userid);
     statusId = await insertStatusRecord(reportDetails.reportid, userid);
 
-    // Step 4: Get the connection details using sourceconnectionid
+    // Step 3: Get the connection details using sourceconnectionid
     const connectionDetails = await getConnectionDetails(
       reportDetails.sourceconnectionid
     );
 
-    // Check connection (Implement this as needed)
+    // Check connection
     const testKnex = await checkConnection(connectionDetails);
     if (!testKnex) {
       await updateStatusRecord(
@@ -47,7 +46,7 @@ async function generateReport(reportName, userid, parameters) {
       throw new Error("Failed to connect to the data source");
     }
 
-    // Step 6: Get the destination details using destinationid
+    // Step 4: Get the destination details using destinationid
     const destinationDetails = await getDestinationDetails(
       reportDetails.destinationid
     );
@@ -62,7 +61,7 @@ async function generateReport(reportName, userid, parameters) {
       throw new Error("Destination not found");
     }
 
-    // Step 7: Download the XSL file from the destination
+    // Step 5: Download the XSL file from the destination
     const file = await downloadFile(
       "aws",
       destinationDetails.url,
@@ -82,7 +81,7 @@ async function generateReport(reportName, userid, parameters) {
 
     const xslContent = file.Body.toString("utf-8");
 
-    // Step 9: Generate SQL query using stored procedure and parameters
+    // Step 6: Generate SQL query using stored procedure and parameters
     const storedProcedure = reportDetails.storedprocedure;
     const parametersDefs = reportDetails.parameters;
     const query = generateQueryText(
@@ -91,22 +90,22 @@ async function generateReport(reportName, userid, parameters) {
       parameters
     );
 
-    // Step 10: Execute the generated query
+    // Step 7: Execute the generated query
     const schemaName = connectionDetails.schema || "public";
     const result = await getProcedureRows(testKnex, query, schemaName);
 
-    // Step 11: Convert result to XML
+    // Step 8: Convert result to XML
     const xmlData = js2xmlparser.parse("ReportData", {
       message: "Report generated successfully",
       data: result,
     });
     const htmlContent = await performXsltTransformation(xmlData, xslContent);
 
-    // Generate the PDF
+    // Step 9: Generate the PDF
     const pdfBuffer = await generatePDF(htmlContent);
     const pdfKey = `reports/${reportName}-${Date.now()}.pdf`;
 
-    // Step 12: Upload the PDF to the destination
+    // Step 10: Upload the PDF to the destination
     const uploadResult = await uploadFile(
       "aws",
       destinationDetails.url,
@@ -119,13 +118,13 @@ async function generateReport(reportName, userid, parameters) {
         statusId,
         "Failed",
         "Failed",
-        uploadResult.message
+        `Failed to upload PDF: ${uploadResult.message}`
       );
-      throw new Error(uploadResult.message);
+      throw new Error(`Failed to upload PDF: ${uploadResult.message}`);
     }
 
     // Update status record to successful
-    await updateStatusRecord(statusId, pdfKey, "Generated");
+    await updateStatusRecord(statusId, pdfKey, "Generated", "Generated");
     return { message: "PDF uploaded successfully", url: uploadResult.url };
   } catch (err) {
     if (statusId) {

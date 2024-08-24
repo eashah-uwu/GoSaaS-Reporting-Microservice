@@ -54,6 +54,26 @@ const createConnection = async (req, res) => {
       message: "Alias name must be unique",
     });
   }
+  // Check if a connection with the same details already exists for the same application and userid
+  const duplicateConnection = await Connection.findDuplicate({
+    username,
+    host,
+    port,
+    database,
+    schema,
+    password,
+    applicationid,
+    userid,
+  });
+
+  if (duplicateConnection) {
+    logger.warn("A connection with the same details already exists", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "A connection with the same details already exists",
+    });
+  }
   // Call the model method to create a new connection
   const connection = await Connection.create(
     username,
@@ -210,9 +230,10 @@ const updateConnection = async (req, res) => {
         .json({ message: "Application not found" });
     }
   }
-  if (alias != "") {
-    const otherConnection = await Connection.findByName(req.body.alias, userid);
-    if (otherConnection && otherConnection.connectionid != connectionid) {
+
+  if (alias !== "") {
+    const otherConnection = await Connection.findByName(alias, userid);
+    if (otherConnection && otherConnection.connectionid !== parsedId) {
       logger.warn("Connection alias must be unique", {
         context: { traceid: req.traceId },
       });
@@ -222,20 +243,47 @@ const updateConnection = async (req, res) => {
     }
   }
 
-  // Validate and parse the data using connectionSchema
-  const validatedData = connectionSchema.partial().parse(data);
-
-  // Call the model method to update the connection
-  const connection = await Connection.update(parsedId, validatedData);
-
-  logger.info("Connection updated successfully", {
-    context: { traceid: req.traceId, id: parsedId, connection },
+  // Check for duplicate connection details
+  const duplicateConnection = await Connection.findDuplicateUpdate({
+    username: data.username || existingConnection.username,
+    host: data.host || existingConnection.host,
+    port: data.port || existingConnection.port,
+    database: data.database || existingConnection.database,
+    schema: data.schema || existingConnection.schema,
+    password: data.password || existingConnection.password, // Assuming it's encrypted
+    applicationid: existingConnection.applicationid,
+    userid,
+    excludeId: parsedId, // Exclude the current connection from the duplicate check
   });
 
-  res.status(StatusCodes.OK).json({
-    message: "Connection updated successfully!",
-    connection,
-  });
+  if (duplicateConnection) {
+    logger.warn("Duplicate connection details found", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Duplicate connection details found",
+    });
+  }
+
+  try {
+    // Proceed with the update if no duplicates are found
+    const updatedConnection = await Connection.update(parsedId, data);
+    logger.info("Connection updated successfully", {
+      context: { traceid: req.traceId, connection: updatedConnection },
+    });
+    return res.status(StatusCodes.OK).json({
+      message: "Connection updated successfully",
+      connection: updatedConnection,
+    });
+  } catch (error) {
+    logger.error("Failed to update connection", {
+      context: { traceid: req.traceId, error: error.message },
+    });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Failed to update connection",
+      error: error.message,
+    });
+  }
 };
 
 // Delete a connection (soft delete)
@@ -328,9 +376,9 @@ const deleteMultipleConnections = async (req, res) => {
     });
   }
 
-  const applicationIds = existingConnections.map(conn => conn.applicationid);
+  const applicationIds = existingConnections.map((conn) => conn.applicationid);
   const applications = await Application.findByIds(applicationIds);
-  const unauthorized = applications.some(app => app.userid !== userid);
+  const unauthorized = applications.some((app) => app.userid !== userid);
 
   if (unauthorized) {
     logger.warn("Unauthorized deletion attempt", {
@@ -345,7 +393,9 @@ const deleteMultipleConnections = async (req, res) => {
   logger.info("Connections deleted successfully", {
     context: { traceid: req.traceId },
   });
-  res.status(StatusCodes.OK).json({ message: "Connections deleted successfully!" });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Connections deleted successfully!" });
 };
 
 module.exports = {
@@ -357,5 +407,5 @@ module.exports = {
   getConnectionsByApplicationId,
   testConnection,
   getStoredProcedures,
-  deleteMultipleConnections
+  deleteMultipleConnections,
 };

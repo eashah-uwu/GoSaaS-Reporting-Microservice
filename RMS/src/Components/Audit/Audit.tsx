@@ -31,7 +31,7 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
         }
       );
       setAuditData(data);
-      setTotal(data.length); // Assuming the backend returns the full set
+      setTotal(data.length);
     } catch (error) {
       console.error("Error fetching audit data:", error);
     } finally {

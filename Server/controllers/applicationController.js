@@ -9,7 +9,7 @@ const createApplication = async (req, res) => {
   const userid=req.user.userid;
   const data = applicationSchema.parse(req.body);
 
-  const existingApplication = await Application.findByName(data.name);
+  const existingApplication = await Application.findByName(data.name,userid);
   if (existingApplication) {
     logger.warn("Application name must be unique", {
       context: { traceid: req.traceId },
@@ -86,7 +86,6 @@ const getApplicationById = async (req, res) => {
   logger.info("Retrieved application by ID", {
     context: { traceid: req.traceId, application },
   });
-  console.log(application);
   res.status(StatusCodes.OK).json(application);
 };
 const updateApplication = async (req, res) => {
@@ -102,7 +101,7 @@ const updateApplication = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Application not found" });
   }
-  const otherApplication = await Application.findByName(data.name);
+  const otherApplication = await Application.findByName(data.name,userid);
   if (otherApplication && otherApplication.applicationid != applicationid) {
     logger.warn("Application name must be unique", {
       context: { traceid: req.traceId },
@@ -142,6 +141,34 @@ const deleteApplication = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Application deleted successfully!" });
 };
+const deleteMultipleApplications = async (req, res) => {
+  const userid=req.user.userid;
+  const { ids } = req.body;
+  const existingApplications = await Application.findByIds(ids);
+  if (existingApplications.length !== ids.length) {
+    logger.warn("Some Applications not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Applications not found for deletion!",
+    });
+  }
+
+  if (existingApplications.some(app => app.userid !== userid)) {
+    logger.warn("Some applications found unauthorized for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Some applications found unauthorized for deletion!"
+    });
+  }
+  await Application.deleteMultiple(ids);
+  logger.info("Applications deleted successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Applications deleted successfully!" });
+};
+
 
 module.exports = {
   createApplication,
@@ -149,4 +176,6 @@ module.exports = {
   getApplicationById,
   updateApplication,
   deleteApplication,
+  deleteMultipleApplications
 };
+

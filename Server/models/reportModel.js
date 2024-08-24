@@ -1,7 +1,17 @@
 const knex = require("../config/db/db");
 
 class Report {
-  static async create(title_p, description_p, parameter_p, source_p, destination_p, applicationid_p, storedprocedure_p, userid_p, key_p) {
+  static async create(
+    title_p,
+    description_p,
+    parameter_p,
+    source_p,
+    destination_p,
+    applicationid_p,
+    storedprocedure_p,
+    userid_p,
+    key_p
+  ) {
     const [createdReport] = await knex("report")
       .insert({
         title: title_p,
@@ -16,26 +26,35 @@ class Report {
         createdat: new Date(),
         updatedat: new Date(),
         createdby: userid_p,
-        filekey: key_p
+        filekey: key_p,
+        isdeleted: false,
       })
       .returning("*");
     const [report] = await knex("report")
-    .select(
-      "report.title",
-      "report.description",
-      knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
-      "report.sourceconnectionid",
-      "report.destinationid",
-      "report.storedprocedure as storedProcedure",
-      "report.applicationid",
-      "sc.alias as sourceConnection",
-      "d.alias as destination"
-    )
-    .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
-    .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-    .where({ "report.reportid": createdReport.reportid });
+      .select(
+        "report.title",
+        "report.reportid",
+        "report.description",
+        knex.raw(
+          `to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`
+        ),
+        "report.sourceconnectionid",
+        "report.destinationid",
+        "report.storedprocedure as storedProcedure",
+        "report.applicationid",
+        "sc.alias as sourceConnection",
+        "d.alias as destination",
+        "report.filekey"
+      )
+      .leftJoin(
+        "connection as sc",
+        "report.sourceconnectionid",
+        "sc.connectionid"
+      )
+      .leftJoin("destination as d", "report.destinationid", "d.destinationid")
+      .where({ "report.reportid": createdReport.reportid });
 
-     return report;
+    return report;
   }
 
   static async findById(id) {
@@ -73,11 +92,17 @@ class Report {
   }
 
   static async delete(id) {
-    return knex("report").where({ reportid: id }).del();
+    const [report] = await knex("report")
+      .where({ reportid: id })
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+
+    return report;
   }
   static async findByTitle(title) {
     return knex("report").select("*").where({ title }).first();
   }
+
 
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
@@ -104,12 +129,25 @@ class Report {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(applicationId, query, filters) {
+  static async findByName(title,userid) {
+    return knex("report")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("title", "ilike", title)
+          .first();
+  }
+  static async countSearchResults(applicationid, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
-      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin(
+        "connection as sc",
+        "report.sourceconnectionid",
+        "sc.connectionid"
+      )
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .where({ "report.applicationid": applicationId })
+      .where({
+        "report.applicationid": applicationid,
+        "report.isdeleted": false,
+      })
       .where((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)
@@ -128,22 +166,39 @@ class Report {
     return parseInt(count.count, 10);
   }
 
-  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+  static async findByApplicationId({
+    applicationid,
+    query,
+    offset,
+    limit,
+    filters = {},
+  }) {
     let baseQuery = knex("report")
       .select(
         "report.title",
+        "report.reportid",
         "report.description",
-        knex.raw(`to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`),
+        knex.raw(
+          `to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`
+        ),
         "report.sourceconnectionid",
         "report.destinationid",
         "report.storedprocedure as storedProcedure",
         "report.applicationid",
         "sc.alias as sourceConnection",
         "d.alias as destination",
+        "report.filekey"
       )
-      .leftJoin("connection as sc", "report.sourceconnectionid", "sc.connectionid")
+      .leftJoin(
+        "connection as sc",
+        "report.sourceconnectionid",
+        "sc.connectionid"
+      )
       .leftJoin("destination as d", "report.destinationid", "d.destinationid")
-      .where({ "report.applicationid": applicationId })
+      .where({
+        "report.applicationid": applicationid,
+        "report.isdeleted": false,
+      })
       .andWhere((builder) => {
         builder
           .where("report.title", "ilike", `%${query}%`)
@@ -163,6 +218,76 @@ class Report {
     }
 
     return baseQuery.offset(offset).limit(limit);
+  }
+
+  static async findAll({ userid, query, offset, limit, filters = {} }) {
+    let baseQuery = knex("reportstatushistory")
+      .select(
+        "reportstatushistory.reportstatushistoryid",
+        "reportstatushistory.reportid",
+        "r.title",
+        knex.raw(
+          `to_char("r"."generationdate", 'YYYY-MM-DD') as "generationDate"`
+        ),
+        "r.description",
+        "reportstatushistory.status",
+        "reportstatushistory.filekey"
+      )
+      .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .where({ "reportstatushistory.userid": userid })
+      .andWhere((builder) => {
+        builder
+          .where("reportstatushistory.status", "ilike", `%${query}%`)
+          .orWhere("r.title", "ilike", `%${query}%`)
+          .orWhere("r.description", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
+      });
+
+    if (filters.sortField && filters.sortField !== "None") {
+      baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }
+    else{
+      baseQuery.orderBy("r.generationdate", "desc");
+    }
+
+    return baseQuery.offset(offset).limit(limit);
+  }
+  static async countSearchReportsHistory(userid, query, filters) {
+    let baseQuery = knex("reportstatushistory")
+      .count({ count: "*" })
+      .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .where({ "reportstatushistory.userid": userid })
+      .where((builder) => {
+        builder
+          .where("reportstatushistory.status", "ilike", `%${query}%`)
+          .orWhere("r.title", "ilike", `%${query}%`)
+          .orWhere("r.description", "ilike", `%${query}%`)
+          .orWhere(
+            knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
+            "ilike",
+            `%${query}%`
+          );
+      });
+
+    const [count] = await baseQuery;
+    return parseInt(count.count, 10);
+  }
+  static async findByIds(ids) {
+    return knex("report")
+    .whereIn("reportid", ids)
+    .andWhere({isdeleted: false})
+    .returning("*");
+  }
+  static async deleteMultiple(ids) {
+    const reports = await knex("report")
+      .whereIn("reportid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return reports;
   }
 }
 

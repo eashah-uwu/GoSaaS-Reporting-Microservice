@@ -4,11 +4,18 @@ const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
 require("dotenv").config();
-const path = require("path");
 const Destination = require("../models/destinationModel");
-const { uploadFile,downloadFile } = require("../storage/cloudStorageService.js");
-
+const Application = require("../models/applicationModel");
+const {
+  uploadFile,
+  downloadFile,
+  deleteFile
+} = require("../storage/cloudStorageService.js");
+const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
+const ReportStatusHistory = require("../models/reportStatusHistory.js");
+const reportQueue = require("../queues/reportQueue");
+
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
   const {
@@ -18,9 +25,29 @@ const createReport = async (req, res) => {
     destination,
     storedProcedure,
     parameter,
-    userid,
     applicationid,
   } = req.body;
+
+  const userid = req.user.userid;
+  const application = await Application.findById(applicationid);
+
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+
+  const existingReport = await Report.findByName(alias,userid);
+  console.log(existingReport)
+  if (existingReport) {
+    logger.warn("Title of report must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Title of report must be unique",
+    });
+  }
 
   const uid = uuidv4(); // Generate a unique identifier
   const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
@@ -58,8 +85,9 @@ const createReport = async (req, res) => {
   });
 };
 const downloadXsl = async (req, res) => {
-  const { id } = req.params;
-  const reportId = parseInt(id, 10);
+  const userid = req.user.userid;
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
 
   if (isNaN(reportId)) {
     logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
@@ -68,29 +96,82 @@ const downloadXsl = async (req, res) => {
       .json({ message: "Invalid report ID" });
   }
   const report = await Report.findById(reportId);
-  if (!report) {
+  if (!report && report.userid != userid) {
     logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
   const destination_db = await Destination.findById(report.destinationid);
-  const file= await downloadFile(
+  const file = await downloadFile(
     "aws",
     destination_db.url,
     destination_db.apikey,
     "reportsdestination0",
     report.filekey
   );
-  res.setHeader('Content-Type', file.ContentType);
+  const fileName = report.filekey.split("/").pop()?.split("-").pop();
+  const fileType = fileName.split(".").pop();
+  res.setHeader("Content-Type", file.ContentType || `application/${fileType}`);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
   res.send(file.Body);
 };
+const downloadReport = async (req, res) => {
+  const userid = req.user.userid;
+  const { reporthistoryid } = req.params;
+
+  const reportHistory = await ReportStatusHistory.findById(reporthistoryid);
+  if (!reportHistory) {
+    logger.warn("Report History not found", { id });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report History not found" });
+  }
+  const report = await Report.findById(reportHistory.reportid);
+  const destination_db = await Destination.findById(report.destinationid);
+  const file = await downloadFile(
+    "aws",
+    destination_db.url,
+    destination_db.apikey,
+    "reportsdestination0",
+    reportHistory.filekey
+  );
+  const fileName = report.filekey.split("/").pop()?.split("-").pop();
+  const fileType = fileName.split(".").pop();
+  res.setHeader("Content-Type", file.ContentType || `application/${fileType}`);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  res.send(file.Body);
+};
+
 const getReports = async (req, res) => {
-  const reports = await Report.findAll();
-  logger.info("Retrieved all reports", {
-    context: { traceid: req.traceId, reports },
+  const {
+    query = config.get("query"),
+    page = config.get("page"),
+    pageSize = config.get("pageSize"),
+    filters = config.get("filters"),
+  } = req.query;
+  const userid = req.user.userid;
+
+  const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const [reports, total] = await Promise.all([
+    Report.findAll({
+      userid,
+      query,
+      offset,
+      limit: parseInt(pageSize, 10),
+      filters,
+    }),
+    Report.countSearchReportsHistory(userid, query, filters),
+  ]);
+  logger.info("Reports retrieved by user ID", {
+    context: { traceid: req.traceId, userid, reports },
   });
-  res.status(StatusCodes.OK).json(reports);
+  res.status(StatusCodes.OK).json({
+    data: reports,
+    total,
+    page: parseInt(page, 10),
+    pageSize: parseInt(pageSize, 10),
+  });
 };
 
 const getReportById = async (req, res) => {
@@ -118,17 +199,28 @@ const getReportById = async (req, res) => {
 };
 
 const updateReport = async (req, res) => {
-  const { id } = req.params;
-  const data = reportSchema.partial().parse(req.body);
-  const report = await Report.update(id, data);
-  if (!report) {
-    logger.warn("Report not found for update", {
-      context: { traceid: req.traceId },
-    });
+  const { reportid } = req.params;
+  const userid = req.user.userid;
+  const existingReport = await Report.findById(reportid);
+  if (!existingReport && existingReport.userid != userid) {
+    logger.warn("Report not found", { id });
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Report not found" });
   }
+  const data = reportSchema.partial().parse(req.body);
+
+  const otherReport = await Report.findByName(alias,userid);
+  if (otherReport && otherReport.reportid != reportid) {
+    logger.warn("Title of report must be unique", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Title of report must be unique",
+    });
+  }
+
+  const report = await Report.update(reportid, data);
   logger.info("Report updated successfully", {
     context: { traceid: req.traceId, report },
   });
@@ -139,41 +231,82 @@ const updateReport = async (req, res) => {
 };
 
 const deleteReport = async (req, res) => {
-  const { id } = req.params;
-  const reportId = parseInt(id, 10);
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
+  const userid = req.user.userid;
 
   if (isNaN(reportId)) {
-    logger.warn("Invalid report ID", { context: { traceid: req.traceId, id } });
+    logger.warn("Invalid report ID", {
+      context: { traceid: req.traceId, reportid },
+    });
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Invalid report ID" });
   }
+  const report = await Report.findById(reportId);
+  if (!report && report.userid != userid) {
+    logger.warn("Report not found", { reportid });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Report not found" });
+  }
+  const destination_db = await Destination.findById(report.destinationid);
+
+    await deleteFile(
+      "aws",
+      destination_db.url,
+      destination_db.apikey,
+      "reportsdestination0",
+      report.filekey
+    );
+  
 
   await Report.delete(reportId);
   logger.info("Report deleted successfully", {
-    context: { traceid: req.traceId, id },
+    context: { traceid: req.traceId, reportid },
   });
   res.status(StatusCodes.OK).json({ message: "Report deleted successfully!" });
 };
 
-const paginateReports = async (req, res) => {
-  const { page = 1, pageSize = 10 } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+const deleteMultipleReports = async (req, res) => {
+  const userid=req.user.userid;
+  const { ids } = req.body;
+  const existingReports = await Report.findByIds(ids);
+  if (existingReports.length !== ids.length) {
+    logger.warn("Some Reports not found for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Applications not found for deletion!",
+    });
+  }
 
-  const [reports, total] = await Promise.all([
-    Report.paginate({ offset, limit: parseInt(pageSize) }),
-    Report.countAll(),
-  ]);
+  if (existingReports.some(report => report.userid !== userid)) {
+    logger.warn("Some Reports found unauthorized for deletion", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Some Reports found unauthorized for deletion!"
+    });
+  }
+  console.log("existingReports",existingReports)
+  for (const report of existingReports) {
+    const destination_db = await Destination.findById(report.destinationid);
+    await deleteFile(
+        "aws",
+        destination_db.url,
+        destination_db.apikey,
+        "reportsdestination0",
+        report.filekey
+    );
+    console.log("deell11")
+  }
 
-  logger.info("Paginated reports retrieved", {
-    context: { traceid: req.traceId, reports },
+  await Report.deleteMultiple(ids);
+  logger.info("Reports deleted successfully", {
+    context: { traceid: req.traceId },
   });
-  res.status(StatusCodes.OK).json({
-    data: reports,
-    total,
-    page: parseInt(page),
-    pageSize: parseInt(pageSize),
-  });
+  res.status(StatusCodes.OK).json({ message: "Reports deleted successfully!" });
 };
 
 const searchReports = async (req, res) => {
@@ -216,20 +349,29 @@ const getReportsByApplicationId = async (req, res) => {
     pageSize = config.get("pageSize"),
     filters = config.get("filters"),
   } = req.query;
-  const { id: applicationId } = req.params;
+  const { applicationid } = req.params;
+  const userid = req.user.userid;
+  const application = await Application.findById(applicationid);
+  if (!application || application.userid != userid) {
+    logger.warn("Application not found", { context: { traceid: req.traceId } });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Application not found" });
+  }
+
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
   const [reports, total] = await Promise.all([
     Report.findByApplicationId({
-      applicationId,
+      applicationid,
       query,
       offset,
       limit: parseInt(pageSize, 10),
       filters,
     }),
-    Report.countSearchResults(applicationId, query, filters),
+    Report.countSearchResults(applicationid, query, filters),
   ]);
   logger.info("Reports retrieved by application ID", {
-    context: { traceid: req.traceId, applicationId, reports },
+    context: { traceid: req.traceId, applicationid, reports },
   });
   res.status(StatusCodes.OK).json({
     data: reports,
@@ -239,8 +381,37 @@ const getReportsByApplicationId = async (req, res) => {
   });
 };
 
+const reportGeneration = async (req, res, next) => {
+  const { reportName, userid, parameters } = req.body;
 
+  try {
+    // Add job to the queue
+    const job = await reportQueue.add("generateReport", {
+      reportName,
+      userid,
+      parameters,
+    });
 
+    if (!job) {
+      logger.error("Failed to add job to the queue");
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Error adding job to the queue",
+      });
+    }
+
+    // Respond with job information
+    res.status(StatusCodes.ACCEPTED).json({
+      message: "Report generation job added to the queue",
+      jobId: job.id,
+    });
+  } catch (err) {
+    logger.error(`Error in reportGeneration: ${err.message}`);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error processing report generation",
+      error: err.message,
+    });
+  }
+};
 module.exports = {
   createReport,
   getReports,
@@ -249,5 +420,8 @@ module.exports = {
   deleteReport,
   searchReports,
   getReportsByApplicationId,
-  downloadXsl
+  downloadXsl,
+  reportGeneration,
+  downloadReport,
+  deleteMultipleReports
 };

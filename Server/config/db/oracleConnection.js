@@ -1,45 +1,74 @@
 const knex = require("knex");
-const debug = require("debug")("oracle-connection");
+const logger = require("../../logger");
 
 class OracleConnection {
   constructor(config) {
-    // Convert port to number if it is defined in the config
-    if (config.port) {
-      config.port = Number(config.port);
+    // Store config as a class property so it can be accessed in other methods
+    this.config = config;
+
+    // Convert port to number if defined in the config
+    if (this.config.port) {
+      this.config.port = Number(this.config.port);
     }
 
     // Essential Oracle configuration
-    this.config = {
-      host: config.host,
-      user: config.username,
-      password: config.password,
-      database: config.database,
-      port: config.port,
+    this.knexConfig = {
+      client: "oracledb",
+      connection: {
+        host: this.config.host,
+        user: this.config.username,
+        password: this.config.password,
+        database: this.config.database,
+        port: this.config.port,
+      },
     };
 
-    debug("Using Oracle config:", this.config);
+    logger.info("Using Oracle config:", this.knexConfig);
+
     // Initialize knex with the essential Oracle configuration
-    this.knex = knex({
-      client: "oracledb",
-      connection: this.config,
-    });
+    this.knex = knex(this.knexConfig);
   }
 
   async testConnection() {
     try {
-      await this.knex.raw("SELECT 1 FROM DUAL");
-      debug("Connection successful");
-      return {
-        success: true,
-        message: "Connection successful",
-      };
+      // Check if the schema exists
+      const schemaExistsQuery = `
+        SELECT COUNT(*) AS schema_exists
+        FROM all_schemas
+        WHERE schema_name = '${this.config.schema || "PUBLIC"}'
+      `;
+      const schemaExistsResult = await this.knex.raw(schemaExistsQuery);
+
+      if (schemaExistsResult.rows[0].schema_exists > 0) {
+        // Test a simple query to check the connection
+        await this.knex.raw("SELECT 1 FROM DUAL");
+        logger.info("Connection successful");
+        return {
+          success: true,
+          message: "Connection successful",
+        };
+      } else {
+        throw new Error(
+          `Schema '${this.config.schema || "PUBLIC"}' does not exist.`
+        );
+      }
     } catch (error) {
-      console.error("Error connecting to Oracle:", error);
+      logger.error("Error connecting to Oracle:", error);
       return {
         success: false,
         message: "Failed to establish Oracle connection",
         error,
       };
+    }
+  }
+
+  async closePool() {
+    try {
+      await this.knex.destroy();
+      logger.info("Oracle pool has been closed");
+    } catch (error) {
+      logger.error("Error closing the Oracle pool:", error);
+      throw error;
     }
   }
 }

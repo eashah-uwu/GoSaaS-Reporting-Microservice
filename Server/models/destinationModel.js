@@ -2,7 +2,7 @@ const knex = require("../config/db/db");
 
 class Destination {
   // Create a new destination
-  static async create(alias_p,url_p,apikey_p,applicationId_p,userId_p) {
+  static async create(alias_p, url_p, apikey_p, applicationId_p, userId_p) {
     // Insert data into the database
     const [destination] = await knex("destination")
       .insert({
@@ -18,8 +18,24 @@ class Destination {
         updatedby: userId_p, // Note the exact column name
       })
       .returning("*");
-      const {alias,applicationid,destinationid,url,apikey,isactive,isdeleted}=destination
-    return {alias,applicationid,destinationid,url,apikey,isactive,isdeleted};
+    const {
+      alias,
+      applicationid,
+      destinationid,
+      url,
+      apikey,
+      isactive,
+      isdeleted,
+    } = destination;
+    return {
+      alias,
+      applicationid,
+      destinationid,
+      url,
+      apikey,
+      isactive,
+      isdeleted,
+    };
   }
 
   // Retrieve all destinations
@@ -37,17 +53,18 @@ class Destination {
   // Update an existing destination
   static async update(id, data) {
     const { alias, url, apikey, isactive, isdeleted } = data;
-    const [prevDestination] = await knex("destination")
-    .where({ destinationid: id })
+    const [prevDestination] = await knex("destination").where({
+      destinationid: id,
+    });
     const [destination] = await knex("destination")
-    .where({ destinationid: id })
+      .where({ destinationid: id })
       .update({
         ...prevDestination,
         isactive: isactive,
         isdeleted: isdeleted,
-        alias:alias,
-        url:url,
-        apikey:apikey,
+        alias: alias,
+        url: url,
+        apikey: apikey,
         updatedat: new Date(),
       })
       .returning("*");
@@ -63,8 +80,20 @@ class Destination {
 
     return destination;
   }
-  
-  static async findByApplicationId({ applicationId, query, offset, limit, filters = {} }) {
+
+  static async findByName(alias, userid) {
+    return knex("destination")
+          .where({ createdby: userid, isdeleted: false })
+          .andWhere("alias", "ilike", alias)
+          .first();
+  }
+  static async findByApplicationId({
+    applicationid,
+    query,
+    offset,
+    limit,
+    filters = {},
+  }) {
     let baseQuery = knex("destination")
       .select(
         "alias",
@@ -75,7 +104,7 @@ class Destination {
         "isactive",
         "isdeleted"
       )
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
@@ -92,15 +121,17 @@ class Destination {
     // Apply sorting if sortField is provided
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    } else {
+      baseQuery.orderBy("alias", "asc");
     }
 
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async countSearchResults(applicationId, query, filters = {}) {
+  static async countSearchResults(applicationid, query, filters = {}) {
     let baseQuery = knex("destination")
       .count({ count: "*" })
-      .where({ applicationid: applicationId, isdeleted: false })
+      .where({ applicationid, isdeleted: false })
       .andWhere((builder) => {
         builder
           .where("alias", "ilike", `%${query}%`)
@@ -117,10 +148,20 @@ class Destination {
     const [{ count }] = await baseQuery;
     return count;
   }
+  static async findByIds(ids) {
+    return knex("destination")
+      .whereIn("destinationid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
+  }
 
-
-
-
+  static async deleteMultiple(ids) {
+    const destinations = await knex("destination")
+      .whereIn("destinationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return destinations;
+  }
 
 }
 

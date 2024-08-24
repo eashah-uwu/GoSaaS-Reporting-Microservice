@@ -49,8 +49,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
           },
         }
       );
-
-      console.log(data);
       const processedData = data.data.map((app: any) => ({
         ...app,
         status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
@@ -71,14 +69,8 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
-
       const requests = updatedItems.map((item) => {
-        const {
-          connectionid,
-          isactive,
-          isdeleted,
-        } = item;
-        console.log(item)
+        const { connectionid, isactive, isdeleted } = item;
         return axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionid}`,
           {
@@ -117,8 +109,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPageSize(Number(event.target.value));
-    setPage(1);
+    if (Number(event.target.value) != 0) {
+      setPageSize(Number(event.target.value));
+      setPage(1);
+    }
   };
 
   const handleFilterChange = (newFilters: any) => {
@@ -134,28 +128,20 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setEditingSource(null);
     setOpenAddSource(false);
   };
-  const handleAddSource = (newSource: any) => {
-    console.log(newSource)
 
-    setConnections((prevData) => [
-      {
-        ...newSource,
-        status: newSource.isactive
-          ? "active"
-          : "inactive",
-      },
-      ...prevData,
-    ]);
+  const handleAddSource = () => {
+    fetchConnections(page, pageSize, searchQuery, filters);
   };
 
   const handleUpdateSource = (updatedSource: any) => {
     setConnections((prevData) =>
       prevData.map((source) =>
-        source.connectionid === updatedSource.connectionid ? {
-          ...updatedSource, status: updatedSource.isactive
-            ? "active"
-            : "inactive",
-        } : source
+        source.connectionid === updatedSource.connectionid
+          ? {
+              ...updatedSource,
+              status: updatedSource.isactive ? "active" : "inactive",
+            }
+          : source
       )
     );
   };
@@ -165,21 +151,38 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
     setOpenAddSource(true);
   };
 
-
-  const handleConnectionDelete = async (connectionId: string | null) => {
+  const handleConnectionDelete = async (selectedIds: string[]) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/connections/${connectionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      if(selectedIds.length==1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${selectedIds[0]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        toast.success("Successfully Deleted Source Connection")
+      }
+      else if(selectedIds.length>1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              ids: selectedIds,
+            },
+          }
+        );
+        toast.success("Successfully Deleted Source Connections")
+      }
       fetchConnections(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      console.log(e);
-    }
+      } catch (e) {
+        toast.error("Error Deleting Connections")
+        throw e;
+      }
   };
 
   const generateBaseColumns = (data: any[]) => {
@@ -199,15 +202,10 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       .map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1),
-
       }));
-
-
-
 
     return columns;
   };
-
 
   const baseColumns = generateBaseColumns(connections);
 
@@ -318,9 +316,6 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         onEdit={handleUpdateSource}
         sourceToEdit={editingSource}
       />
-
-
-
     </>
   );
 };

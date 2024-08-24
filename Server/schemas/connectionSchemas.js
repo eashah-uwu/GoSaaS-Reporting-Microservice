@@ -13,6 +13,7 @@ const connectionSchema = z.object({
   applicationid: z.number().int(),
   createdby: z.number().int().optional(),
   updatedby: z.number().int().optional(),
+  schema: z.string().max(255).optional(), // Example of a new field
 });
 
 module.exports = connectionSchema;

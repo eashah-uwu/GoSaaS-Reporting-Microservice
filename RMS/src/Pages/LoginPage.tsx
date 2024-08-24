@@ -1,5 +1,5 @@
 import Navbar from "../Components/Navbar/Navbar";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Formik, FormikHelpers } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { setToken, setUserId } from "../State/authSlice";
 import axios from "axios";
 import styles from "./pages.module.css";
+import { toast } from "react-toastify";
 
 import {
   Box,
@@ -40,6 +41,18 @@ function LoginPage() {
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const isMediumScreen = useMediaQuery("(min-width:960px)");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log(window.location.search)
+    const errorParam = urlParams.get("error");
+
+    if (errorParam === "UnauthorizedDomain") {
+      toast.error("Only Gosaas accounts are allowed to log in.");
+      urlParams.delete("error");
+      navigate({ search: urlParams.toString() }, { replace: true });
+    }
+  }, []);
 
   const login = async (
     values: LoginValues,

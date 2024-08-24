@@ -14,7 +14,8 @@ const {
   downloadXsl,
   reportGeneration,
   downloadReport,
-  deleteMultipleReports
+  deleteMultipleReports,
+  //updateMultipleStatus
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken = require("../middlewares/auth");

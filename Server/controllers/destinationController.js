@@ -171,13 +171,50 @@ const deleteMultipleDestinations = async (req, res) => {
       message: "Unauthorized deletion attempt!",
     });
   }
-  
+
   await Destination.deleteMultiple(ids);
   logger.info("Destinations deleted successfully", {
     context: { traceid: req.traceId },
   });
   res.status(StatusCodes.OK).json({ message: "Destinations deleted successfully!" });
 };
+
+const updateMultipleStatus=async(req,res)=>{
+  const userid=req.user.userid;
+  const { ids,status } = req.body;
+  if (!['active', 'inactive'].includes(status)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
+  }
+
+  const existingDestinations = await Destination.findByIds(ids);
+  if (existingDestinations.length !== ids.length) {
+    logger.warn("Some Destinations not found for Status Update", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Destinations not found for Status Update!",
+    });
+  }
+
+  const applicationIds = existingDestinations.map(dest => dest.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some(app => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized Update attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized Update attempt!",
+    });
+  }
+
+  await Destination.batchChangeStatus(ids, status);
+  logger.info("Destinations status changed successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Destinations status changed successfully!" });
+}
 
 // Get destinations by application ID
 const getDestinationsByApplicationId = async (req, res) => {
@@ -251,5 +288,6 @@ module.exports = {
   getDestinationsByApplicationId,
   connectStorageDestination,
   addFileToDestination,
-  deleteMultipleDestinations
+  deleteMultipleDestinations,
+  updateMultipleStatus
 };

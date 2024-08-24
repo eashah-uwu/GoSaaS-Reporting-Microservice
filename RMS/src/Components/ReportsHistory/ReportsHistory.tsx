@@ -157,6 +157,7 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             includeEdit={false}
             baseColumns={baseColumns}
             pageSize={pageSize}
+            onGroupStatusChange={()=>{}}
             onSave={() => {}}
             rowIdAccessor="reportstatushistoryid"
             onDelete={() => {}}

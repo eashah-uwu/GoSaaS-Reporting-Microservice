@@ -137,6 +137,25 @@ const Dashboard = () => {
   const handleAddApplication = () => {
     fetchApplications(page, pageSize, searchQuery, filters);
   };
+  const handleGroupStatusChange = async(selectedIds: string[],status:string) => {
+    try {
+        const data={ids:selectedIds,status:status};
+        await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/api/applications/group-status`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        toast.success("Successfully Updated Status of Applications")
+        fetchApplications(page, pageSize, searchQuery, filters);
+      } catch (e) {
+        toast.error("Error Updating Status")
+        throw e;
+      }
+  };
 
   const handleApplicationDelete = async (selectedIds: string[]) => {
     try {
@@ -243,6 +262,7 @@ const Dashboard = () => {
           onSave={handleSave}
           rowIdAccessor="applicationid"
           onDelete={handleApplicationDelete}
+          onGroupStatusChange={handleGroupStatusChange}
           onAddData={handleAddApplicationOpen}
           includeEdit={false}
           onEdit={function (item: any): void {

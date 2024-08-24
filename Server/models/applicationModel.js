@@ -66,7 +66,13 @@ class Application {
       .returning("*");
     return applications;
   }
-
+  static async batchChangeStatus(ids, status) {
+    const isActive = status === 'active';
+    return knex("application")
+      .whereIn("applicationid", ids)
+      .update({ isactive:isActive, updatedat: new Date() })
+      .returning("*");
+  }
   static async update(id, data) {
     let { name, isactive, isdeleted, description = "" } = data;
     const [prevApplication] = await knex("application").where({

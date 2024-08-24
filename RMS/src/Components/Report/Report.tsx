@@ -142,7 +142,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
   const handleReportDelete = async (selectedIds: string[]) => {
     try {
-      if(selectedIds.length==1){
+      if (selectedIds.length == 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/reports/${selectedIds[0]}`,
           {
@@ -153,7 +153,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         );
         toast.success("Successfully Deleted Reports")
       }
-      else if(selectedIds.length>1){
+      else if (selectedIds.length > 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/reports/delete`,
           {
@@ -168,10 +168,10 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         toast.success("Successfully Deleted Reports")
       }
       fetchReports(page, pageSize, searchQuery, filters);
-      } catch (e) {
-        toast.error("Error Deleting Reports")
-        throw e;
-      }
+    } catch (e) {
+      toast.error("Error Deleting Reports")
+      throw e;
+    }
   };
 
   const handleEdit = (report: any) => {
@@ -199,9 +199,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         key === "filekey"
           ? { accessorKey: key, header: "Xsl File" }
           : {
-              accessorKey: key,
-              header: key.charAt(0).toUpperCase() + key.slice(1),
-            }
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+          }
       );
   };
 
@@ -257,6 +257,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="reportid"
+            onGroupStatusChange={()=>{}}
             onDelete={handleReportDelete}
             onAddData={handleAddReportOpen}
             onEdit={handleEdit}

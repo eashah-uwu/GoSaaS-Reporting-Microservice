@@ -63,6 +63,8 @@ const createReport = async (req, res) => {
     "reportsdestination0"
   );
 
+  console.log(source);
+
   const newReport = await Report.create(
     alias,
     description,
@@ -197,21 +199,34 @@ const getReportById = async (req, res) => {
   });
   res.status(StatusCodes.OK).json(report);
 };
-
 const updateReport = async (req, res) => {
-  const { reportid } = req.params;
-  const userid = req.user.userid;
-  const existingReport = await Report.findById(reportid);
-  if (!existingReport && existingReport.userid != userid) {
-    logger.warn("Report not found", { id });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Report not found" });
-  }
-  const data = reportSchema.partial().parse(req.body);
+  const {
+    alias,
+    description,
+    source,
+    destination,
+    storedProcedure,
+    parameter,
+    applicationid,
+  } = req.body;
 
-  const otherReport = await Report.findByName(alias,userid);
-  if (otherReport && otherReport.reportid != reportid) {
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10); 
+  const userid = req.user.userid;
+
+  const sourceId = parseInt(source, 10);
+  const destinationId = parseInt(destination, 10);
+  const storedProcedureId = parseInt(storedProcedure, 10);
+  const applicationId = parseInt(applicationid, 10);
+
+
+  const existingReport = await Report.findById(reportId);
+  if (!existingReport || existingReport.userid != userid) {
+    logger.warn("Report not found or unauthorized", { id: reportId });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
+  }
+  const otherReport = await Report.findByName(alias, userid);
+  if (otherReport && otherReport.reportid != reportId) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
     });
@@ -219,16 +234,40 @@ const updateReport = async (req, res) => {
       message: "Title of report must be unique",
     });
   }
+  
+  const data = {
+    title: alias,
+    description,
+    generationdate: existingReport.generationdate, 
+    parameters: parameter,
+    sourceconnectionid: sourceId,
+    destinationid: destinationId,
+    applicationid: applicationId,
+    storedprocedureid: storedProcedureId,
+    userid: userid,
+  };
+  
+  console.log(data);
 
-  const report = await Report.update(reportid, data);
-  logger.info("Report updated successfully", {
-    context: { traceid: req.traceId, report },
-  });
-  res.status(StatusCodes.OK).json({
-    message: "Report updated successfully!",
-    report,
-  });
+  try {
+    const report = await Report.update(reportId, data);
+    logger.info("Report updated successfully", {
+      context: { traceid: req.traceId, report },
+    });
+    res.status(StatusCodes.OK).json({
+      message: "Report updated successfully!",
+      report,
+    });
+  } catch (error) {
+    logger.error("Error updating report", {
+      context: { traceid: req.traceId, error },
+    });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "An error occurred while updating the report",
+    });
+  }
 };
+
 
 const deleteReport = async (req, res) => {
   const { reportid } = req.params;

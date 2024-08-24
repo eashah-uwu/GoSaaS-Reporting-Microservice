@@ -57,8 +57,8 @@ class Report {
     return report;
   }
 
-  static async findById(id) {
-    return knex("report").where({ reportid: id }).first();
+  static async findById(reportid) {
+    return knex("report").where({ reportid: reportid }).first();
   }
 
   static async update(id, data) {
@@ -129,12 +129,14 @@ class Report {
     return baseQuery.offset(offset).limit(limit);
   }
 
-  static async findByName(title,userid) {
+
+  static async findByName(title, userid) {
     return knex("report")
-          .where({ userid: userid, isdeleted: false })
+          .where({ createdby: userid, isdeleted: false })
           .andWhere("title", "ilike", title)
           .first();
   }
+  static asyn
   static async countSearchResults(applicationid, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })

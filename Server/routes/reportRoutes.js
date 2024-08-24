@@ -25,7 +25,7 @@ router.get("/download-xsl/:reportid",verifyToken,downloadXsl)
 router.get("/download-report/:reporthistoryid",verifyToken,downloadReport)
 router.get("/history",verifyToken, getReports);
 router.get("/:applicationid",verifyToken, getReportsByApplicationId);
-router.put("/:applicationid",verifyToken, updateReport);
+router.put("/:reportid",verifyToken,upload.single("file"), updateReport);
 router.delete("/delete",verifyToken, deleteMultipleReports); 
 router.delete("/:reportid",verifyToken, deleteReport);
 router.post("/generateReport", reportGeneration);

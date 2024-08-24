@@ -51,58 +51,89 @@ const AddReport: FC<AddReportProps> = ({
     parameter: report?.parameter || ''
   });
 
-
   useEffect(() => {
-    if (report) {
-      setFormData({
-        alias: report.title || "",
-        description: report.description || "",
-        source: report.sourceConnection || "",
-        destination: report.destination || "",
-        storedProcedure: report.storedProcedure || "",
-        parameter: report.parameter || "",
-      });
-      setParameters(report.parameter || "");
-    } else {
-      setFormData({
-        alias: "",
-        description: "",
-        source: "",
-        destination: "",
-        storedProcedure: "",
-        parameter: "",
-      });
-      setParameters("");
-    }
-  }, [report]);
+    const fetchDropdownData = async () => {
+      try {
+        const [sourcesResponse, destinationsResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+  
+        const fetchedSources = sourcesResponse.data.data;
+        const fetchedDestinations = destinationsResponse.data.data;
+  
+        setSources(fetchedSources);
+        setDestinations(fetchedDestinations);
+  
+        if (report) {
+          const source = fetchedSources.find(
+            (source: any) => source.connectionid === report.sourceconnectionid
+          );
+          const destination = fetchedDestinations.find(
+            (destination: any) => destination.destinationid === report.destinationid
+          );
+  
+          
+          console.log("this is the form im setting", formData);
+          if (source) {
+            const storedProcedureResponse = await axios.post(
+              `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
+              { id: source.connectionid },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+  
+            if (storedProcedureResponse.data.success) {
+              setStoredProcedures(storedProcedureResponse.data.data);
+              setFormData((prev) => ({
+                ...prev,
+                storedProcedure: report.storedProcedure || "",
+                parameter: report.parameter || "",
+              }));
+              setParameters(report.parameter || "");
+            } else {
+              toast.error("Failed to load stored procedures: " + storedProcedureResponse.data.message);
+            }
+          }
 
-
-   
-useEffect(() => {
-  const fetchDropdownData = async () => {
-    try {
-      const [sourcesResponse, destinationsResponse] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-      ]);
-
-      setSources(sourcesResponse.data.data);
-      setDestinations(destinationsResponse.data.data);
-    } catch (error) {
-      toast.error("Failed to load dropdown data");
-    }
-  };
-
-  fetchDropdownData();
-}, [applicationId, token]);
+          setFormData((prev) => ({
+            ...prev,
+            alias: report.title || "",
+            description: report.description || "",
+            source: source ? source.connectionid : "",
+            destination: destination ? destination.destinationid : "",
+          }));
+          
+        } else {
+          setFormData({
+            alias: "",
+            description: "",
+            source: "",
+            destination: "",
+            storedProcedure: "",
+            parameter: "",
+          });
+          setParameters("");
+        }
+      } catch (error) {
+        toast.error("Failed to load dropdown data");
+      }
+    };
+  
+    fetchDropdownData();
+  }, [applicationId, token, report]);
+  
 
 
 const handleChange = async (e: any) => {
@@ -165,12 +196,21 @@ const handleChange = async (e: any) => {
         formDataToSend.append("file", file);
       }
       formDataToSend.append("applicationid", applicationId);
-
+       
+      formDataToSend.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
+      
       if (report) {
-        // Editing existing report
+        // Editingreport existing 
+        formDataToSend.forEach((value, key) => {
+          console.log(`${key}: ${value}`);
+        });
+        
+   
         const response = await axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/reports/${report.reportid}`,
-          formDataToSend,
+            formDataToSend,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -178,7 +218,7 @@ const handleChange = async (e: any) => {
           }
         );
 
-        if (response.status === 200) {
+        if (response.status === StatusCodes.OK) {
           toast.success("Report updated successfully!");
           onEdit?.(response.data.report);
           handleClose();
@@ -197,7 +237,7 @@ const handleChange = async (e: any) => {
           }
         );
 
-        if (response.status === 201) {
+        if (response.status === StatusCodes.CREATED) {
           toast.success("Report created successfully!");
           onAdd(response.data.report);
           handleClose();
@@ -233,9 +273,9 @@ const handleChange = async (e: any) => {
   return (
     <>
       <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{report ? "Edit Report" : "Configure Report"}</DialogTitle>
-      <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <DialogTitle>{report ? "Edit Report" : "Configure Report"}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
             <div className={styles.formContainer}>
               <TextField
                 margin="dense"
@@ -270,9 +310,14 @@ const handleChange = async (e: any) => {
                   value={formData.source}
                   onChange={handleChange}
                 >
-                  <MenuItem value="" hidden>Select Source</MenuItem>
+                  <MenuItem value="" hidden>
+                    Select Source
+                  </MenuItem>
                   {sources.map((source) => (
-                    <MenuItem key={source.connectionid} value={source.connectionid}>
+                    <MenuItem
+                      key={source.connectionid}
+                      value={source.connectionid}
+                    >
                       {source.alias}
                     </MenuItem>
                   ))}
@@ -289,12 +334,26 @@ const handleChange = async (e: any) => {
                   value={formData.destination}
                   onChange={handleChange}
                 >
-                  <MenuItem value="" hidden>Select Destination</MenuItem>
-                  {destinations.map((destination) => (
-                    <MenuItem key={destination.destinationid} value={destination.destinationid}>
-                      {destination.alias}
+                  <MenuItem value="" hidden>
+                    Select Destination
+                  </MenuItem>
+                  {report ? (
+                    <MenuItem
+                      key={report.destinationid}
+                      value={report.destinationid}
+                    >
+                      {report.destination}
                     </MenuItem>
-                  ))}
+                  ) : (
+                    destinations.map((destination) => (
+                      <MenuItem
+                        key={destination.destinationid}
+                        value={destination.destinationid}
+                      >
+                        {destination.alias}
+                      </MenuItem>
+                    ))
+                  )}
                 </TextField>
               </div>
             </div>
@@ -310,7 +369,9 @@ const handleChange = async (e: any) => {
                   value={formData.storedProcedure}
                   onChange={handleProcedureSelect}
                 >
-                  <MenuItem value="" hidden>Select Stored Procedure</MenuItem>
+                  <MenuItem value="" hidden>
+                    Select Stored Procedure
+                  </MenuItem>
                   {storedProcedures.map((proc, index) => (
                     <MenuItem key={index} value={proc.procedure_name}>
                       {proc.procedure_name}
@@ -343,35 +404,35 @@ const handleChange = async (e: any) => {
               />
             </div>
             <DialogActions className={styles.formActions}>
-            <Button
-              size="small"
-              onClick={onClose}
-              sx={{
-                backgroundColor: "#7d0e0e",
-                color: "white",
-                ":hover": {
+              <Button
+                size="small"
+                onClick={onClose}
+                sx={{
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="small"
-              sx={{
-                backgroundColor: "#7d0e0e",
-                color: "white",
-                ":hover": {
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="small"
+                sx={{
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                },
-              }}
-            >
-              {report ? "Update" : "Generate"}
-            </Button>
-          </DialogActions>
+                  ":hover": {
+                    backgroundColor: "#7d0e0e",
+                    color: "white",
+                  },
+                }}
+              >
+                {report ? "Update" : "Generate"}
+              </Button>
+            </DialogActions>
           </form>
         </DialogContent>
       </Dialog>

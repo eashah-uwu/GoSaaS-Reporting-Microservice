@@ -77,17 +77,22 @@ class AuditModel {
     return query;
   }
 
-  // Retrieves unique modules and events from the AuditEvents table
-  static async getUniqueModulesAndEvents() {
-    const [uniqueModules, uniqueEvents] = await Promise.all([
-      knex("auditevents").distinct("module").select("module"),
-      knex("auditevents").distinct("event").select("event"),
-    ]);
+  // Retrieves unique modules from the AuditEvents table
+  static async getUniqueModules() {
+    const uniqueModules = await knex("auditevents").distinct("module").select("module");
+    return uniqueModules.map((row) => row.module);
+  }
 
-    return {
-      modules: uniqueModules.map((row) => row.module),
-      events: uniqueEvents.map((row) => row.event),
-    };
+  // Retrieves unique events from the AuditEvents table
+  static async getUniqueEvents() {
+    const uniqueEvents = await knex("auditevents").distinct("event").select("event");
+    return uniqueEvents.map((row) => row.event);
+  }
+
+  // Retrieves unique users from the AuditTrail table
+  static async getUniqueUsers() {
+    const uniqueUsers = await knex("audittrail").distinct("createdby").select("createdby");
+    return uniqueUsers.map((row) => row.createdby);
   }
 }
 

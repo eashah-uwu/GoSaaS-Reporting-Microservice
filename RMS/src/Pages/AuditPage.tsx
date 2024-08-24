@@ -25,28 +25,32 @@ const AuditPage = () => {
     // Fetch users, modules, and events for dropdowns
     const fetchFilters = async () => {
       try {
-        const usersResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/users`, {
+        const usersResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         setUsers(usersResponse.data);
     
-        const uniqueResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/unique`, {
+        const modulesResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/modules`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        
-        const { modules, events } = uniqueResponse.data;
-        setModules(modules);
-        setEvents(events);
+        setModules(modulesResponse.data);
+    
+        const eventsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/events`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setEvents(eventsResponse.data);
       } catch (error) {
         console.error("Failed to fetch filter data", error);
       }
     };
     
-    fetchFilters();
+    fetchFilters();    
   }, [token]);
   interface FilterType {
     user?: string;

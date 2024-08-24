@@ -1,5 +1,3 @@
-// controllers/auditController.js
-
 const AuditModel = require("../models/auditModel");
 const HttpStatus = require("http-status-codes");
 
@@ -33,10 +31,22 @@ class AuditController {
     return res.status(HttpStatus.StatusCodes.OK).json(auditTrails);
   }
 
-  // Gets unique modules and events
-  static async getUniqueModulesAndEvents(req, res) {
-    const { modules, events } = await AuditModel.getUniqueModulesAndEvents();
-    return res.status(HttpStatus.StatusCodes.OK).json({ modules, events });
+  // Gets unique modules
+  static async getUniqueModules(req, res) {
+    const modules = await AuditModel.getUniqueModules();
+    return res.status(HttpStatus.StatusCodes.OK).json(modules);
+  }
+
+  // Gets unique events
+  static async getUniqueEvents(req, res) {
+    const events = await AuditModel.getUniqueEvents();
+    return res.status(HttpStatus.StatusCodes.OK).json(events);
+  }
+
+  // Gets unique users
+  static async getUniqueUsers(req, res) {
+    const users = await AuditModel.getUniqueUsers();
+    return res.status(HttpStatus.StatusCodes.OK).json(users);
   }
 }
 

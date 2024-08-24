@@ -32,15 +32,15 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             if (col.accessorKey === 'filekey' && rowIdAccessor === "reportid") {
                 const filekey = info.getValue();
                 const fileName = filekey.split('/').pop()?.split('-').pop();
-                const handleDownload = async (e:any) => {
+                const handleDownload = async (e: any) => {
                     e.preventDefault();
                     try {
                         const response = await axios.get(
-                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download/${info.row.original[rowIdAccessor]}`,
+                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download-xsl/${info.row.original[rowIdAccessor]}`,
                             {
                                 responseType: "blob",
                                 headers: {
-                                    Authorization: `Bearer ${token}`, 
+                                    Authorization: `Bearer ${token}`,
                                 },
                             }
                         );
@@ -66,6 +66,44 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
                     </a>
                 );
             }
+            if (col.accessorKey === 'filekey' && rowIdAccessor === "reportstatushistoryid") {
+                const filekey = info.getValue();
+                const fileName = filekey.split('/').pop()?.split('-').pop();
+                const status = info.row.original["status"];
+                const handleReportDownload = async (e: any) => {
+                    e.preventDefault();
+                    try {
+                        const response = await axios.get(
+                            `${import.meta.env.VITE_BACKEND_URL}/api/reports/download-report/${info.row.original[rowIdAccessor]}`,
+                            {
+                                responseType: "blob",
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        );
+
+                        // Create a URL for the downloaded file
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.setAttribute("download", fileName || "downloaded_file.pdf");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (error) {
+                        console.error("Error downloading file", error);
+                    }
+                };
+
+                return (
+                    <a style={{ color: status === "Generated" ? "#bc1a1a" : "#ccc", fontWeight: "bold", textDecoration: "none", display: "flex", justifyContent: "center",pointerEvents: status === "Generated" ? "auto" : "none" }} href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download-report/${info.row.original[rowIdAccessor]}`} download onClick={handleReportDownload}>
+                        {`${fileName}  `}
+                        <CloudDownloadIcon sx={{ marginLeft: "0.5rem" }}>
+                        </CloudDownloadIcon>
+                    </a>
+                );
+            }
 
             return info.getValue();
         }
@@ -77,21 +115,25 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original[rowIdAccessor]} handleStatusChange={handleStatusChange} />,
         });
     }
-    columns.push({
-        accessorKey: "edit",
-        header: "Actions",
-        cell: ({ row }: any) => (
-            <span style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-0.5rem" }}>
-                {includeEdit && <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
-                    <Edit />
-                </IconButton>}
+    if (rowIdAccessor != "reportstatushistoryid") {
 
-                <DeleteIcon
-                    sx={{ color: "#7d0e0e", cursor: "pointer" }}
-                    onClick={() => handleDeleteClick(row.original[rowIdAccessor])} />
-            </span>
-        ),
-    });
+        columns.push({
+            accessorKey: "edit",
+            header: "Actions",
+            cell: ({ row }: any) => (
+                <span style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    {includeEdit && <IconButton onClick={() => onEdit(row.original)} sx={{ ml: 2, width: "auto", height: "auto" }}>
+                        <Edit />
+                    </IconButton>}
+
+                    <DeleteIcon
+                        sx={{ color: "#7d0e0e", cursor: "pointer" }}
+                        onClick={() => handleDeleteClick(row.original[rowIdAccessor])} />
+                </span>
+            ),
+        });
+    }
+
     return columns;
 };
 

@@ -10,7 +10,8 @@ const {
   updateDestination,
   deleteDestination,
   connectStorageDestination,
-  addFileToDestination
+  addFileToDestination,
+  deleteMultipleDestinations
 } = require("../controllers/destinationController");
 const verifyToken=require("../middlewares/auth")
 
@@ -21,6 +22,7 @@ router.post("/upload",verifyToken,upload.single('file'), addFileToDestination);
 router.get("/get-dest/:id",verifyToken, getDestinationById);
 router.get("/:applicationid",verifyToken, getDestinationsByApplicationId);
 router.put("/:destinationid",verifyToken, updateDestination);
+router.delete("/delete",verifyToken, deleteMultipleDestinations); 
 router.delete("/:destinationid",verifyToken, deleteDestination);
 
 module.exports = router;

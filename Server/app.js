@@ -12,6 +12,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 
 const testMiddleware = require("./middlewares/index");
+require("./worker/reportWorker"); // Ensure the worker is required to start processing jobs
 
 // Import routes
 const indexRouter = require("./routes/index");
@@ -50,15 +51,12 @@ app.use(traceIdMiddleware);
 // Routes
 app.use("/", indexRouter);
 
-app.use("api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/connections", connectionRoutes);
-app.use("/api/auth", authRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/audit-trails", auditRoutes);
-
-
 
 // Error handling middleware
 app.use(errorHandler);

@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import styles from "./AddReport.module.css";
 import { toast } from "react-toastify";
+import { StatusCodes } from "http-status-codes";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
@@ -205,7 +206,12 @@ const handleChange = async (e: any) => {
         }
       }
     } catch (error: any) {
-      toast.error("Error submitting report. Please try again.");
+      if (error.response && error.response.status === StatusCodes.CONFLICT) {
+        toast.error("Alias must be unique" );
+      } else {
+        toast.error("Error creating report. Please try again.");
+      }
+      
     }
   };
 

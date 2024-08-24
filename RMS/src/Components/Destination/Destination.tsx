@@ -29,7 +29,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [filters, setFilters] = useState<{
     sortField?: string;
     sortOrder?: string;
-  status?: string;
+    status?: string;
   }>({});
 
   const fetchDestinations = async (
@@ -50,7 +50,6 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         }
       );
 
-      console.log(data);
       const processedData = data.data.map((app: any) => ({
         ...app,
         status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
@@ -115,8 +114,10 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPageSize(Number(event.target.value));
-    setPage(1);
+    if(Number(event.target.value)!=0){
+      setPageSize(Number(event.target.value));
+      setPage(1);
+    }
   };
 
   const handleFilterChange = (newFilters: any) => {
@@ -132,13 +133,11 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     setEditingDestination(null);
     setOpenAddDestination(false);
   };
-  // const handleAddDestination = (newDestination: any) => {
-  //   setDestinations((prevData) => [...prevData,{...newDestination,status:newDestination.isdeleted ? "delete" : newDestination.isactive ? "active" : "inactive"}]);
-  // };
 
-  const handleAddOrEditDestination = (newOrUpdatedDestination: any) => {
+
+  const handleAddOrEditDestination = () => {
     setEditingDestination(null);
-    fetchDestinations();
+    fetchDestinations(page, pageSize, searchQuery, filters);
   };
 
   const handleEdit = (destination: any) => {
@@ -146,21 +145,38 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     setOpenAddDestination(true);
   };
 
-  const handleConnectionDelete = async (destinationId: string | null) => {
+  const handleDestinationsDelete = async (selectedIds: string[]) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${destinationId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      if(selectedIds.length==1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${selectedIds[0]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        toast.success("Successfully Deleted Destination")
+      }
+      else if(selectedIds.length>1){
+        await axios.delete(
+          `${import.meta.env.VITE_BACKEND_URL}/api/destinations/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              ids: selectedIds,
+            },
+          }
+        );
+        toast.success("Successfully Deleted Destinations")
+      }
       fetchDestinations(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      console.log(e);
-    }
+      } catch (e) {
+        toast.error("Error Deleting Destinations")
+        throw e;
+      }
   };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -182,12 +198,15 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
   const baseColumns = generateBaseColumns(destinations);
 
-
   return (
     <>
       <div className={classes.main}>
         <Box sx={{ float: "left", marginLeft: "7.5%" }}>
-          <Filter columns={baseColumns} onFilterChange={handleFilterChange} showStatusFilter={true}/>
+          <Filter
+            columns={baseColumns}
+            onFilterChange={handleFilterChange}
+            showStatusFilter={true}
+          />
         </Box>
         <Box
           sx={{
@@ -209,8 +228,10 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
           <Button
             onClick={handleSearchSubmit}
             size="medium"
-            sx={{backgroundColor: "#7d0e0e",color: "white",
-              ":hover": {backgroundColor: "#7d0e0e",color: "white"}
+            sx={{
+              backgroundColor: "#7d0e0e",
+              color: "white",
+              ":hover": { backgroundColor: "#7d0e0e", color: "white" },
             }}
           >
             Search
@@ -227,7 +248,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="destinationid"
-            onDelete={handleConnectionDelete}
+            onDelete={handleDestinationsDelete}
             onAddData={handleAddDestinationOpen}
             onEdit={handleEdit}
           />
@@ -281,7 +302,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         onClose={onClose}
         onAddOrEdit={handleAddOrEditDestination}
         applicationId={applicationId}
-        initialData={editingDestination} 
+        initialData={editingDestination}
       />
     </>
   );

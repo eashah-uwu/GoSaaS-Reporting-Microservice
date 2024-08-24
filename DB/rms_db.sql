@@ -9,6 +9,7 @@ CREATE DATABASE rms_db;
 
 -- Drop tables if they exist
 DROP TABLE IF EXISTS AuditTrail;
+DROP TABLE IF EXISTS AuditEvents;
 DROP TABLE IF EXISTS ReportStatusHistory;
 DROP TABLE IF EXISTS Report;
 DROP TABLE IF EXISTS StoredProcedure;
@@ -26,6 +27,12 @@ CREATE TABLE "User" (
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+ALTER TABLE "User"
+ADD COLUMN "LastLoginAt" TIMESTAMP NULL,
+ADD COLUMN "LastLogoutAt" TIMESTAMP NULL;
+
 
 -- Create the Application table
 CREATE TABLE Application (
@@ -90,54 +97,59 @@ CREATE TABLE Destination (
     FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
 );
 
--- Create the Report table
-CREATE TABLE Report (
-    ReportID SERIAL PRIMARY KEY,
-    Title VARCHAR(255) NOT NULL,
-    Description TEXT,
-    GenerationDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    Parameters JSON,
-    SourceConnectionID INT,
-    DestinationID INT,
-    ApplicationID INT,
-    StoredProcedureID INT,
-    UserID INT,
-    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT,
-    FOREIGN KEY (SourceConnectionID) REFERENCES Connection(ConnectionID),
-    FOREIGN KEY (DestinationID) REFERENCES Destination(DestinationID),
-    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID),
-    FOREIGN KEY (StoredProcedureID) REFERENCES StoredProcedure(StoredProcedureID),
-    FOREIGN KEY (UserID) REFERENCES "User"(UserID)
+-- Drop table
+
+-- DROP TABLE public.report;
+
+CREATE TABLE public.report (
+    reportid serial4 NOT NULL,
+    title varchar(255) NOT NULL,
+    description text NULL,
+    generationdate timestamp NOT NULL,
+    parameters json NULL,
+    sourceconnectionid int4 NULL,
+    destinationid int4 NULL,
+    applicationid int4 NULL,
+    storedprocedure varchar(255) NULL,
+    userid int4 NULL,
+    createdat timestamp NOT NULL,
+    updatedat timestamp NULL,
+    createdby int4 NULL,
+    filekey varchar(255) NULL,
+    isdeleted bool DEFAULT true NULL,
+    CONSTRAINT report_pkey PRIMARY KEY (reportid),
+    CONSTRAINT report_applicationid_fkey FOREIGN KEY (applicationid) REFERENCES public.application(applicationid),
+    CONSTRAINT report_destinationid_fkey FOREIGN KEY (destinationid) REFERENCES public.destination(destinationid),
+    CONSTRAINT report_sourceconnectionid_fkey FOREIGN KEY (sourceconnectionid) REFERENCES public."connection"(connectionid),
+    CONSTRAINT report_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid)
 );
+CREATE INDEX idx_report_appid ON public.report USING btree (applicationid);
+CREATE INDEX idx_report_destid ON public.report USING btree (destinationid);
+CREATE INDEX idx_report_sourceconnid ON public.report USING btree (sourceconnectionid);
+CREATE INDEX idx_report_userid ON public.report USING btree (userid);
 
--- Create the ReportStatusHistory table
-CREATE TABLE ReportStatusHistory (
-    ReportStatusHistoryID SERIAL PRIMARY KEY,
-    ReportID INT NOT NULL,
-    Status VARCHAR(50) NOT NULL,
-    Timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ReportID) REFERENCES Report(ReportID)
+-- Drop table
+
+-- DROP TABLE public.reportstatushistory;
+
+CREATE TABLE public.reportstatushistory (
+    reportstatushistoryid serial4 NOT NULL,
+    reportid int4 NOT NULL,
+    status varchar(50) NOT NULL,
+    "timestamp" timestamp NOT NULL,
+    "UserID" int4 NULL,
+    message varchar(255) NULL,
+    createdat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+    updatedat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+    filekey varchar(255) NULL,
+    CONSTRAINT reportstatushistory_pkey PRIMARY KEY (reportstatushistoryid),
+    CONSTRAINT reportstatushistory_reportid_fkey FOREIGN KEY (reportid) REFERENCES public.report(reportid)
 );
-
--- Create the AuditTrail table
-CREATE TABLE AuditTrail (
-    AuditTrailID SERIAL PRIMARY KEY,
-    Timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    Action VARCHAR(255) NOT NULL,
-    Details TEXT
-);
-
-ALTER TABLE "report"
-ADD COLUMN filekey VARCHAR(255);
-
-ALTER TABLE report RENAME COLUMN storedprocedureid TO storedprocedure;
+CREATE INDEX idx_reportstatushistory_reportid ON public.reportstatushistory USING btree (reportid);
 
 --Delete Previous Audit Table
 DROP TABLE IF EXISTS AuditTrail;
 DROP TABLE IF EXISTS AuditEvents;
-
 
 CREATE TABLE AuditEvents (
 	ID int8 GENERATED ALWAYS AS IDENTITY (INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -167,32 +179,42 @@ CREATE TABLE AuditTrail (
 );
 
 
+
+-- Application Module Events
 INSERT INTO AuditEvents (CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, Event, Description, Module)
-VALUES 
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'User Login', 'User logged into the system', 'Authentication'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'User Logout', 'User logged out of the system', 'Authentication'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Creation', 'New data entry created', 'Data Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Update', 'Existing data entry updated', 'Data Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Data Deletion', 'Data entry deleted', 'Data Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Password Change', 'User changed their password', 'User Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Role Assignment', 'Assigned role to a user', 'User Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Permission Change', 'Changed user permissions', 'User Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Profile Update', 'User updated their profile', 'User Management'),
-('system', CURRENT_TIMESTAMP, NULL, NULL, 'Account Lockout', 'User account was locked due to multiple failed login attempts', 'Security');
+VALUES
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Created', 'New application was created', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Updated', 'Application details were updated', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Deleted', 'Application was deleted', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Restored', 'Application was restored from deletion', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Inactivated', 'Application status was changed to inactive', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Activated', 'Application status was changed to inactive', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Name Changed', 'Application name was updated', 'Application'),
 
-INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
-VALUES 
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'User logged in', CURRENT_TIMESTAMP, 1, 1),
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'User logged out', CURRENT_TIMESTAMP, 1, 2),
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'Created new data entry', CURRENT_TIMESTAMP, 2, 3),
-(TRUE, 'editor', CURRENT_TIMESTAMP, 'Updated existing data entry', CURRENT_TIMESTAMP, 2, 4),
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'Deleted a data entry', CURRENT_TIMESTAMP, 3, 5),
-(FALSE, 'user', CURRENT_TIMESTAMP, 'Changed password', CURRENT_TIMESTAMP, 10, 6),
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'Assigned role to user', CURRENT_TIMESTAMP, 11, 7),
-(TRUE, 'admin', CURRENT_TIMESTAMP, 'Changed user permissions', CURRENT_TIMESTAMP, 11, 8),
-(FALSE, 'user', CURRENT_TIMESTAMP, 'Updated profile information', CURRENT_TIMESTAMP, 10, 9),
-(FALSE, 'system', CURRENT_TIMESTAMP, 'User account locked after failed login attempts', CURRENT_TIMESTAMP, 10, 10);
+-- Destination Module Events
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Added', 'New destination was added', 'Destination'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Updated', 'Destination details were updated', 'Destination'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Deleted', 'Destination was deleted', 'Destination'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Restored', 'Destination was restored from deletion', 'Destination'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Activated', 'Destination status was changed to active', 'Destination'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Destination Inactivated', 'Destination status was changed to inactive', 'Destination'),
 
+-- User Module Events
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Created', 'New user account was created', 'User'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Updated', 'User details were updated', 'User'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Deleted', 'User account was deleted', 'User'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Restored', 'User account was restored', 'User'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Logged In', 'User logged into the system', 'User'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'User Logged Out', 'User logged out of the system', 'User'),
+
+-- Report Module Events
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Created', 'New report was created', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Updated', 'Report details were updated', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Deleted', 'Report was deleted', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Restored', 'Report was restored from deletion', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Parameters Modified', 'Parameters for the report were modified', 'Report')
+
+;
 
 
 
@@ -201,11 +223,6 @@ CREATE INDEX idx_user_email ON "User" (Email);
 CREATE INDEX idx_application_userid ON Application (UserID);
 CREATE INDEX idx_connection_appid ON Connection (ApplicationID);
 CREATE INDEX idx_destination_appid ON Destination (ApplicationID);
-CREATE INDEX idx_report_appid ON Report (ApplicationID);
-CREATE INDEX idx_report_sourceconnid ON Report (SourceConnectionID);
-CREATE INDEX idx_report_destid ON Report (DestinationID);
-CREATE INDEX idx_report_userid ON Report (UserID);
-CREATE INDEX idx_reportstatushistory_reportid ON ReportStatusHistory (ReportID);
 CREATE INDEX idx_storedprocedure_sourceconnid ON StoredProcedure (SourceConnectionID);
 
 -- Insert data into User table
@@ -247,27 +264,7 @@ VALUES
 ('Dest2', 'http://example.com/api2', 'apikey2', TRUE, FALSE, 2, NOW(), NOW(), 2, 2),
 ('Dest3', 'http://example.com/api3', 'apikey3', FALSE, TRUE, 3, NOW(), NOW(), 3, 3);
 
--- Insert data into Report table
-INSERT INTO Report (Title, Description, GenerationDate, Parameters, SourceConnectionID, DestinationID, ApplicationID, StoredProcedureID, UserID, CreatedAt, UpdatedAt, CreatedBy)
-VALUES 
-('Report1', 'Description for Report1', NOW(), '{"param1": "value1"}', 1, 1, 1, 1, 1, NOW(), NOW(), 1),
-('Report2', 'Description for Report2', NOW(), '{"param2": "value2"}', 2, 2, 2, 2, 2, NOW(), NOW(), 2),
-('Report3', 'Description for Report3', NOW(), '{"param3": "value3"}', 3, 3, 3, 3, 3, NOW(), NOW(), 3);
 
--- Insert data into ReportStatusHistory table
-INSERT INTO ReportStatusHistory (ReportID, Status, Timestamp)
-VALUES 
-(1, 'Generated', NOW()),
-(2, 'Pending', NOW()),
-(3, 'Failed', NOW());
 
--- Insert data into AuditTrail table
-INSERT INTO AuditTrail (Timestamp, Action, Details)
-VALUES 
-(NOW(), 'Create', 'Created new user'),
-(NOW(), 'Update', 'Updated application details'),
-(NOW(), 'Delete', 'Deleted a connection');
 
 -- Example query to view data
-
-SELECT * FROM "User";

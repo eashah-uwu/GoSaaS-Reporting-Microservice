@@ -6,6 +6,7 @@ const {
   getApplicationById,
   updateApplication,
   deleteApplication,
+  deleteMultipleApplications
 } = require("../controllers/applicationController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken=require("../middlewares/auth")
@@ -15,6 +16,7 @@ router.post("/",verifyToken, createApplication);
 router.get("/",verifyToken, validateQuery, getApplications); 
 router.get("/:applicationid",verifyToken, getApplicationById);
 router.put("/:applicationid",verifyToken, updateApplication);
+router.delete("/delete",verifyToken, deleteMultipleApplications); 
 router.delete("/:applicationid",verifyToken, deleteApplication);
 
 module.exports = router;

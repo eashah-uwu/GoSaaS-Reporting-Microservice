@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import classes from "./Report.module.css";
+import classes from "./ReportsHistory.module.css";
 import axios from "axios";
 import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
@@ -9,18 +9,13 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { RootState } from "../../State/store";
 
-interface ReportProps {
-  applicationId: string;
-}
+interface ReportHistoryProps {}
 
-const Report: React.FC<ReportProps> = ({ applicationId }) => {
+const ReportHistory: React.FC<ReportHistoryProps> = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
-  const [currentReport, setCurrentReport] = useState<any | null>(null);
-
-  const [openAddReport, setOpenAddReport] = useState<boolean>(false);
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -41,7 +36,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/reports/${applicationId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports/history`,
         {
           params: { page, pageSize, query, filters },
           headers: {
@@ -60,32 +55,8 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
   useEffect(() => {
     fetchReports(page, pageSize, searchQuery, filters);
-  }, [applicationId, page, pageSize, filters]);
+  }, [page, pageSize, filters]);
 
-  const handleSave = async (updatedItems: any[]) => {
-    try {
-      const requests = updatedItems.map((item) => {
-        const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
-        return axios.put(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }/api/destinations/${destinationid}`,
-          {
-            destinationid,
-            alias,
-            url,
-            apikey,
-            isactive,
-            isdeleted,
-          }
-        );
-      });
-      await Promise.all(requests);
-      console.log("Updated Items", updatedItems);
-    } catch (error) {
-      alert("Failed to update data");
-    }
-  };
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
@@ -101,8 +72,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   ) => {
     setPage(value);
   };
+
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (Number(event.target.value) != 0) {
+    if(Number(event.target.value)!=0){
       setPageSize(Number(event.target.value));
       setPage(1);
     }
@@ -113,91 +85,21 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setPage(1);
   };
 
-  const handleAddReportOpen = () => {
-    setOpenAddReport(true);
-  };
+  const handleAddReport = (newReport: any) => {};
 
-
-  const handleAddReportClose = () => {
-    setCurrentReport(null); 
-    setOpenAddReport(false);
-  };
-
-  const handleUpdateReport = (updatedReport: any) => {
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.reportid === updatedReport.reportid
-          ? {
-              ...updatedReport,
-              status: updatedReport.isActive ? "active" : "inactive",
-            }
-          : report
-      )
-    );
-  };
-
-  const handleAddReport = (newReport: any) => {
-    setReports((prevData) => [...prevData, { ...newReport }]);
-  };
-
-  const handleReportDelete = async (selectedIds: string[]) => {
-    try {
-      if(selectedIds.length==1){
-        await axios.delete(
-          `${import.meta.env.VITE_BACKEND_URL}/api/reports/${selectedIds[0]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
-          }
-        );
-        toast.success("Successfully Deleted Reports")
-      }
-      else if(selectedIds.length>1){
-        await axios.delete(
-          `${import.meta.env.VITE_BACKEND_URL}/api/reports/delete`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            data: {
-              ids: selectedIds,
-            },
-          }
-        );
-        toast.success("Successfully Deleted Reports")
-      }
-      fetchReports(page, pageSize, searchQuery, filters);
-      } catch (e) {
-        toast.error("Error Deleting Reports")
-        throw e;
-      }
-  };
-
-  const handleEdit = (report: any) => {
-    setCurrentReport(report);
-    console.log("this app prints data", report)
-    setOpenAddReport(true);
-  };
-
-   
+  const handleReportDelete = async (reportid: string | null) => {};
+  const handleEdit = (connection: any) => {};
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
       .filter(
         (key) =>
-          key !== "destinationid" &&
-          key !== "applicationid" &&
-          key !== "sourceconnectionid" &&
-          key !== "storedprocedureid" &&
-          key !== "status" &&
-          key !== "reportid" &&
-          key !== "description"
+          key !== "reportid" && key!=="reportstatushistoryid"
       )
       .map((key) =>
         key === "filekey"
-          ? { accessorKey: key, header: "Xsl File" }
+          ? { accessorKey: key, header: "Download Report" }
           : {
               accessorKey: key,
               header: key.charAt(0).toUpperCase() + key.slice(1),
@@ -252,14 +154,14 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           <TableConfig
             data={reports}
             includeStatus={false}
-            includeEdit={true}
+            includeEdit={false}
             baseColumns={baseColumns}
             pageSize={pageSize}
-            onSave={handleSave}
-            rowIdAccessor="reportid"
-            onDelete={handleReportDelete}
-            onAddData={handleAddReportOpen}
-            onEdit={handleEdit}
+            onSave={() => {}}
+            rowIdAccessor="reportstatushistoryid"
+            onDelete={() => {}}
+            onAddData={() => {}}
+            onEdit={() => {}}
           />
         )}
         {!loading && !error && (
@@ -305,18 +207,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             </FormControl>
           </Box>
         )}
-     
       </div>
-       <AddReport
-      open={openAddReport}
-      applicationId={applicationId}
-      onClose={handleAddReportClose}
-      onAdd={handleAddReport}
-      onEdit={handleUpdateReport}
-      report={currentReport}
-    />
     </>
   );
 };
 
-export default Report;
+export default ReportHistory;

@@ -41,14 +41,30 @@ class Application {
   static async findAll() {
     return knex("application").select("*").where({ isdeleted: false });
   }
-  static async findByName(name) {
-    return knex("application").where({ name }).first();
+  static async findByName(name,userid) {
+    return knex("application")
+          .where({ userid: userid, isdeleted: false })
+          .andWhere("name", "ilike", name)
+          .first();
   }
 
   static async findById(id) {
     return knex("application")
       .where({ applicationid: id, isdeleted: false })
       .first();
+  }
+  static async findByIds(ids) {
+    return knex("application")
+    .whereIn("applicationid", ids)
+    .andWhere({isdeleted: false})
+    .returning("*");
+  }
+  static async deleteMultiple(ids) {
+    const applications = await knex("application")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return applications;
   }
 
   static async update(id, data) {
@@ -80,6 +96,7 @@ class Application {
       .returning("*");
     return application;
   }
+  
 
   static async countAll() {
     const [{ count }] = await knex("application")
@@ -95,7 +112,7 @@ class Application {
         "name",
         "isactive",
         "isdeleted",
-        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`)
+        knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "creationdate"`)
       )
       .where({ userid: userid, isdeleted: false })
       .andWhere((builder) => {
@@ -116,6 +133,8 @@ class Application {
     if (filters.sortField && filters.sortField !== "None") {
       const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
       baseQuery.orderBy(filters.sortField, sortOrder);
+    }else{
+      baseQuery.orderBy("createdat", "desc");
     }
 
     return baseQuery.offset(offset).limit(limit);

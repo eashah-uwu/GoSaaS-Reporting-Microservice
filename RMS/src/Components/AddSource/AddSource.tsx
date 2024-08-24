@@ -22,26 +22,62 @@ import * as z from "zod";
 import { Source } from "@mui/icons-material";
 
 const connectionSchema = z.object({
-  alias: z.string().max(255, "Alias should not exceed 255 characters").optional(),
-  username: z.string().max(255, "Username should not exceed 255 characters").optional(),
-  host: z.string().max(255, "Host should not exceed 255 characters").optional(),
-  port: z
-  .preprocess((val) => {
-    if (typeof val === "string") val = parseInt(val, 10);
-    return val;
-  }, z.number().int().positive().max(65535).or(z.nan()).refine(
-      (val) => !isNaN(val),
-      { message: "Port must be a valid integer between 1 and 65535" }
-    )),
-  database: z.string().max(255, "Database should not exceed 255 characters").optional(),
-  type: z.string().max(50, "Type should not exceed 50 characters").optional(),
-  password: z.string().max(255, "Password should not exceed 255 characters").optional(),
+  alias: z
+    .string()
+    .min(3, "Alias must be at least 3 characters")
+    .max(25, "Alias should not exceed 25 characters")
+    .optional(),
+  username: z
+    .string()
+    .min(1, "Username is required")
+    .max(50, "Username should not exceed 50 characters")
+    .optional(),
+  host: z
+    .string()
+    .min(1, "Host is required")
+    .max(255, "Host should not exceed 255 characters")
+    .optional(),
+  port: z.preprocess(
+    (val) => {
+      if (typeof val === "string") val = parseInt(val, 10);
+      return val;
+    },
+    z
+      .number()
+      .int()
+      .positive()
+      .max(65535)
+      .or(z.nan())
+      .refine((val) => !isNaN(val), {
+        message: "Port must be a valid integer between 1 and 65535",
+      })
+  ),
+  database: z
+    .string()
+    .min(1, "Database name is required")
+    .max(50, "Database name should not exceed 50 characters")
+    .optional(),
+  type: z
+    .string()
+    .min(1, "Type is required")
+    .max(50, "Type should not exceed 50 characters")
+    .optional(),
+  password: z
+    .string()
+    .min(8, "Password should be at least 8 characters")
+    .max(50, "Password should not exceed 50 characters")
+    .optional(),
+  schema: z
+    .string()
+    .min(1, "Schema Name is required")
+    .max(50, "Schema Name should not exceed 50 characters")
+    .optional(), // Add the new field here
 });
 
 interface AddSourceProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newSource: any) => void;
+  onAdd: () => void;
   onEdit?: (updatedSource: any) => void;
   applicationId: string;
   sourceToEdit?: any;
@@ -68,36 +104,37 @@ const AddSource: FC<AddSourceProps> = ({
     resolver: zodResolver(connectionSchema),
     defaultValues: {
       alias: "",
-      username:"",
+      username: "",
       host: "",
       port: "",
       database: "",
       type: "",
       password: "",
+      schema: "", // Add the default value here
     },
   });
 
   const [saveDisabled, setSaveDisabled] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-   
 
   useEffect(() => {
     const fetch = async () => {
       if (sourceToEdit) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${sourceToEdit.connectionid}`,
+            `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-con/${
+              sourceToEdit.connectionid
+            }`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
               },
             }
           );
           const { username, password } = response.data;
           setUsername(username);
           setPassword(password);
-  
           reset({
             alias: sourceToEdit.alias || "",
             username: username || "",
@@ -106,16 +143,16 @@ const AddSource: FC<AddSourceProps> = ({
             database: sourceToEdit.database || "",
             type: sourceToEdit.type || "",
             password: password || "",
+            schema: sourceToEdit.schema || "", // Add this line
           });
         } catch (error) {
           console.error("Failed to fetch connection data", error);
         }
       }
     };
-  
+
     fetch();
   }, [sourceToEdit, reset]);
-  
 
   const onSubmit = async (formData: any) => {
     if (saveDisabled) {
@@ -124,15 +161,17 @@ const AddSource: FC<AddSourceProps> = ({
     }
 
     try {
-      const payload = { ...formData,  applicationId };
+      const payload = { ...formData, applicationId };
 
       if (sourceToEdit) {
         const response = await axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${sourceToEdit.connectionid}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/${
+            sourceToEdit.connectionid
+          }`,
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -149,15 +188,13 @@ const AddSource: FC<AddSourceProps> = ({
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-
         if (response.status === StatusCodes.CREATED) {
           toast.success("Connection added successfully!");
-          console.log(response)
-          onAdd(response.data.connection);
+          onAdd();
         } else {
           toast.error("Failed to add connection: " + response.data.message);
         }
@@ -166,8 +203,25 @@ const AddSource: FC<AddSourceProps> = ({
       setSaveDisabled(true);
       handleClose();
     } catch (error: any) {
-      if (error.response && error.response.status === StatusCodes.CONFLICT) {
-        setError("alias", { message: "Alias must be unique" });
+      if (error.response) {
+        const { status, data } = error.response;
+
+        // Check for specific status codes or messages
+        if (status === StatusCodes.CONFLICT) {
+          if (data.message === "Alias name must be unique") {
+            setError("alias", { message: "Alias must be unique" });
+          } else if (
+            data.message === "A connection with the same details already exists"
+          ) {
+            toast.error(
+              "Failed to save connection: Duplicate connection details found."
+            );
+          } else {
+            toast.error("Failed to save connection: " + data.message);
+          }
+        } else {
+          toast.error("Failed to save connection: " + error.message);
+        }
       } else {
         toast.error("Failed to save connection: " + error.message);
       }
@@ -181,7 +235,7 @@ const AddSource: FC<AddSourceProps> = ({
         data,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -201,14 +255,17 @@ const AddSource: FC<AddSourceProps> = ({
 
   const handleClose = () => {
     reset({
-      alias:  "",
-      username:  "",
+      alias: "",
+      username: "",
       host: "",
-      port:  "",
+      port: "",
       database: "",
       type: "",
       password: "",
+      schema: "",
     });
+    setSaveDisabled(true); // Ensure Save button is disabled on close
+
     onClose();
   };
 
@@ -246,6 +303,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.username}
                     helperText={errors.username?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -262,6 +323,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.host}
                     helperText={errors.host?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
@@ -277,9 +342,15 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Port"
                     fullWidth
+                    type="number" // Ensure only numeric values can be input
                     {...field}
                     error={!!errors.port}
                     helperText={errors.port?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
+                    InputProps={{ inputProps: { min: 1, max: 65535 } }} // Optional: restrict range
                   />
                 )}
               />
@@ -296,12 +367,36 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.database}
                     helperText={errors.database?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />
             </div>
           </div>
           <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="schema"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    margin="dense"
+                    label="Schema Name"
+                    fullWidth
+                    {...field}
+                    error={!!errors.schema}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
+                    helperText={errors.schema?.message}
+                  />
+                )}
+              />
+            </div>
             <div className={styles.formItem}>
               <Controller
                 name="type"
@@ -314,6 +409,10 @@ const AddSource: FC<AddSourceProps> = ({
                     fullWidth
                     {...field}
                     error={!!errors.type}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true); // Re-disables the save button on field change
+                    }}
                     helperText={errors.type?.message}
                   >
                     <MenuItem value="">Select Type</MenuItem>
@@ -338,6 +437,10 @@ const AddSource: FC<AddSourceProps> = ({
                     {...field}
                     error={!!errors.password}
                     helperText={errors.password?.message}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSaveDisabled(true);
+                    }}
                   />
                 )}
               />

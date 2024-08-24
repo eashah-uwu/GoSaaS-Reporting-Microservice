@@ -169,6 +169,41 @@ const deleteMultipleApplications = async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "Applications deleted successfully!" });
 };
 
+const updateMultipleStatus=async(req,res)=>{
+  const userid=req.user.userid;
+  const { ids,status } = req.body;
+  console.log(ids,status)
+  if (!['active', 'inactive'].includes(status)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
+  }
+
+  const existingApplications = await Application.findByIds(ids);
+  if (existingApplications.length !== ids.length) {
+    logger.warn("Some Applications not found for status change", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Applications not found for status change!",
+    });
+  }
+
+  if (existingApplications.some(app => app.userid !== userid)) {
+    logger.warn("Some applications found unauthorized for status change", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Some applications found unauthorized for status change!",
+    });
+  }
+
+  await Application.batchChangeStatus(ids, status);
+  logger.info("Applications status changed successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Applications status changed successfully!" });
+
+}
+
 
 module.exports = {
   createApplication,
@@ -176,6 +211,7 @@ module.exports = {
   getApplicationById,
   updateApplication,
   deleteApplication,
-  deleteMultipleApplications
+  deleteMultipleApplications,
+  updateMultipleStatus
 };
 

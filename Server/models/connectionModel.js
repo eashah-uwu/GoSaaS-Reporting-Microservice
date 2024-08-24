@@ -356,7 +356,13 @@ class Connection {
 
     return baseQuery.offset(offset).limit(limit);
   }
-
+  static async batchChangeStatus(ids, status) {
+    const isActive = status === 'active';
+    return knex("connection")
+      .whereIn("connectionid", ids)
+      .update({ isactive:isActive, updatedat: new Date() })
+      .returning("*");
+  }
   static async countSearchResults(applicationid, query, filters = {}) {
     let baseQuery = knex("connection")
       .count({ count: "*" })

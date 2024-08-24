@@ -18,6 +18,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
+  const [currentReport, setCurrentReport] = useState<any | null>(null);
 
   const [openAddReport, setOpenAddReport] = useState<boolean>(false);
 
@@ -64,24 +65,24 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
-      // const requests = updatedItems.map((item) => {
-      //   const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
-      //   return axios.put(
-      //     `${
-      //       import.meta.env.VITE_BACKEND_URL
-      //     }/api/destinations/${destinationid}`,
-      //     {
-      //       destinationid,
-      //       alias,
-      //       url,
-      //       apikey,
-      //       isactive,
-      //       isdeleted,
-      //     }
-      //   );
-      // });
-      // await Promise.all(requests);
-      // console.log("Updated Items", updatedItems);
+      const requests = updatedItems.map((item) => {
+        const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
+        return axios.put(
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/api/destinations/${destinationid}`,
+          {
+            destinationid,
+            alias,
+            url,
+            apikey,
+            isactive,
+            isdeleted,
+          }
+        );
+      });
+      await Promise.all(requests);
+      console.log("Updated Items", updatedItems);
     } catch (error) {
       alert("Failed to update data");
     }
@@ -116,9 +117,25 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setOpenAddReport(true);
   };
 
+
   const handleAddReportClose = () => {
+    setCurrentReport(null); 
     setOpenAddReport(false);
   };
+
+  const handleUpdateReport = (updatedReport: any) => {
+    setReports((prevReports) =>
+      prevReports.map((report) =>
+        report.reportid === updatedReport.reportid
+          ? {
+              ...updatedReport,
+              status: updatedReport.isActive ? "active" : "inactive",
+            }
+          : report
+      )
+    );
+  };
+
   const handleAddReport = (newReport: any) => {
     setReports((prevData) => [...prevData, { ...newReport }]);
   };
@@ -144,9 +161,14 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
     }
   };
-  const handleEdit = (connection: any) => {
 
+  const handleEdit = (report: any) => {
+    setCurrentReport(report);
+    console.log("this app prints data", report)
+    setOpenAddReport(true);
   };
+
+   
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
@@ -267,16 +289,16 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           </Box>
 
         )}
-        {/* <a href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download/11`} download>
-          <button>Download File</button>
-        </a> */}
+     
       </div>
-      <AddReport
-        open={openAddReport}
-        applicationId={applicationId}
-        onClose={handleAddReportClose}
-        onAdd={handleAddReport}
-      />
+       <AddReport
+      open={openAddReport}
+      applicationId={applicationId}
+      onClose={handleAddReportClose}
+      onAdd={handleAddReport}
+      onEdit={handleUpdateReport}
+      report={currentReport}
+    />
     </>
   );
 };

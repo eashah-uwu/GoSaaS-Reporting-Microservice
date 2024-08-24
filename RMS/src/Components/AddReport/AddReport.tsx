@@ -19,10 +19,19 @@ interface AddReportProps {
   open: boolean;
   onClose: () => void;
   onAdd: (newReport: any) => void;
+  onEdit?: (updatedReport: any) => void;
   applicationId: string;
+  report?: any; 
 }
 
-const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) => {
+const AddReport: FC<AddReportProps> = ({
+  open,
+  onClose,
+  onAdd,
+  onEdit,
+  applicationId,
+  report,
+}) => {
   const [sources, setSources] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [storedProcedures, setStoredProcedures] = useState<any[]>([]);
@@ -30,76 +39,99 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const [file, setFile] = useState<File | null>(null);
   const userid = useSelector((state: RootState) => state.auth.userId || "");
   const token = useSelector((state: RootState) => state.auth.token);
-  // const [saveDisabled, setSaveDisabled] = useState(true)
+
+  
   const [formData, setFormData] = useState({
-    alias: '',
-    description: '',
-    source: '',
-    destination: '',
-    storedProcedure: '',
-    parameter: ''
+    alias: report?.title || '',
+    description: report?.description || '',
+    source: report?.sourceConnection || '',
+    destination: report?.destination || '',
+    storedProcedure: report?.storedProcedure || '',
+    parameter: report?.parameter || ''
   });
 
+
   useEffect(() => {
-    // Fetch sources and destinations based on applicationId
-    const fetchDropdownData = async () => {
-      try {
-        const [sourcesResponse, destinationsResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          ),
-          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          )
-        ]);
-
-        setSources(sourcesResponse.data.data);
-        setDestinations(destinationsResponse.data.data);
-     
-      } catch (error) {
-        toast.error("Failed to load dropdown data");
-      }
-    };
-
-    fetchDropdownData();
-  }, [applicationId]);
+    if (report) {
+      setFormData({
+        alias: report.title || "",
+        description: report.description || "",
+        source: report.sourceConnection || "",
+        destination: report.destination || "",
+        storedProcedure: report.storedProcedure || "",
+        parameter: report.parameter || "",
+      });
+      setParameters(report.parameter || "");
+    } else {
+      setFormData({
+        alias: "",
+        description: "",
+        source: "",
+        destination: "",
+        storedProcedure: "",
+        parameter: "",
+      });
+      setParameters("");
+    }
+  }, [report]);
 
 
-  const handleChange = async (e: any) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+   
+useEffect(() => {
+  const fetchDropdownData = async () => {
+    try {
+      const [sourcesResponse, destinationsResponse] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${applicationId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/destinations/${applicationId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
 
-    if (name === 'source') {
-      try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
-          { id: value },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.data.success) {
-          setStoredProcedures(response.data.data);
-          toast.success("Connection successful, stored procedures loaded!");
-        } else {
-          toast.error("Failed to load stored procedures: " + response.data.message);
-        }
-      } catch (error: any) {
-        toast.error("Error testing connection. Please try again.");
-      }
+      setSources(sourcesResponse.data.data);
+      setDestinations(destinationsResponse.data.data);
+    } catch (error) {
+      toast.error("Failed to load dropdown data");
     }
   };
+
+  fetchDropdownData();
+}, [applicationId, token]);
+
+
+const handleChange = async (e: any) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+
+  if (name === "source") {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
+        { id: value },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setStoredProcedures(response.data.data);
+        toast.success("Connection successful, stored procedures loaded!");
+      } else {
+        toast.error("Failed to load stored procedures: " + response.data.message);
+      }
+    } catch (error: any) {
+      toast.error("Error testing connection. Please try again.");
+    }
+  }
+};
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -115,7 +147,7 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
 
-    if (!file) {
+    if (!file && !report) {
       toast.error("Please upload an .xls file.");
       return;
     }
@@ -128,29 +160,56 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       formDataToSend.append("destination", formData.destination);
       formDataToSend.append("storedProcedure", formData.storedProcedure);
       formDataToSend.append("parameter", formData.parameter);
-      formDataToSend.append("file", file);
+      if (file) {
+        formDataToSend.append("file", file);
+      }
       formDataToSend.append("applicationid", applicationId);
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/reports`,
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
-      if (response.status === 201) {
-        toast.success("Report created successfully!");
-        onAdd(response.data.report);
-        handleClose();
+      if (report) {
+        // Editing existing report
+        const response = await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reports/${report.reportid}`,
+          formDataToSend,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          toast.success("Report updated successfully!");
+          onEdit?.(response.data.report);
+          handleClose();
+        } else {
+          toast.error("Failed to update report.");
+        }
       } else {
-        toast.error("Failed to create report.");
+        // Creating new report
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reports`,
+          formDataToSend,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 201) {
+          toast.success("Report created successfully!");
+          onAdd(response.data.report);
+          handleClose();
+        } else {
+          toast.error("Failed to create report.");
+        }
       }
     } catch (error: any) {
-      toast.error("Error creating report. Please try again.");
+      toast.error("Error submitting report. Please try again.");
     }
   };
+
+
   const handleClose = () => {
     setFormData({
       alias: '',
@@ -160,16 +219,17 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
       storedProcedure: '',
       parameter: ''
     });
+    setFile(null);
     onClose();
   };
 
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} >
-        <DialogTitle>Configure Report</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleSubmit}>
+      <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{report ? "Edit Report" : "Configure Report"}</DialogTitle>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
             <div className={styles.formContainer}>
               <TextField
                 margin="dense"
@@ -277,31 +337,35 @@ const AddReport: FC<AddReportProps> = ({ open, onClose, onAdd, applicationId }) 
               />
             </div>
             <DialogActions className={styles.formActions}>
-              <Button
-                size="small"
-                onClick={onClose}
-                sx={{
+            <Button
+              size="small"
+              onClick={onClose}
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": {
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                  ":hover": {
-                    backgroundColor: "#7d0e0e",
-                    color: "white",
-                  },
-                }}>
-                Cancel
-              </Button>
-              <Button type="submit" size="small"
-                sx={{
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="small"
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": {
                   backgroundColor: "#7d0e0e",
                   color: "white",
-                  ":hover": {
-                    backgroundColor: "#7d0e0e",
-                    color: "white",
-                  },
-                }}>
-                Generate
-              </Button>
-            </DialogActions>
+                },
+              }}
+            >
+              {report ? "Update" : "Generate"}
+            </Button>
+          </DialogActions>
           </form>
         </DialogContent>
       </Dialog>

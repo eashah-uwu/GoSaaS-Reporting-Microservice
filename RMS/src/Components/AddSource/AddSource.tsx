@@ -117,6 +117,7 @@ const AddSource: FC<AddSourceProps> = ({
   const [saveDisabled, setSaveDisabled] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [wasTested, setWasTested] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -145,6 +146,8 @@ const AddSource: FC<AddSourceProps> = ({
             password: password || "",
             schema: sourceToEdit.schema || "", // Add this line
           });
+               setSaveDisabled(true);
+          setWasTested(false); 
         } catch (error) {
           console.error("Failed to fetch connection data", error);
         }
@@ -201,6 +204,7 @@ const AddSource: FC<AddSourceProps> = ({
       }
 
       setSaveDisabled(true);
+      setWasTested(false); 
       handleClose();
     } catch (error: any) {
       if (error.response) {
@@ -243,6 +247,7 @@ const AddSource: FC<AddSourceProps> = ({
       if (response.data.success) {
         toast.success("Connection successful!");
         setSaveDisabled(false);
+        setWasTested(true);
       } else {
         toast.error("Connection failed: " + response.data.message);
         setSaveDisabled(true);
@@ -264,7 +269,8 @@ const AddSource: FC<AddSourceProps> = ({
       password: "",
       schema: "",
     });
-    setSaveDisabled(true); // Ensure Save button is disabled on close
+    setSaveDisabled(true);
+    setWasTested(false); 
 
     onClose();
   };
@@ -306,6 +312,7 @@ const AddSource: FC<AddSourceProps> = ({
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
+                      setWasTested(false);
                     }}
                   />
                 )}
@@ -326,6 +333,7 @@ const AddSource: FC<AddSourceProps> = ({
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
+                      setWasTested(false);
                     }}
                   />
                 )}
@@ -349,6 +357,8 @@ const AddSource: FC<AddSourceProps> = ({
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
+                      setWasTested(false);
+
                     }}
                     InputProps={{ inputProps: { min: 1, max: 65535 } }} // Optional: restrict range
                   />
@@ -370,6 +380,7 @@ const AddSource: FC<AddSourceProps> = ({
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
+                      setWasTested(false);
                     }}
                   />
                 )}
@@ -390,7 +401,8 @@ const AddSource: FC<AddSourceProps> = ({
                     error={!!errors.schema}
                     onChange={(e) => {
                       field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
+                      setSaveDisabled(true);
+                      setWasTested(false);
                     }}
                     helperText={errors.schema?.message}
                   />
@@ -411,7 +423,8 @@ const AddSource: FC<AddSourceProps> = ({
                     error={!!errors.type}
                     onChange={(e) => {
                       field.onChange(e);
-                      setSaveDisabled(true); // Re-disables the save button on field change
+                      setSaveDisabled(true); 
+                      setWasTested(false);
                     }}
                     helperText={errors.type?.message}
                   >
@@ -440,6 +453,7 @@ const AddSource: FC<AddSourceProps> = ({
                     onChange={(e) => {
                       field.onChange(e);
                       setSaveDisabled(true);
+                      setWasTested(false);
                     }}
                   />
                 )}

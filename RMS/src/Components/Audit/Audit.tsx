@@ -87,6 +87,7 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
             includeEdit={false}
             onAddData={() => {}}
             onEdit={() => {}}
+            onGroupStatusChange={() => {}}
           />
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, marginTop: 2 }}>
             <Pagination count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />

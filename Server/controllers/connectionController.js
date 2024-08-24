@@ -321,6 +321,44 @@ const deleteConnection = async (req, res) => {
     .json({ message: "Connection deleted successfully!" });
 };
 
+const updateMultipleStatus=async(req,res)=>{
+  const userid=req.user.userid;
+  const { ids,status } = req.body;
+  if (!['active', 'inactive'].includes(status)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
+  }
+
+  const existingConnections = await Connection.findByIds(ids);
+  if (existingConnections.length !== ids.length) {
+    logger.warn("Some Connections not found for Status Update", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Connections not found for Status Update!",
+    });
+  }
+
+  const applicationIds = existingConnections.map((conn) => conn.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some((app) => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized Update attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized Update attempt!",
+    });
+  }
+
+  await Connection.batchChangeStatus(ids, status);
+  logger.info("Connections status changed successfully", {
+    context: { traceid: req.traceId },
+  });
+  res.status(StatusCodes.OK).json({ message: "Connections status changed successfully!" });
+}
+
+
 const getConnectionsByApplicationId = async (req, res) => {
   const {
     query = config.get("query"),
@@ -408,4 +446,5 @@ module.exports = {
   testConnection,
   getStoredProcedures,
   deleteMultipleConnections,
+  updateMultipleStatus
 };

@@ -70,7 +70,13 @@ class Destination {
       .returning("*");
     return destination;
   }
-
+  static async batchChangeStatus(ids, status) {
+    const isActive = status === 'active';
+    return knex("destination")
+      .whereIn("destinationid", ids)
+      .update({ isactive:isActive, updatedat: new Date() })
+      .returning("*");
+  }
   // Delete a destination by ID (soft delete)
   static async delete(id) {
     const [destination] = await knex("destination")

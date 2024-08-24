@@ -11,7 +11,8 @@ const {
   deleteDestination,
   connectStorageDestination,
   addFileToDestination,
-  deleteMultipleDestinations
+  deleteMultipleDestinations,
+  updateMultipleStatus
 } = require("../controllers/destinationController");
 const verifyToken=require("../middlewares/auth")
 
@@ -21,6 +22,7 @@ router.post("/connect",verifyToken, connectStorageDestination);
 router.post("/upload",verifyToken,upload.single('file'), addFileToDestination);
 router.get("/get-dest/:id",verifyToken, getDestinationById);
 router.get("/:applicationid",verifyToken, getDestinationsByApplicationId);
+router.put("/group-status",verifyToken, updateMultipleStatus);
 router.put("/:destinationid",verifyToken, updateDestination);
 router.delete("/delete",verifyToken, deleteMultipleDestinations); 
 router.delete("/:destinationid",verifyToken, deleteDestination);

@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, TablePagination, TableContainer, Checkbox, IconButton } from "@mui/material";
+import { Paper, Table as MuiTable, TableBody, TableCell, TableHead, TableRow, TablePagination, TableContainer, Checkbox, IconButton, Button } from "@mui/material";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
@@ -11,13 +11,17 @@ interface TableProps {
   columns: ColumnDef<any>[];
   pageSize: number;
   onDeleteSelected: (selectedIds: string[]) => void;
+  onChangeStatusSelected: (selectedIds: string[], status: string) => void;
   rowIdAccessor: string;
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   flex: 1,
   textAlign: 'center',
-  overflow: 'hidden',
+  overflow: "visible",
+  whiteSpace: "normal",
+  wordWrap: "break-word",
+  wordBreak: "break-word",
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#7d0e0e",
     color: theme.palette.common.white,
@@ -37,7 +41,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const Table: FC<TableProps> = ({ data, columns, pageSize, onDeleteSelected, rowIdAccessor }) => {
+const Table: FC<TableProps> = ({ data, columns, pageSize, onDeleteSelected, rowIdAccessor, onChangeStatusSelected }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -80,17 +84,46 @@ const Table: FC<TableProps> = ({ data, columns, pageSize, onDeleteSelected, rowI
     onDeleteSelected(selectedRows);
     setSelectedRows([]);
   };
+  const handleMultipleStatusChange = (status: string) => {
+    onChangeStatusSelected(selectedRows, status);
+    setSelectedRows([]);
+  };
 
   return (
     <div className={classes.main_body}>
       {selectedRows.length > 0 && (
-        <IconButton
-          color="primary"
-          onClick={handleDeleteSelected}
-          style={{ color: '#7d0e0e', float: "left" }}
-        >
-          <DeleteIcon sx={{ height: "2rem", width: "2rem" }} />
-        </IconButton>
+        <>
+          <IconButton
+            onClick={handleDeleteSelected}
+            style={{ color: '#7d0e0e', float: "left" }}
+          >
+            <DeleteIcon sx={{ height: "2rem", width: "2rem" }} />
+          </IconButton>
+          <IconButton
+            onClick={() => handleMultipleStatusChange('active')}
+            style={{ float: "left" }}
+          >
+            <Button size="medium"
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": { backgroundColor: "#7d0e0e", color: "white" },
+              }}>Activate</Button>
+          </IconButton>
+          <IconButton
+            onClick={() => handleMultipleStatusChange('inactive')}
+            style={{ float: "left" }}
+          >
+            <Button size="medium"
+              sx={{
+                backgroundColor: "#7d0e0e",
+                color: "white",
+                ":hover": { backgroundColor: "#7d0e0e", color: "white" },
+              }}>Deactivate</Button>
+          </IconButton>
+        </>
+
+
       )}
       <TableContainer component={Paper}>
 
@@ -99,16 +132,16 @@ const Table: FC<TableProps> = ({ data, columns, pageSize, onDeleteSelected, rowI
           <TableHead>
             {getHeaderGroups().map((headerGroup, index) => (
               <StyledTableRow key={index}>
-                <StyledTableCell padding="checkbox" sx={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <StyledTableCell padding="checkbox" sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Checkbox
                     indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
                     checked={data.length > 0 && selectedRows.length === data.length}
                     onChange={handleSelectAllClick}
-                    style={{color:"white"}}
+                    style={{ color: "white" }}
                   />
                 </StyledTableCell>
                 {headerGroup.headers.map((header, index) => (
-                  <StyledTableCell key={index}>
+                  <StyledTableCell key={index} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </StyledTableCell>
                 ))}
@@ -127,14 +160,14 @@ const Table: FC<TableProps> = ({ data, columns, pageSize, onDeleteSelected, rowI
                   aria-checked={isItemSelected}
                   selected={isItemSelected}
                 >
-                  <StyledTableCell padding="checkbox" sx={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <StyledTableCell padding="checkbox" sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Checkbox
                       checked={isItemSelected}
-                      style={{color:"#7d0e0e"}}
+                      style={{ color: "#7d0e0e" }}
                     />
                   </StyledTableCell>
                   {row.getVisibleCells().map((cell, index) => (
-                    <StyledTableCell key={index} sx={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <StyledTableCell onClick={(e) => e.stopPropagation()} key={index} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </StyledTableCell>
                   ))}

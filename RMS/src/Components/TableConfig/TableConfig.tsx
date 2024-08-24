@@ -15,17 +15,20 @@ interface TableConfigProps {
     onSave: (updatedData: any[]) => void;
     rowIdAccessor: string;
     onDelete: (selectedIds: string[]) => void;
+    onGroupStatusChange: (selectedIds: string[],selectedStatus:string) => void;
     onAddData: () => void;
     onEdit: (item: any) => void;
 }
 
-const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor, onDelete, onAddData, includeEdit, onEdit
+const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, pageSize, onSave, rowIdAccessor, onDelete,onGroupStatusChange, onAddData, includeEdit, onEdit
 }) => {
     const [initialData, setInitialData] = useState<any[]>(data);
     const [tableData, setTableData] = useState<any[]>(data);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [openStatusDialog, setOpenStatusDialog] = useState<boolean>(false);
     const [selectedDataId, setSelectedDataId] = useState<string>("");
     const [selectedDataIds, setSelectedDataIds] = useState<any[]>([]);
+    const [selectedStatus, setSelectedStatus] = useState<string>("");
     const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false);
 
     useEffect(() => {
@@ -39,30 +42,30 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     }, [tableData, initialData]);
 
     const handleStatusChange = (id: string, newStatus: string) => {
-        if (newStatus === "delete") {
-            setSelectedDataId(id);
-            setOpenDialog(true);
-        } else {
             setTableData((prevData) =>
                 prevData.map((dataItem) =>
                     dataItem[rowIdAccessor] === id ? { ...dataItem, status: newStatus } : dataItem
                 )
             );
-        }
     };
     const handleDeleteSelected = (selectedIds: string[]) => {
         setSelectedDataIds(selectedIds)
         setOpenDialog(true)
-      };
+    };
+    const handleMultipleStatusChange = (selectedIds: string[], status: string) => {
+        setSelectedStatus(status)
+        setSelectedDataIds(selectedIds)
+        setOpenStatusDialog(true);
+    };
     const handleDeleteClick = (id: string) => {
         setSelectedDataId(id);
         setOpenDialog(true);
     };
     const handleDeleteConfirm = () => {
-        if(selectedDataId==""){
+        if (selectedDataId == "") {
             onDelete(selectedDataIds);
         }
-        else{
+        else {
             onDelete([selectedDataId]);
         }
         setOpenDialog(false);
@@ -73,6 +76,19 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     const handleDeleteCancel = () => {
         setOpenDialog(false);
         setSelectedDataId("");
+        setSelectedDataIds([]);
+    };
+    const handleStatusConfirm = () => {
+        onGroupStatusChange(selectedDataIds,selectedStatus);
+        setOpenStatusDialog(false);
+        setSelectedDataIds([]);
+        setSelectedStatus("")
+    };
+
+    const handleStatusCancel = () => {
+        setOpenStatusDialog(false);
+        setSelectedDataIds([]);
+        setSelectedStatus("")
     };
 
 
@@ -81,8 +97,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
     const handleSave = async () => {
         const updatedData = tableData.map(dataItem => ({
             ...dataItem,
-            isactive: dataItem.status === "active",
-            isdeleted: dataItem.status === "delete"
+            isactive: dataItem.status === "active"
         }));
         const updatedItems = updatedData.filter((item, index) => {
             return JSON.stringify(item) !== JSON.stringify(initialData[index]);
@@ -98,7 +113,7 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
         <>
             <Box padding={6} sx={{ width: "90%", margin: "0 auto" }}>
                 {data.length == 0 && <p>No Data Found. Add using + Icon</p>}
-                {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} onDeleteSelected={handleDeleteSelected} rowIdAccessor={rowIdAccessor} />}
+                {filteredData && data.length > 0 && <Table data={filteredData} columns={columns} pageSize={pageSize} onDeleteSelected={handleDeleteSelected} onChangeStatusSelected={handleMultipleStatusChange} rowIdAccessor={rowIdAccessor} />}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                     {
                         rowIdAccessor !== "reportstatushistoryid" &&
@@ -129,6 +144,13 @@ const TableConfig: FC<TableConfigProps> = ({ data, includeStatus, baseColumns, p
                 onConfirm={handleDeleteConfirm}
                 title="Confirm Deletion"
                 message="Are you sure you want to delete this application?"
+            />
+            <Confirmation
+                open={openStatusDialog}
+                onClose={handleStatusCancel}
+                onConfirm={handleStatusConfirm}
+                title={`Confirm Status Change to ${selectedStatus}`}
+                message={`Are you sure you want to change the status of selected items to ${selectedStatus}?`}
             />
         </>
     );

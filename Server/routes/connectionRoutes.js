@@ -9,7 +9,8 @@ const {
   getConnections,
   getConnectionsByApplicationId,
   getStoredProcedures,
-  deleteMultipleConnections
+  deleteMultipleConnections,
+  updateMultipleStatus
 } = require("../controllers/connectionController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken=require("../middlewares/auth")
@@ -19,6 +20,7 @@ router.get("/", validateQuery, getConnections);
 router.post("/test-connection",verifyToken, testConnection);
 router.post("/get-stored-procedures",verifyToken,getStoredProcedures);
 router.get("/get-con/:connectionid",verifyToken, getConnectionById);
+router.put("/group-status",verifyToken, updateMultipleStatus);
 router.put("/:connectionid",verifyToken, updateConnection);
 router.delete("/delete",verifyToken, deleteMultipleConnections); 
 router.delete("/:connectionid",verifyToken, deleteConnection);

@@ -73,8 +73,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
       const requests = updatedItems.map((item) => {
         const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
         return axios.put(
-          `${
-            import.meta.env.VITE_BACKEND_URL
+          `${import.meta.env.VITE_BACKEND_URL
           }/api/destinations/${destinationid}`,
           {
             destinationid,
@@ -114,7 +113,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(Number(event.target.value)!=0){
+    if (Number(event.target.value) != 0) {
       setPageSize(Number(event.target.value));
       setPage(1);
     }
@@ -147,7 +146,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
   const handleDestinationsDelete = async (selectedIds: string[]) => {
     try {
-      if(selectedIds.length==1){
+      if (selectedIds.length == 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/destinations/${selectedIds[0]}`,
           {
@@ -158,7 +157,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         );
         toast.success("Successfully Deleted Destination")
       }
-      else if(selectedIds.length>1){
+      else if (selectedIds.length > 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/destinations/delete`,
           {
@@ -173,10 +172,29 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
         toast.success("Successfully Deleted Destinations")
       }
       fetchDestinations(page, pageSize, searchQuery, filters);
-      } catch (e) {
-        toast.error("Error Deleting Destinations")
-        throw e;
-      }
+    } catch (e) {
+      toast.error("Error Deleting Destinations")
+      throw e;
+    }
+  };
+  const handleGroupStatusChange = async (selectedIds: string[], status: string) => {
+    try {
+      const data = { ids: selectedIds, status: status };
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/destinations/group-status`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Successfully Updated Status of Destinations")
+      fetchDestinations(page, pageSize, searchQuery, filters);
+    } catch (e) {
+      toast.error("Error Updating Status")
+      throw e;
+    }
   };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -249,6 +267,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
             onSave={handleSave}
             rowIdAccessor="destinationid"
             onDelete={handleDestinationsDelete}
+            onGroupStatusChange={handleGroupStatusChange}
             onAddData={handleAddDestinationOpen}
             onEdit={handleEdit}
           />

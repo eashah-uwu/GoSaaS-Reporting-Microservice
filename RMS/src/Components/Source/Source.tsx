@@ -184,7 +184,25 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         throw e;
       }
   };
-
+  const handleGroupStatusChange = async(selectedIds: string[],status:string) => {
+    try {
+        const data={ids:selectedIds,status:status};
+        await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/group-status`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        toast.success("Successfully Updated Status of Connections")
+        fetchConnections(page, pageSize, searchQuery, filters);
+      } catch (e) {
+        toast.error("Error Updating Status")
+        throw e;
+      }
+  };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
 
@@ -260,6 +278,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
             onSave={handleSave}
             rowIdAccessor="connectionid"
             onDelete={handleConnectionDelete}
+            onGroupStatusChange={handleGroupStatusChange}
             onAddData={handleAddSourceOpen}
             onEdit={handleEdit}
           />

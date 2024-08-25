@@ -2,13 +2,14 @@ const knex = require("../config/db/db");
 
 class Destination {
   // Create a new destination
-  static async create(alias_p, url_p, apikey_p, applicationId_p, userId_p) {
+  static async create(alias_p, url_p, apikey_p,bucketName_p, applicationId_p, userId_p) {
     // Insert data into the database
     const [destination] = await knex("destination")
       .insert({
         alias: alias_p,
         url: url_p,
         apikey: apikey_p, // Note the exact column name
+        bucketname:bucketName_p,
         isactive: true, // Note the exact column name
         isdeleted: false, // Note the exact column name
         applicationid: applicationId_p, // Note the exact column name
@@ -24,6 +25,7 @@ class Destination {
       destinationid,
       url,
       apikey,
+      bucketname,
       isactive,
       isdeleted,
     } = destination;
@@ -33,6 +35,7 @@ class Destination {
       destinationid,
       url,
       apikey,
+      bucketname,
       isactive,
       isdeleted,
     };
@@ -49,10 +52,27 @@ class Destination {
       .where({ destinationid: id, isdeleted: false })
       .first();
   }
+ 
+  static async findDuplicate(url,apiKey,bucketname,applicationId,userid) {
+    
+    const destinations = await knex("destination")
+      .where({
+        url,
+        apikey:apiKey,
+        bucketname:bucketname,
+        applicationid:applicationId,
+        createdby: userid,
+        isdeleted: false, 
+      })
+      .select("*"); 
+
+    
+    return destinations;
+  }
 
   // Update an existing destination
   static async update(id, data) {
-    const { alias, url, apikey, isactive, isdeleted } = data;
+    const { alias, url, apikey,bucketName, isactive, isdeleted } = data;
     const [prevDestination] = await knex("destination").where({
       destinationid: id,
     });
@@ -65,6 +85,7 @@ class Destination {
         alias: alias,
         url: url,
         apikey: apikey,
+        bucketname:bucketName,
         updatedat: new Date(),
       })
       .returning("*");
@@ -87,9 +108,9 @@ class Destination {
     return destination;
   }
 
-  static async findByName(alias, userid) {
+  static async findByName(alias, applicationid) {
     return knex("destination")
-          .where({ createdby: userid, isdeleted: false })
+          .where({ applicationid: applicationid, isdeleted: false })
           .andWhere("alias", "ilike", alias)
           .first();
   }
@@ -107,6 +128,7 @@ class Destination {
         "destinationid",
         "url",
         "apikey",
+        "bucketname",
         "isactive",
         "isdeleted"
       )
@@ -128,7 +150,7 @@ class Destination {
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
     } else {
-      baseQuery.orderBy("alias", "asc");
+      baseQuery.orderBy("createdat", "desc");
     }
 
     return baseQuery.offset(offset).limit(limit);

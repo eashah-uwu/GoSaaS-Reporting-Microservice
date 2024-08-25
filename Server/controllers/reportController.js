@@ -38,7 +38,7 @@ const createReport = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingReport = await Report.findByName(alias,userid);
+  const existingReport = await Report.findByName(alias,applicationid);
   console.log(existingReport)
   if (existingReport) {
     logger.warn("Title of report must be unique", {
@@ -60,7 +60,7 @@ const createReport = async (req, res) => {
     destination_db.url,
     destination_db.apikey,
     { key, buffer },
-    "reportsdestination0"
+    destination_db.bucketname
   );
 
   console.log(source);
@@ -109,7 +109,7 @@ const downloadXsl = async (req, res) => {
     "aws",
     destination_db.url,
     destination_db.apikey,
-    "reportsdestination0",
+    destination_db.bucketname,
     report.filekey
   );
   const fileName = report.filekey.split("/").pop()?.split("-").pop();
@@ -135,7 +135,7 @@ const downloadReport = async (req, res) => {
     "aws",
     destination_db.url,
     destination_db.apikey,
-    "reportsdestination0",
+    destination_db.bucketname,
     reportHistory.filekey
   );
   const fileName = report.filekey.split("/").pop()?.split("-").pop();
@@ -225,7 +225,7 @@ const updateReport = async (req, res) => {
     logger.warn("Report not found or unauthorized", { id: reportId });
     return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
   }
-  const otherReport = await Report.findByName(alias, userid);
+  const otherReport = await Report.findByName(alias, existingReport.applicationid);
   if (otherReport && otherReport.reportid != reportId) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -295,7 +295,7 @@ const deleteReport = async (req, res) => {
       "aws",
       destination_db.url,
       destination_db.apikey,
-      "reportsdestination0",
+      destination_db.bucketname,
       report.filekey
     );
   
@@ -335,7 +335,7 @@ const deleteMultipleReports = async (req, res) => {
         "aws",
         destination_db.url,
         destination_db.apikey,
-        "reportsdestination0",
+        destination_db.bucketname,
         report.filekey
     );
     console.log("deell11")

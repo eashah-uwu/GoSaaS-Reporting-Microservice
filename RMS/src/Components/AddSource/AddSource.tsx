@@ -26,17 +26,20 @@ const connectionSchema = z.object({
     .string()
     .min(3, "Alias must be at least 3 characters")
     .max(25, "Alias should not exceed 25 characters")
-    .optional(),
+    .refine((value) => !/^\d/.test(value), {
+      message: "Alias cannot start with a number",
+    }),
   username: z
     .string()
-    .min(1, "Username is required")
+    .min(3, "Username must be atleast 3 characters")
     .max(50, "Username should not exceed 50 characters")
-    .optional(),
+    .refine((value) => !/^\d/.test(value), {
+      message: "Username cannot start with a number",
+    }),
   host: z
     .string()
-    .min(1, "Host is required")
-    .max(255, "Host should not exceed 255 characters")
-    .optional(),
+    .min(3, "Host must be atleast 3 characters")
+    .max(25, "Host should not exceed 25 characters"),
   port: z.preprocess(
     (val) => {
       if (typeof val === "string") val = parseInt(val, 10);
@@ -54,24 +57,26 @@ const connectionSchema = z.object({
   ),
   database: z
     .string()
-    .min(1, "Database name is required")
+    .min(3, "Database name must be atleast 3 characters")
     .max(50, "Database name should not exceed 50 characters")
-    .optional(),
+    .refine((value) => !/^\d/.test(value), {
+      message: "Database name cannot start with a number",
+    }),
   type: z
     .string()
-    .min(1, "Type is required")
-    .max(50, "Type should not exceed 50 characters")
-    .optional(),
+    .min(3, "Type must be atleast 3 characters")
+    .max(50, "Type should not exceed 50 characters"),
   password: z
     .string()
-    .min(8, "Password should be at least 8 characters")
-    .max(50, "Password should not exceed 50 characters")
-    .optional(),
+    .min(5, "Password should be at least 5 characters")
+    .max(50, "Password should not exceed 50 characters"),
   schema: z
     .string()
-    .min(1, "Schema Name is required")
+    .min(3, "Schema Name must be atleast 3 characters")
     .max(50, "Schema Name should not exceed 50 characters")
-    .optional(), // Add the new field here
+    .refine((value) => !/^\d/.test(value), {
+      message: "Schema Name canot start with a number",
+    })
 });
 
 interface AddSourceProps {
@@ -290,6 +295,7 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Alias"
                     fullWidth
+                    required
                     {...field}
                     error={!!errors.alias}
                     helperText={errors.alias?.message}
@@ -307,6 +313,7 @@ const AddSource: FC<AddSourceProps> = ({
                     label="username"
                     fullWidth
                     {...field}
+                    required
                     error={!!errors.username}
                     helperText={errors.username?.message}
                     onChange={(e) => {
@@ -328,6 +335,7 @@ const AddSource: FC<AddSourceProps> = ({
                     label="Host"
                     fullWidth
                     {...field}
+                    required
                     error={!!errors.host}
                     helperText={errors.host?.message}
                     onChange={(e) => {
@@ -350,6 +358,7 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Port"
                     fullWidth
+                    required
                     type="number" // Ensure only numeric values can be input
                     {...field}
                     error={!!errors.port}
@@ -373,6 +382,7 @@ const AddSource: FC<AddSourceProps> = ({
                   <TextField
                     margin="dense"
                     label="Database"
+                    required
                     fullWidth
                     {...field}
                     error={!!errors.database}
@@ -396,6 +406,7 @@ const AddSource: FC<AddSourceProps> = ({
                   <TextField
                     margin="dense"
                     label="Schema Name"
+                    required
                     fullWidth
                     {...field}
                     error={!!errors.schema}
@@ -418,6 +429,7 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Type"
                     select
+                    required
                     fullWidth
                     {...field}
                     error={!!errors.type}
@@ -446,6 +458,7 @@ const AddSource: FC<AddSourceProps> = ({
                     margin="dense"
                     label="Password"
                     type="password"
+                    required
                     fullWidth
                     {...field}
                     error={!!errors.password}

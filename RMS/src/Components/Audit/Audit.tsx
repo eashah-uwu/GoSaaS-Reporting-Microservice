@@ -33,6 +33,7 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
       setAuditData(data);
       setTotal(data.length);
     } catch (error) {
+      console.log("Error fetching audit data:", error);
       console.error("Error fetching audit data:", error);
     } finally {
       setLoading(false);
@@ -40,6 +41,7 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
   };
 
   useEffect(() => {
+    console.log("hereeee")
     fetchAuditData(page, pageSize, filters);
   }, [page, pageSize, filters]);
 
@@ -52,6 +54,24 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
     setPage(1);
   };
 
+  const generateBaseColumns = (data: any[]) => {
+    if (data.length === 0) return [];
+    const sample = data[0];
+    return Object.keys(sample)
+      .filter(
+        (key) =>
+          key !== "id"
+      )
+      .map((key) => {
+        return {
+          accessorKey: key,
+          header: key.charAt(0).toUpperCase() + key.slice(1),
+        }
+      }
+      );
+  };
+  const baseColumns = generateBaseColumns(auditData);
+
   return (
     <Box sx={{ marginTop: "2rem", marginLeft: "10%", marginRight: "10%" }}>
       {loading ? (
@@ -63,31 +83,15 @@ const Audit: React.FC<AuditProps> = ({ filters }) => {
           <TableConfig
             data={auditData}
             includeStatus={false}
-            baseColumns={[{
-              field: 'createdby',
-              headerName: 'Created By',
-              flex: 1,
-            }, {
-              field: 'description',
-              headerName: 'Description',
-              flex: 1,
-            }, {
-              field: 'Module-Event',
-              headerName: 'Module-Event',
-              flex: 1,
-            }, {
-              field: 'createddate',
-              headerName: 'Created Date',
-              flex: 1,
-            }]} 
+            baseColumns={baseColumns}
             pageSize={pageSize}
-            onSave={() => {}}
-            onDelete={() => {}}
+            onSave={() => { }}
+            onDelete={() => { }}
             rowIdAccessor="id"
             includeEdit={false}
-            onAddData={() => {}}
-            onEdit={() => {}}
-            onGroupStatusChange={() => {}}
+            onAddData={() => { }}
+            onEdit={() => { }}
+            onGroupStatusChange={() => { }}
           />
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, marginTop: 2 }}>
             <Pagination count={Math.ceil(total / pageSize)} page={page} onChange={handlePageChange} />

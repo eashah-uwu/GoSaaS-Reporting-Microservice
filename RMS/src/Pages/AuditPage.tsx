@@ -41,7 +41,6 @@ const AuditPage = () => {
             },
           }),
         ]);
-
         setUsers(usersResponse.data);
         setModules(modulesResponse.data);
         setEvents(eventsResponse.data);
@@ -128,7 +127,7 @@ const AuditPage = () => {
           sx={{ minWidth: 150 }}
         />
       </Box>
-      {/* <Audit filters={filters} /> */}
+      <Audit filters={filters} />
     </>
   );
 };

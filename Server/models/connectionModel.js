@@ -399,6 +399,13 @@ class Connection {
       .returning("*");
     return connections;
   }
+  static async deleteByApplicationIds(ids) {
+    const connections = await knex("connection")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
+  }
 }
 
 module.exports = Connection;

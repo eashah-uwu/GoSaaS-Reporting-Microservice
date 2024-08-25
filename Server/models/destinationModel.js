@@ -168,6 +168,13 @@ class Destination {
       .returning("*");
     return destinations;
   }
+  static async deleteByApplicationIds(ids) {
+    const connections = await knex("destination")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
+  }
 
 }
 

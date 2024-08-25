@@ -1,4 +1,7 @@
 const Application = require("../models/applicationModel");
+const Connection = require("../models/connectionModel");
+const Destination = require("../models/destinationModel");
+const Report = require("../models/reportModel");
 const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const applicationSchema = require("../schemas/applicationSchemas");
@@ -133,6 +136,11 @@ const deleteApplication = async (req, res) => {
       message: "Application not Found!"
     });
   }
+  await Promise.all([
+    Connection.deleteByApplicationIds([applicationid]),
+    Destination.deleteByApplicationIds([applicationid]),
+    Report.deleteByApplicationIds([applicationid]),
+  ]);
   const application = await Application.delete(applicationid);
   logger.info("Application deleted successfully", {
     context: { traceid: req.traceId },
@@ -162,6 +170,11 @@ const deleteMultipleApplications = async (req, res) => {
       message: "Some applications found unauthorized for deletion!"
     });
   }
+  await Promise.all([
+    Connection.deleteByApplicationIds([ids]),
+    Destination.deleteByApplicationIds([ids]),
+    Report.deleteByApplicationIds([ids]),
+  ]);
   await Application.deleteMultiple(ids);
   logger.info("Applications deleted successfully", {
     context: { traceid: req.traceId },
@@ -172,7 +185,6 @@ const deleteMultipleApplications = async (req, res) => {
 const updateMultipleStatus=async(req,res)=>{
   const userid=req.user.userid;
   const { ids,status } = req.body;
-  console.log(ids,status)
   if (!['active', 'inactive'].includes(status)) {
     return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
   }

@@ -266,6 +266,7 @@ const handleChange = async (e: any) => {
       parameter: ''
     });
     setFile(null);
+    setParameters("");
     onClose();
   };
 

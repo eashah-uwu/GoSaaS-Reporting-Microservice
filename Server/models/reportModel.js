@@ -291,6 +291,13 @@ class Report {
       .returning("*");
     return reports;
   }
+  static async deleteByApplicationIds(ids) {
+    const connections = await knex("report")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
+  }
 }
 
 module.exports = Report;

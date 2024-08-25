@@ -11,7 +11,7 @@ const {
 
 const createDestination = async (req, res) => {
   const userid = req.user.userid;
-  const { destination, alias, url, apiKey, applicationId } = req.body;
+  const { destination, alias, url, apiKey, applicationId,bucketname } = req.body;
   const application = await Application.findById(applicationId);
 
   if (!application || application.userid != userid) {
@@ -21,7 +21,7 @@ const createDestination = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingDestination = await Destination.findByName(alias,userid);
+  const existingDestination = await Destination.findByName(alias,applicationId);
   if (existingDestination) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -30,9 +30,19 @@ const createDestination = async (req, res) => {
       message: "Alias name must be unique",
     });
   }
+  const duplicateDestinations = await Destination.findDuplicate(url,apiKey,bucketname,applicationId,userid);
 
-  await connectToDestination(destination, url, apiKey);
-  const newDestination = await Destination.create(alias, url, apiKey, applicationId, userid);
+  if (duplicateDestinations[0]) {
+    logger.warn("A connection with the same details already exists", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "A connection with the same details already exists",
+    });
+  }
+
+  await connectToDestination(destination, url, apiKey,bucketname);
+  const newDestination = await Destination.create(alias, url, apiKey,bucketname, applicationId, userid);
   logger.info("Destination created successfully", {
     context: { traceid: req.traceId, destination },
   });
@@ -93,7 +103,7 @@ const updateDestination = async (req, res) => {
     }
   }
 
-  const otherDestination = await Destination.findByName(req.body.alias,userid);
+  const otherDestination = await Destination.findByName(req.body.alias,existingDestination.applicationid);
   if (otherDestination && otherDestination.destinationid != destinationid) {
     logger.warn("Destination alias must be unique", {
       context: { traceid: req.traceId },
@@ -259,8 +269,8 @@ const getDestinationsByApplicationId = async (req, res) => {
 };
 
 const connectStorageDestination = async (req, res) => {
-  const { destination, url, apiKey, alias } = req.body;
-  const result = await connectToDestination(destination, url, apiKey);
+  const { destination, url, apiKey, alias,bucketname } = req.body;
+  const result = await connectToDestination(destination, url, apiKey,bucketname);
   logger.info("Destination connected successfully", {
     context: { traceid: req.traceId, result },
   });

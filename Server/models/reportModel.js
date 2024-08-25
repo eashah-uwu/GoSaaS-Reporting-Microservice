@@ -130,9 +130,9 @@ class Report {
   }
 
 
-  static async findByName(title, userid) {
+  static async findByName(title, applicationid) {
     return knex("report")
-          .where({ createdby: userid, isdeleted: false })
+          .where({ applicationid: applicationid, isdeleted: false })
           .andWhere("title", "ilike", title)
           .first();
   }
@@ -217,6 +217,8 @@ class Report {
 
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
+    }else {
+      baseQuery.orderBy("report.createdat", "desc");
     }
 
     return baseQuery.offset(offset).limit(limit);
@@ -290,6 +292,13 @@ class Report {
       .update({ isdeleted: true, updatedat: new Date() })
       .returning("*");
     return reports;
+  }
+  static async deleteByApplicationIds(ids) {
+    const connections = await knex("report")
+      .whereIn("applicationid", ids)
+      .update({ isdeleted: true, updatedat: new Date() })
+      .returning("*");
+    return connections;
   }
 }
 

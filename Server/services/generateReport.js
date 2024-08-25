@@ -66,7 +66,7 @@ async function generateReport(reportName, userid, parameters) {
       "aws",
       destinationDetails.url,
       destinationDetails.apikey,
-      "reportsdestination0",
+      destinationDetails.bucketname,
       reportDetails.filekey
     );
     if (!file) {
@@ -111,7 +111,7 @@ async function generateReport(reportName, userid, parameters) {
       destinationDetails.url,
       destinationDetails.apikey,
       { key: pdfKey, buffer: pdfBuffer },
-      "reportsdestination0"
+      destinationDetails.bucketname
     );
     if (!uploadResult.success) {
       await updateStatusRecord(

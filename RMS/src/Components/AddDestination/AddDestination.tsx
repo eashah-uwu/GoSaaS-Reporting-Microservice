@@ -22,10 +22,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const destinationSchema = z.object({
-  alias: z.string().max(255).nonempty("Alias is required"),
-  destination: z.string().max(255).nonempty("Destination is required"),
-  url: z.string().max(255).optional(),
-  apiKey: z.string().max(255).optional(),
+  alias: z.string().min(3, "Alias must be atleast 3 characters").max(25, "Alias should not exceed 25 characters"),
+  destination: z.string().min(3, "Destination must be atleast 3 characters").max(25, "Destination should not exceed 25 characters"),
+  url: z.string().min(3, "Url must be atleast 3 characters").max(100, "Url should not exceed 100 characters"),
+  apiKey: z.string().min(3, "Api Key must be atleast 3 characters").max(100, "Api Key should not exceed 100 characters"),
+  bucketname: z.string().min(2, "BucketName must be atleast 2 characters").max(25, "Bucket Name should not exceed 25 characters")
 });
 
 interface AddDestinationProps {
@@ -66,6 +67,7 @@ const AddDestination: FC<AddDestinationProps> = ({
       destination: "aws",
       url: "",
       apiKey: "",
+      bucketname: "",
       ...initialData,
     },
   });
@@ -93,6 +95,7 @@ const AddDestination: FC<AddDestinationProps> = ({
             destination: destination || "aws",
             url: initialData.url || "",
             apiKey: initialData.apikey || "",
+            bucketname: initialData.bucketname || "",
           });
         } catch (error) {
           console.error("Failed to fetch connection data", error);
@@ -133,7 +136,7 @@ const AddDestination: FC<AddDestinationProps> = ({
       }
     } catch (error: any) {
       if (error.response && error.response.status === StatusCodes.CONFLICT) {
-        setError("alias", { message: "Alias must be unique" });
+        toast.error("Failed to add Desintaion: " + error.response.data.message);
       } else {
         toast.error(
           `Error ${
@@ -171,6 +174,7 @@ const AddDestination: FC<AddDestinationProps> = ({
       destination: "aws",
       url: "",
       apiKey: "",
+      bucketname: "",
     });
     setDisabled(true);
     onClose();
@@ -194,6 +198,7 @@ const AddDestination: FC<AddDestinationProps> = ({
                     margin="dense"
                     label="Alias"
                     type="text"
+                    required
                     fullWidth
                     error={!!errors.alias}
                     helperText={errors.alias?.message?.toString()}
@@ -212,6 +217,7 @@ const AddDestination: FC<AddDestinationProps> = ({
                     select
                     fullWidth
                     {...field}
+                    required
                     error={!!errors.destination}
                     onChange={(e) => {
                       field.onChange(e);
@@ -235,6 +241,7 @@ const AddDestination: FC<AddDestinationProps> = ({
                     margin="dense"
                     label="URL"
                     type="text"
+                    required
                     fullWidth
                     error={!!errors.url}
                     helperText={errors.url?.message?.toString()}
@@ -257,8 +264,33 @@ const AddDestination: FC<AddDestinationProps> = ({
                     label="API Key"
                     type="text"
                     fullWidth
+                    required
                     error={!!errors.apiKey}
                     helperText={errors.apiKey?.message?.toString()}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setDisabled(true);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </div>
+          <div className={styles.formContainer}>
+            <div className={styles.formItem}>
+              <Controller
+                name="bucketname"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="Bucket Name"
+                    type="text"
+                    fullWidth
+                    required
+                    error={!!errors.bucketname}
+                    helperText={errors.bucketname?.message?.toString()}
                     onChange={(e) => {
                       field.onChange(e);
                       setDisabled(true);
@@ -271,7 +303,7 @@ const AddDestination: FC<AddDestinationProps> = ({
           <DialogActions className={styles.formActions}>
             <Button
               size="small"
-              onClick={handleConnect}
+              onClick={handleSubmit(handleConnect)}
               sx={{
                 backgroundColor: "#7d0e0e",
                 color: "white",

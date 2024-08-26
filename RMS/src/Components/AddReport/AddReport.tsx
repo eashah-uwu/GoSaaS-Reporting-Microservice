@@ -19,8 +19,8 @@ import { RootState } from "../../State/store";
 interface AddReportProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (newReport: any) => void;
-  onEdit?: (updatedReport: any) => void;
+  onAdd: () => void;
+  onEdit?: () => void;
   applicationId: string;
   report?: any; 
 }
@@ -191,7 +191,7 @@ const handleChange = async (e: any) => {
       formDataToSend.append("source", formData.source);
       formDataToSend.append("destination", formData.destination);
       formDataToSend.append("storedProcedure", formData.storedProcedure);
-      formDataToSend.append("parameter", formData.parameter);
+      formDataToSend.append("parameter", parameters);
       if (file) {
         formDataToSend.append("file", file);
       }
@@ -220,7 +220,7 @@ const handleChange = async (e: any) => {
 
         if (response.status === StatusCodes.OK) {
           toast.success("Report updated successfully!");
-          onEdit?.(response.data.report);
+          onEdit?.();
           handleClose();
         } else {
           toast.error("Failed to update report.");
@@ -239,7 +239,7 @@ const handleChange = async (e: any) => {
 
         if (response.status === StatusCodes.CREATED) {
           toast.success("Report created successfully!");
-          onAdd(response.data.report);
+          onAdd();
           handleClose();
         } else {
           toast.error("Failed to create report.");

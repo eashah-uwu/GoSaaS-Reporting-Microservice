@@ -129,21 +129,12 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setOpenAddReport(false);
   };
 
-  const handleUpdateReport = (updatedReport: any) => {
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.reportid === updatedReport.reportid
-          ? {
-            ...updatedReport,
-            status: updatedReport.isActive ? "active" : "inactive",
-          }
-          : report
-      )
-    );
+  const handleUpdateReport = () => {
+    fetchReports(page, pageSize, searchQuery, filters);
   };
 
-  const handleAddReport = (newReport: any) => {
-    setReports((prevData) => [...prevData, { ...newReport }]);
+  const handleAddReport = () => {
+    fetchReports(page, pageSize, searchQuery, filters);
   };
 
   const handleReportDelete = async (selectedIds: string[]) => {

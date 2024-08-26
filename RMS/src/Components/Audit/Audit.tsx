@@ -21,6 +21,7 @@ const Audit = () => {
     dateTo: "",
     sortField: "",
     sortOrder: "",
+    status:true,
   });
 
   const [users, setUsers] = useState<string[]>([]);
@@ -178,6 +179,7 @@ const Audit = () => {
             <FormControl sx={{ minWidth: 150, marginRight: 5 }}>
               <InputLabel>Sort Field</InputLabel>
               <Select
+                label="Sort By"
                 value={filters.sortField}
                 onChange={(e) => handleFilterChange({ sortField: e.target.value })}
               >
@@ -189,14 +191,28 @@ const Audit = () => {
                 ))}
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 150 }}>
+            <FormControl sx={{ minWidth: 150 , marginRight: 5}}>
               <InputLabel>Sort Order</InputLabel>
               <Select
+                label="Sort Order"
                 value={filters.sortOrder}
                 onChange={(e) => handleFilterChange({ sortOrder: e.target.value })}
               >
                 <MenuItem value="asc">Ascending</MenuItem>
                 <MenuItem value="desc">Descending</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                label="Status"
+                value={filters.status === true ? 'true' : filters.status === false ? 'false' : ''}
+                onChange={(e) => handleFilterChange({ status: e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined })}
+                displayEmpty
+              >
+                <MenuItem value=""></MenuItem>
+                <MenuItem value="true">Active</MenuItem>
+                <MenuItem value="false">Inactive</MenuItem>
               </Select>
             </FormControl>
           </Box>

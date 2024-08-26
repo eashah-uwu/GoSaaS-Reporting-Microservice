@@ -62,6 +62,9 @@ class AuditModel {
     if (filters.dateTo) {
       query.where("at.createddate", "<=", filters.dateTo);
     }
+    if (filters.status !== undefined) {
+      query.where("at.isactive", filters.status);
+    }
 
     // Apply sorting
     if (filters.sortField) {

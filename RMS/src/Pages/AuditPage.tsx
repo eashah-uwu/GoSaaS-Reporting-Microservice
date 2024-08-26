@@ -9,18 +9,6 @@ import Filter from "../Components/Filter/Filter";
 
 
 const AuditPage = () => {
-  const token = useSelector((state: RootState) => state.auth.token);
-  
-  const [filters, setFilters] = useState<any>({
-    user: "",
-    module: "",
-    event: "",
-    dateFrom: "",
-    dateTo: "",
-    sortField: "",
-    sortOrder: "",
-    status: ""
-  });
 
   
   

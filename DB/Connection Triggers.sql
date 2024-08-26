@@ -169,3 +169,11 @@ SELECT * FROM AuditTrail
 
 select  * from "User" u 
 
+update audittrail 
+set isactive = true 
+where isactive is false ;
+
+update audittrail 
+set isdeleted = false 
+where isdeleted is true ;
+

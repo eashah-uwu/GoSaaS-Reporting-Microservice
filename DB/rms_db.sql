@@ -186,6 +186,8 @@ CREATE TABLE AuditTrail (
 	CONSTRAINT audittrail_event FOREIGN KEY (AuditEventID) REFERENCES AuditEvents(ID),
 	CONSTRAINT audittrail_user FOREIGN KEY (UserID) REFERENCES "User"(UserID)
 );
+ALTER TABLE AuditTrail
+ADD COLUMN isDeleted BOOLEAN DEFAULT FALSE;
 
 
 

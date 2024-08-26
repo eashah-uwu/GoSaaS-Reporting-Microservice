@@ -63,7 +63,17 @@ const Audit = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setAuditData(data);
+  
+      // Map isactive to status and exclude isactive from the data
+      const processedData = data.map((record: any) => {
+        const { isactive, ...rest } = record; // Exclude isactive
+        return {
+          ...rest,
+          status: isactive ? "active" : "inactive", // Map isactive to status
+        };
+      });
+  
+      setAuditData(processedData);
       setTotal(data.length);
     } catch (error) {
       console.log("Error fetching audit data:", error);
@@ -71,6 +81,7 @@ const Audit = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchAuditData(page, pageSize, filters);
@@ -97,14 +108,53 @@ const Audit = () => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
-      .filter((key) => key !== "id")
+      .filter((key) => key !== "id" && key !== "isactive" && key !== "status") // Exclude isactive colums
       .map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1),
       }));
   };
+  
 
   const baseColumns = generateBaseColumns(auditData);
+  const handleSave = async (updates: any[]) => {
+    try {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/bulk-update`, { updates }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAuditData(page, pageSize, filters);
+    } catch (error) {
+      console.error("Error saving updates:", error);
+    }
+  };
+  
+  const handleDelete = async (selectedIds: string[]) => {
+  const ids = selectedIds.map(id => parseInt(id, 10));
+  try {
+    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/bulk-delete`, { ids }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchAuditData(page, pageSize, filters);
+  } catch (error) {
+    console.error("Error deleting records:", error);
+  }
+};
+
+const handleGroupStatusChange = async (selectedIds: string[], selectedStatus: string) => {
+  const ids = selectedIds.map(id => parseInt(id, 10));
+  const status = selectedStatus === 'true'; // Convert 'true' to boolean true, 'false' to boolean false
+  try {
+    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/bulk-status-update`, { ids, status }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchAuditData(page, pageSize, filters);
+  } catch (error) {
+    console.error("Error changing status:", error);
+  }
+};
+
+
+  
 
   return (
     <Box sx={{ marginTop: "2rem", marginLeft: "10%", marginRight: "10%" }}>
@@ -210,7 +260,7 @@ const Audit = () => {
                 onChange={(e) => handleFilterChange({ status: e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined })}
                 displayEmpty
               >
-                <MenuItem value=""></MenuItem>
+                <MenuItem value="">All</MenuItem>
                 <MenuItem value="true">Active</MenuItem>
                 <MenuItem value="false">Inactive</MenuItem>
               </Select>
@@ -218,19 +268,20 @@ const Audit = () => {
           </Box>
 
 
-            <TableConfig
-              data={auditData}
-              includeStatus={false}
-              baseColumns={baseColumns}
-              pageSize={pageSize}
-              onSave={() => {}}
-              onDelete={() => {}}
-              rowIdAccessor="id"
-              includeEdit={false}
-              onAddData={() => {}}
-              onEdit={() => {}}
-              onGroupStatusChange={() => {}}
-            />
+          <TableConfig
+            data={auditData}
+            includeStatus={true} // Show the Status column
+            baseColumns={baseColumns}
+            pageSize={pageSize}
+            onSave={handleSave}  // Function to handle multiple updates
+            onDelete={handleDelete}  // Function to handle multiple deletions
+            rowIdAccessor="id"
+            includeEdit={false}
+            onAddData={() => {}}
+            onEdit={() => {}}
+            onGroupStatusChange={handleGroupStatusChange}  // Function to handle status changes
+          />
+
             <Box
               sx={{
                 display: "flex",

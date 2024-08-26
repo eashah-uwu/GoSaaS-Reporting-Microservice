@@ -17,4 +17,14 @@ router.get("/events", AuditController.getUniqueEvents);
 // Route to get unique users
 router.get("/users", AuditController.getUniqueUsers);
 
+// Route to bulk update audit trails
+router.post("/bulk-update", AuditController.bulkUpdate);
+
+// Route to bulk delete audit trails
+router.post("/bulk-delete", AuditController.bulkDelete);
+
+// Route to bulk update status of audit trails
+router.post("/bulk-status-update", AuditController.bulkStatusUpdate);
+
+
 module.exports = router;

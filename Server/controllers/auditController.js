@@ -48,6 +48,50 @@ class AuditController {
     const users = await AuditModel.getUniqueUsers();
     return res.status(HttpStatus.StatusCodes.OK).json(users);
   }
+  // Handles bulk updates of audit trail entries
+  static async bulkUpdate(req, res) {
+    const { updates } = req.body;
+    
+    try {
+      await Promise.all(updates.map(async (update) => {
+        const { id, ...data } = update;
+        await AuditModel.updateAuditTrail(id, data);
+      }));
+      res.status(HttpStatus.StatusCodes.OK).json({ message: "Bulk update successful" });
+    } catch (error) {
+      res.status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Bulk update failed" });
+    }
+  }
+
+  // Handles bulk deletions of audit trail entries
+  static async bulkDelete(req, res) {
+    const { ids } = req.body;
+    
+    try {
+      await AuditModel.bulkDelete(ids);
+      res.status(HttpStatus.StatusCodes.OK).json({ message: "Bulk delete successful" });
+    } catch (error) {
+      res.status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Bulk delete failed" });
+    }
+  }
+
+  // Handles bulk status updates of audit trail entries
+  static async bulkStatusUpdate(req, res) {
+    const { ids, status } = req.body;
+    
+    try {
+      await AuditModel.bulkStatusUpdate(ids, status);
+      res.status(HttpStatus.StatusCodes.OK).json({ message: "Bulk status update successful" });
+    } catch (error) {
+      res.status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Bulk status update failed" });
+    }
+  }
+  
+
+
+
+
+
 }
 
 module.exports = AuditController;

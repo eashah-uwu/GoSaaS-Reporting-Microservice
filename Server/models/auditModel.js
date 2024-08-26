@@ -43,8 +43,9 @@ class AuditModel {
         "at.createdby",
         "at.description",
         knex.raw(`CONCAT(ae.module, '-', ae.event) AS "Module-Event"`),
-        "at.createddate"
-      );
+        "at.createddate",
+        "at.isactive"
+      ).where("at.isdeleted", false); 
 
     // Apply filters
     if (filters.createdBy) {
@@ -98,6 +99,31 @@ class AuditModel {
     const uniqueUsers = await knex("audittrail").distinct("createdby").select("createdby");
     return uniqueUsers.map((row) => row.createdby);
   }
+  // Updates multiple audit trail entries
+  static async updateAuditTrail(id, data) {
+    await knex("audittrail")
+      .where({ id })
+      .update(data);
+  }
+
+  // Deletes multiple audit trail entries
+  static async bulkDelete(ids) {
+    await knex("audittrail")
+      .whereIn("id", ids)
+      .update({ isdeleted: true });
+  }
+
+  // Updates the status of multiple audit trail entries
+  static async bulkStatusUpdate(ids, status) {
+    await knex("audittrail")
+      .whereIn("id", ids)
+      .update({ isactive: status });
+  }
+  
+
+
+
+
 }
 
 module.exports = AuditModel;

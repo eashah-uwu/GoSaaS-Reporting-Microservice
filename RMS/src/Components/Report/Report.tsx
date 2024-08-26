@@ -235,7 +235,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           <Filter
             columns={baseColumns}
             onFilterChange={handleFilterChange}
-            showStatusFilter={false}
+            showStatusFilter={true}
           />
         </Box>
         <Box

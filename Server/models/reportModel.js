@@ -87,7 +87,7 @@ class Report {
         storedprocedureid: storedprocedureid,
         userid: userid,
         updatedat: new Date(),
-        filekey:filekey
+        filekey: filekey
       })
       .returning("*");
     return report;
@@ -218,6 +218,10 @@ class Report {
           );
       });
 
+    if (filters.status) {
+      if (filters.status === "active") baseQuery.andWhere("report.isactive", true);
+      if (filters.status === "inactive") baseQuery.andWhere("report.isactive", false);
+    }
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
     } else {
@@ -278,6 +282,11 @@ class Report {
             `%${query}%`
           );
       });
+    if (filters.status) {
+      if (filters.status === "active") baseQuery.andWhere("isactive", true);
+      if (filters.status === "inactive") baseQuery.andWhere("isactive", false);
+      if (filters.status === "deleted") baseQuery.andWhere("isdeleted", true);
+    }
 
     const [count] = await baseQuery;
     return parseInt(count.count, 10);
@@ -311,7 +320,7 @@ class Report {
   }
   static async updateSingleStatus(reportId, isactive) {
     return knex("report")
-    .where({ "reportid": reportId})
+      .where({ "reportid": reportId })
       .update({ isactive: isactive, updatedat: new Date() })
       .returning("*");
   }

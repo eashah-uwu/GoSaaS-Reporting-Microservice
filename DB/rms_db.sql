@@ -69,6 +69,15 @@ CREATE TABLE Connection (
     FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
 );
 
+-- Add the "schema" column
+ALTER TABLE Connection
+ADD COLUMN "schema" VARCHAR(255);
+
+-- Modify the "Username" column to allow NULL values
+ALTER TABLE Connection
+ALTER COLUMN Username DROP NOT NULL;
+
+
 -- Create the StoredProcedure table
 CREATE TABLE StoredProcedure (
     StoredProcedureID SERIAL PRIMARY KEY,

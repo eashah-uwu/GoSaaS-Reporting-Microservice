@@ -27,6 +27,9 @@ const Dashboard = () => {
 
   const [openAddApplication, setOpenAddApplication] = useState<boolean>(false);
 
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  
+  
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -119,6 +122,12 @@ const Dashboard = () => {
     if(Number(event.target.value)!=0){
       setPageSize(Number(event.target.value));
       setPage(1);
+    }
+  };
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if(Number(event.target.value)!=0){
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
     }
   };
 
@@ -299,8 +308,13 @@ const Dashboard = () => {
           >
             <TextField
               label="Items per page"
-              value={pageSize < total ? pageSize : total}
-              onChange={handlePageSizeChange}
+              value={itemsPerPage < total ? itemsPerPage : total}
+              onKeyDown={(event:any) => {
+                if (event.key === 'Enter') {
+                  handlePageSizeChange(event);
+                }
+              }}
+              onChange={handleItemsPerPageChange}
               variant="standard"
               type="number"
               size="small"

@@ -21,6 +21,8 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const [currentReport, setCurrentReport] = useState<any | null>(null);
 
   const [openAddReport, setOpenAddReport] = useState<boolean>(false);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -67,8 +69,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       const requests = updatedItems.map((item) => {
         const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
         return axios.put(
-          `${
-            import.meta.env.VITE_BACKEND_URL
+          `${import.meta.env.VITE_BACKEND_URL
           }/api/destinations/${destinationid}`,
           {
             destinationid,
@@ -107,7 +108,12 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       setPage(1);
     }
   };
-
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (Number(event.target.value) != 0) {
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
+    }
+  };
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
     setPage(1);
@@ -119,7 +125,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
 
   const handleAddReportClose = () => {
-    setCurrentReport(null); 
+    setCurrentReport(null);
     setOpenAddReport(false);
   };
 
@@ -128,9 +134,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       prevReports.map((report) =>
         report.reportid === updatedReport.reportid
           ? {
-              ...updatedReport,
-              status: updatedReport.isActive ? "active" : "inactive",
-            }
+            ...updatedReport,
+            status: updatedReport.isActive ? "active" : "inactive",
+          }
           : report
       )
     );
@@ -180,7 +186,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setOpenAddReport(true);
   };
 
-   
+
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
@@ -193,6 +199,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           key !== "storedprocedureid" &&
           key !== "status" &&
           key !== "reportid" &&
+          key !== "parameters" &&
           key !== "description"
       )
       .map((key) =>
@@ -257,7 +264,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="reportid"
-            onGroupStatusChange={()=>{}}
+            onGroupStatusChange={() => { }}
             onDelete={handleReportDelete}
             onAddData={handleAddReportOpen}
             onEdit={handleEdit}
@@ -292,8 +299,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             >
               <TextField
                 label="Items per page"
-                value={pageSize < total ? pageSize : total}
-                onChange={handlePageSizeChange}
+                value={itemsPerPage < total ? itemsPerPage : total}
+                onKeyDown={(event: any) => {
+                  if (event.key === 'Enter') {
+                    handlePageSizeChange(event);
+                  }
+                }}
+                onChange={handleItemsPerPageChange}
                 variant="standard"
                 type="number"
                 size="small"
@@ -306,16 +318,16 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             </FormControl>
           </Box>
         )}
-     
+
       </div>
-       <AddReport
-      open={openAddReport}
-      applicationId={applicationId}
-      onClose={handleAddReportClose}
-      onAdd={handleAddReport}
-      onEdit={handleUpdateReport}
-      report={currentReport}
-    />
+      <AddReport
+        open={openAddReport}
+        applicationId={applicationId}
+        onClose={handleAddReportClose}
+        onAdd={handleAddReport}
+        onEdit={handleUpdateReport}
+        report={currentReport}
+      />
     </>
   );
 };

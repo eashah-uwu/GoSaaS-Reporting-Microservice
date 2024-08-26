@@ -183,6 +183,7 @@ class Report {
         ),
         "report.sourceconnectionid",
         "report.destinationid",
+        "report.parameters",
         "report.storedprocedure as storedProcedure",
         "report.applicationid",
         "sc.alias as sourceConnection",

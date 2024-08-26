@@ -101,7 +101,7 @@ const AddReport: FC<AddReportProps> = ({
                 storedProcedure: report.storedProcedure || "",
                 parameter: report.parameter || "",
               }));
-              setParameters(report.parameter || "");
+              setParameters(report.parameters || "");
             } else {
               toast.error("Failed to load stored procedures: " + storedProcedureResponse.data.message);
             }

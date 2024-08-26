@@ -22,6 +22,8 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
   const [openAddSource, setOpenAddSource] = useState<boolean>(false);
   const [editingSource, setEditingSource] = useState<any>(null);
 
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -114,7 +116,12 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       setPage(1);
     }
   };
-
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (Number(event.target.value) != 0) {
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
+    }
+  };
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
     setPage(1);
@@ -138,9 +145,9 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       prevData.map((source) =>
         source.connectionid === updatedSource.connectionid
           ? {
-              ...updatedSource,
-              status: updatedSource.isactive ? "active" : "inactive",
-            }
+            ...updatedSource,
+            status: updatedSource.isactive ? "active" : "inactive",
+          }
           : source
       )
     );
@@ -153,7 +160,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
 
   const handleConnectionDelete = async (selectedIds: string[]) => {
     try {
-      if(selectedIds.length==1){
+      if (selectedIds.length == 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/${selectedIds[0]}`,
           {
@@ -164,7 +171,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         );
         toast.success("Successfully Deleted Source Connection")
       }
-      else if(selectedIds.length>1){
+      else if (selectedIds.length > 1) {
         await axios.delete(
           `${import.meta.env.VITE_BACKEND_URL}/api/connections/delete`,
           {
@@ -179,29 +186,29 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
         toast.success("Successfully Deleted Source Connections")
       }
       fetchConnections(page, pageSize, searchQuery, filters);
-      } catch (e) {
-        toast.error("Error Deleting Connections")
-        throw e;
-      }
+    } catch (e) {
+      toast.error("Error Deleting Connections")
+      throw e;
+    }
   };
-  const handleGroupStatusChange = async(selectedIds: string[],status:string) => {
+  const handleGroupStatusChange = async (selectedIds: string[], status: string) => {
     try {
-        const data={ids:selectedIds,status:status};
-        await axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}/api/connections/group-status`,
-          data,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        toast.success("Successfully Updated Status of Connections")
-        fetchConnections(page, pageSize, searchQuery, filters);
-      } catch (e) {
-        toast.error("Error Updating Status")
-        throw e;
-      }
+      const data = { ids: selectedIds, status: status };
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/connections/group-status`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Successfully Updated Status of Connections")
+      fetchConnections(page, pageSize, searchQuery, filters);
+    } catch (e) {
+      toast.error("Error Updating Status")
+      throw e;
+    }
   };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -312,8 +319,13 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
             >
               <TextField
                 label="Items per page"
-                value={pageSize < total ? pageSize : total}
-                onChange={handlePageSizeChange}
+                value={itemsPerPage < total ? itemsPerPage : total}
+                onKeyDown={(event: any) => {
+                  if (event.key === 'Enter') {
+                    handlePageSizeChange(event);
+                  }
+                }}
+                onChange={handleItemsPerPageChange}
                 variant="standard"
                 type="number"
                 size="small"

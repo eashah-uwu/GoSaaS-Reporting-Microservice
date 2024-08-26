@@ -107,7 +107,7 @@ async function generateReport(reportName, userid, parameters) {
 
     // Step 10: Upload the PDF to the destination
     const uploadResult = await uploadFile(
-      "aws",
+      destinationDetails.cloudprovider,
       destinationDetails.url,
       destinationDetails.apikey,
       { key: pdfKey, buffer: pdfBuffer },

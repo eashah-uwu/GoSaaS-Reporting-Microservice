@@ -40,7 +40,6 @@ const createReport = async (req, res) => {
   }
 
   const existingReport = await Report.findByName(alias,applicationid);
-  console.log(existingReport)
   if (existingReport) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -57,7 +56,7 @@ const createReport = async (req, res) => {
 
   const destination_db = await Destination.findById(destination);
   await uploadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
     { key, buffer },
@@ -107,7 +106,7 @@ const downloadXsl = async (req, res) => {
   }
   const destination_db = await Destination.findById(report.destinationid);
   const file = await downloadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
     destination_db.bucketname,
@@ -133,7 +132,7 @@ const downloadReport = async (req, res) => {
   const report = await Report.findById(reportHistory.reportid);
   const destination_db = await Destination.findById(report.destinationid);
   const file = await downloadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
     destination_db.bucketname,
@@ -292,7 +291,7 @@ const deleteReport = async (req, res) => {
   const destination_db = await Destination.findById(report.destinationid);
 
     await deleteFile(
-      "aws",
+      destination_db.cloudprovider,
       destination_db.url,
       destination_db.apikey,
       destination_db.bucketname,
@@ -332,7 +331,7 @@ const deleteMultipleReports = async (req, res) => {
   for (const report of existingReports) {
     const destination_db = await Destination.findById(report.destinationid);
     await deleteFile(
-        "aws",
+      destination_db.cloudprovider,
         destination_db.url,
         destination_db.apikey,
         destination_db.bucketname,

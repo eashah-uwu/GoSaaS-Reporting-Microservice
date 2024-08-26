@@ -103,6 +103,7 @@ CREATE TABLE Destination (
 );
 
 -- Create the Report table
+-- Create the Report table with userid column and foreign key constraint
 CREATE TABLE public.report (
     reportid serial4 NOT NULL,
     title varchar(255) NOT NULL,
@@ -112,6 +113,7 @@ CREATE TABLE public.report (
     sourceconnectionid int4 NULL,
     destinationid int4 NULL,
     applicationid int4 NULL,
+    userid int4 NULL, -- Added userid column
     storedprocedure varchar(255) NULL,
     createdat timestamp NOT NULL,
     updatedat timestamp NULL,
@@ -122,28 +124,34 @@ CREATE TABLE public.report (
     CONSTRAINT report_applicationid_fkey FOREIGN KEY (applicationid) REFERENCES public.application(applicationid),
     CONSTRAINT report_destinationid_fkey FOREIGN KEY (destinationid) REFERENCES public.destination(destinationid),
     CONSTRAINT report_sourceconnectionid_fkey FOREIGN KEY (sourceconnectionid) REFERENCES public."connection"(connectionid),
-    CONSTRAINT report_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid)
+    CONSTRAINT report_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid),
+    CONSTRAINT report_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid) -- Added foreign key constraint
 );
+
 CREATE INDEX idx_report_appid ON public.report USING btree (applicationid);
 CREATE INDEX idx_report_destid ON public.report USING btree (destinationid);
 CREATE INDEX idx_report_sourceconnid ON public.report USING btree (sourceconnectionid);
 CREATE INDEX idx_report_createdby ON public.report USING btree (createdby);
 
 -- Create the ReportStatusHistory table
+-- Create the ReportStatusHistory table with userid column and foreign key constraint
 CREATE TABLE public.reportstatushistory (
     reportstatushistoryid serial4 NOT NULL,
     reportid int4 NOT NULL,
     status varchar(50) NOT NULL,
     "timestamp" timestamp NOT NULL,
     createdby int4 NULL,
+    userid int4 NULL, -- Added userid column
     message varchar(255) NULL,
     createdat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
     updatedat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
     filekey varchar(255) NULL,
     CONSTRAINT reportstatushistory_pkey PRIMARY KEY (reportstatushistoryid),
     CONSTRAINT reportstatushistory_reportid_fkey FOREIGN KEY (reportid) REFERENCES public.report(reportid),
-    CONSTRAINT reportstatushistory_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid)
+    CONSTRAINT reportstatushistory_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid),
+    CONSTRAINT reportstatushistory_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid) -- Added foreign key constraint
 );
+
 CREATE INDEX idx_reportstatushistory_reportid ON public.reportstatushistory USING btree (reportid);
 
 -- Delete Previous Audit Table

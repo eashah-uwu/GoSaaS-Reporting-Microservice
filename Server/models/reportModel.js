@@ -22,6 +22,7 @@ class Report {
         destinationid: destination_p,
         applicationid: applicationid_p,
         storedprocedure: storedprocedure_p,
+        userid: userid_p,
         createdat: new Date(),
         updatedat: new Date(),
         createdby: userid_p,
@@ -83,7 +84,7 @@ class Report {
         destinationid: destinationid,
         applicationid: applicationid,
         storedprocedureid: storedprocedureid,
-        createdby: userid,
+        userid: userid,
         updatedat: new Date(),
       })
       .returning("*");
@@ -235,7 +236,7 @@ class Report {
         "reportstatushistory.filekey"
       )
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
-      .where({ "reportstatushistory.createdby": userid })
+      .where({ "reportstatushistory.userid": userid })
       .andWhere((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)
@@ -260,7 +261,7 @@ class Report {
     let baseQuery = knex("reportstatushistory")
       .count({ count: "*" })
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
-      .where({ "reportstatushistory.createdby": userid })
+      .where({ "reportstatushistory.userid": userid })
       .where((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)

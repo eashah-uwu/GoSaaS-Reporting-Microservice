@@ -3,10 +3,12 @@ import Navbar from "../Components/Navbar/Navbar";
 import WidgetWrapper from "../Components/WidgetWrapper";
 import { Box, Typography } from "@mui/material";
 import ReportHistory from '../Components/ReportsHistory/ReportsHistory';
+import Breadcrumbs from "../Components/BreadCrumbs/BreadCrumbs";
 function ReportPage() {
   return (
     <>   
       <Navbar />
+      <Breadcrumbs/>
       <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
         Reports Overview
       </Typography>

@@ -23,7 +23,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
         cell: (info: any) => {
             if (col.accessorKey === 'name' && rowIdAccessor === "applicationid") {
                 return (
-                    <Link style={{ color: "#bc1a1a", fontWeight: "bold", textDecoration: "none" }} to={`/application/${info.row.original[rowIdAccessor]}`}>
+                    <Link style={{ color: "#bc1a1a", fontWeight: "bold", textDecoration: "none" }} to={`/${info.row.original[rowIdAccessor]}`}>
                         {info.getValue()}
                     </Link>
                 );

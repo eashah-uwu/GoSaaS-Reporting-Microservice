@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { useMediaQuery, useTheme } from "@mui/material";
 import EditApplication from "../Components/EditApplication/EditApplication";
-
+import { useNavigate } from 'react-router-dom';
 import classes from "./ApplicationPage.module.css";
 import Source from "../Components/Source/Source";
 import Destination from "../Components/Destination/Destination";
@@ -25,12 +25,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "../State/store";
 import { toast } from "react-toastify";
 import { StatusCodes } from "http-status-codes";
+import Breadcrumbs from "../Components/BreadCrumbs/BreadCrumbs";
 
 const ApplicationPage = () => {
   const { applicationid } = useParams();
   const [applicationData, setApplicationData] = useState<any>(null);
   const [activeButton, setActiveButton] = useState<string>("source");
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const theme = useTheme();
@@ -58,6 +60,9 @@ const ApplicationPage = () => {
     fetchApplicationData();
   }, [applicationid]);
 
+  const handleBackToDashboard = () => {
+    navigate('/');
+  };
   if (!applicationData) return <div>Loading...</div>;
 
   const handleButtonClick = (buttonName: string) => {
@@ -126,6 +131,16 @@ const ApplicationPage = () => {
     <>
       <Navbar />
       <main className={classes.main_content}>
+        {/* <Button size="small"
+          sx={{
+            margin: '1rem',
+            backgroundColor: "#7d0e0e",
+            color: "white",
+            ":hover": { backgroundColor: "#7d0e0e", color: "white" },
+          }} onClick={handleBackToDashboard}>
+          Return To Dashboard
+        </Button> */}
+            <Breadcrumbs/>
         <Box
           sx={{
             background: "rgb(255, 255, 255)",

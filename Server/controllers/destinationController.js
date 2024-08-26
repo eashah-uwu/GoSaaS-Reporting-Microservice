@@ -14,6 +14,8 @@ const {
 
 const createDestination = async (req, res) => {
   const userid = req.user.userid;
+  const data = createDestinationSchema.parse(req.body);
+
   const { destination, alias, url, apiKey, applicationId, bucketname } =
     req.body;
   const application = await Application.findById(applicationId);

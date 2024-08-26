@@ -89,6 +89,7 @@ class Destination {
   static async update(id, data) {
     const { alias, destination, url, apikey, bucketName, isactive, isdeleted } =
       data;
+
     const [prevDestination] = await knex("destination").where({
       destinationid: id,
     });

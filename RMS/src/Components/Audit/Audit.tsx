@@ -142,7 +142,7 @@ const Audit = () => {
 
 const handleGroupStatusChange = async (selectedIds: string[], selectedStatus: string) => {
   const ids = selectedIds.map(id => parseInt(id, 10));
-  const status = selectedStatus === 'true'; // Convert 'true' to boolean true, 'false' to boolean false
+  const status = selectedStatus.toLowerCase() === 'active'; // Convert 'true' to boolean true, 'false' to boolean false
   try {
     await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/audit-trails/bulk-status-update`, { ids, status }, {
       headers: { Authorization: `Bearer ${token}` },

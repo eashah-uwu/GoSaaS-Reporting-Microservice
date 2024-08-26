@@ -15,6 +15,7 @@ const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
 const ReportStatusHistory = require("../models/reportStatusHistory.js");
 const reportQueue = require("../queues/reportQueue");
+const { Store } = require("express-session");
 
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
@@ -216,7 +217,6 @@ const updateReport = async (req, res) => {
 
   const sourceId = parseInt(source, 10);
   const destinationId = parseInt(destination, 10);
-  const storedProcedureId = parseInt(storedProcedure, 10);
   const applicationId = parseInt(applicationid, 10);
 
 
@@ -243,11 +243,11 @@ const updateReport = async (req, res) => {
     sourceconnectionid: sourceId,
     destinationid: destinationId,
     applicationid: applicationId,
-    storedprocedureid: storedProcedureId,
+    storedProcedure: storedProcedure,
     userid: userid,
   };
   
-  console.log(data);
+  
 
   try {
     const report = await Report.update(reportId, data);

@@ -63,7 +63,7 @@ async function generateReport(reportName, userid, parameters) {
 
     // Step 5: Download the XSL file from the destination
     const file = await downloadFile(
-      "aws",
+      destinationDetails.cloudprovider,
       destinationDetails.url,
       destinationDetails.apikey,
       destinationDetails.bucketname,

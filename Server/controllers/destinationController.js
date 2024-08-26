@@ -1,6 +1,9 @@
 const Destination = require("../models/destinationModel");
 const { StatusCodes } = require("http-status-codes");
-const { connectToDestination, uploadFile } = require('../storage/cloudStorageService.js');
+const {
+  connectToDestination,
+  uploadFile,
+} = require("../storage/cloudStorageService.js");
 const config = require("config");
 const logger = require("../logger");
 const Application = require("../models/applicationModel");
@@ -11,7 +14,8 @@ const {
 
 const createDestination = async (req, res) => {
   const userid = req.user.userid;
-  const { destination, alias, url, apiKey, applicationId,bucketname } = req.body;
+  const { destination, alias, url, apiKey, applicationId, bucketname } =
+    req.body;
   const application = await Application.findById(applicationId);
 
   if (!application || application.userid != userid) {
@@ -21,7 +25,10 @@ const createDestination = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingDestination = await Destination.findByName(alias,applicationId);
+  const existingDestination = await Destination.findByName(
+    alias,
+    applicationId
+  );
   if (existingDestination) {
     logger.warn("Alias name must be unique", {
       context: { traceid: req.traceId },
@@ -30,7 +37,14 @@ const createDestination = async (req, res) => {
       message: "Alias name must be unique",
     });
   }
-  const duplicateDestinations = await Destination.findDuplicate(url,apiKey,bucketname,applicationId,userid);
+  const duplicateDestinations = await Destination.findDuplicate(
+    url,
+    apiKey,
+    bucketname,
+    applicationId,
+    userid,
+    destination
+  );
 
   if (duplicateDestinations[0]) {
     logger.warn("A connection with the same details already exists", {
@@ -41,17 +55,24 @@ const createDestination = async (req, res) => {
     });
   }
 
-  await connectToDestination(destination, url, apiKey,bucketname);
-  const newDestination = await Destination.create(alias, url, apiKey,bucketname, applicationId, userid);
+  await connectToDestination(destination, url, apiKey, bucketname);
+  const newDestination = await Destination.create(
+    alias,
+    destination,
+    url,
+    apiKey,
+    bucketname,
+    applicationId,
+    userid
+  );
   logger.info("Destination created successfully", {
     context: { traceid: req.traceId, destination },
   });
   res.status(StatusCodes.OK).json({
-    message: "Destination created successfully!",
+    message: "Destination created successfully! ",
     destination: newDestination,
   });
 };
-
 
 // Get all destinations
 const getAllDestinations = async (req, res) => {
@@ -94,16 +115,23 @@ const updateDestination = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Destination not found" });
   } else {
-    const application = await Application.findById(existingDestination.applicationid);
+    const application = await Application.findById(
+      existingDestination.applicationid
+    );
     if (!application || application.userid != userid) {
-      logger.warn("Application not found for Destination", { context: { traceid: req.traceId } });
+      logger.warn("Application not found for Destination", {
+        context: { traceid: req.traceId },
+      });
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Application not found" });
     }
   }
 
-  const otherDestination = await Destination.findByName(req.body.alias,existingDestination.applicationid);
+  const otherDestination = await Destination.findByName(
+    req.body.alias,
+    existingDestination.applicationid
+  );
   if (otherDestination && otherDestination.destinationid != destinationid) {
     logger.warn("Destination alias must be unique", {
       context: { traceid: req.traceId },
@@ -137,9 +165,13 @@ const deleteDestination = async (req, res) => {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Destination not found" });
   } else {
-    const application = await Application.findById(existingDestination.applicationid);
+    const application = await Application.findById(
+      existingDestination.applicationid
+    );
     if (!application || application.userid != userid) {
-      logger.warn("Application not found for Destination", { context: { traceid: req.traceId } });
+      logger.warn("Application not found for Destination", {
+        context: { traceid: req.traceId },
+      });
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Application not found" });
@@ -153,7 +185,6 @@ const deleteDestination = async (req, res) => {
     message: "Destination deleted successfully!",
   });
 };
-
 
 const deleteMultipleDestinations = async (req, res) => {
   const userid = req.user.userid;
@@ -169,9 +200,9 @@ const deleteMultipleDestinations = async (req, res) => {
     });
   }
 
-  const applicationIds = existingDestinations.map(dest => dest.applicationid);
+  const applicationIds = existingDestinations.map((dest) => dest.applicationid);
   const applications = await Application.findByIds(applicationIds);
-  const unauthorized = applications.some(app => app.userid !== userid);
+  const unauthorized = applications.some((app) => app.userid !== userid);
 
   if (unauthorized) {
     logger.warn("Unauthorized deletion attempt", {
@@ -186,14 +217,18 @@ const deleteMultipleDestinations = async (req, res) => {
   logger.info("Destinations deleted successfully", {
     context: { traceid: req.traceId },
   });
-  res.status(StatusCodes.OK).json({ message: "Destinations deleted successfully!" });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Destinations deleted successfully!" });
 };
 
-const updateMultipleStatus=async(req,res)=>{
-  const userid=req.user.userid;
-  const { ids,status } = req.body;
-  if (!['active', 'inactive'].includes(status)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
+const updateMultipleStatus = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids, status } = req.body;
+  if (!["active", "inactive"].includes(status)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid status!" });
   }
 
   const existingDestinations = await Destination.findByIds(ids);
@@ -206,9 +241,9 @@ const updateMultipleStatus=async(req,res)=>{
     });
   }
 
-  const applicationIds = existingDestinations.map(dest => dest.applicationid);
+  const applicationIds = existingDestinations.map((dest) => dest.applicationid);
   const applications = await Application.findByIds(applicationIds);
-  const unauthorized = applications.some(app => app.userid !== userid);
+  const unauthorized = applications.some((app) => app.userid !== userid);
 
   if (unauthorized) {
     logger.warn("Unauthorized Update attempt", {
@@ -223,17 +258,14 @@ const updateMultipleStatus=async(req,res)=>{
   logger.info("Destinations status changed successfully", {
     context: { traceid: req.traceId },
   });
-  res.status(StatusCodes.OK).json({ message: "Destinations status changed successfully!" });
-}
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Destinations status changed successfully!" });
+};
 
 // Get destinations by application ID
 const getDestinationsByApplicationId = async (req, res) => {
-  const {
-    query = "",
-    page = 1,
-    pageSize = 10,
-    filters = {},
-  } = req.query;
+  const { query = "", page = 1, pageSize = 10, filters = {} } = req.query;
   const { applicationid } = req.params;
   const userid = req.user.userid;
   const offset = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
@@ -269,13 +301,18 @@ const getDestinationsByApplicationId = async (req, res) => {
 };
 
 const connectStorageDestination = async (req, res) => {
-  const { destination, url, apiKey, alias,bucketname } = req.body;
-  const result = await connectToDestination(destination, url, apiKey,bucketname);
+  const { destination, url, apiKey, alias, bucketname } = req.body;
+  const result = await connectToDestination(
+    destination,
+    url,
+    apiKey,
+    bucketname
+  );
   logger.info("Destination connected successfully", {
     context: { traceid: req.traceId, result },
   });
   res.status(200).json({ message: result.message });
-}
+};
 
 const addFileToDestination = async (req, res) => {
   const { destination, url, apiKey, alias, bucketName } = req.body;
@@ -287,7 +324,7 @@ const addFileToDestination = async (req, res) => {
   } else {
     res.status(500).json({ error: result.message });
   }
-}
+};
 
 module.exports = {
   createDestination,
@@ -299,5 +336,5 @@ module.exports = {
   connectStorageDestination,
   addFileToDestination,
   deleteMultipleDestinations,
-  updateMultipleStatus
+  updateMultipleStatus,
 };

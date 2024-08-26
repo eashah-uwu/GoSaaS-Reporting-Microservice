@@ -177,8 +177,8 @@ class Report {
   }) {
     let baseQuery = knex("report")
       .select(
-        "report.title",
         "report.reportid",
+        "report.title",
         "report.description",
         knex.raw(
           `to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`
@@ -204,7 +204,8 @@ class Report {
       })
       .andWhere((builder) => {
         builder
-          .where("report.title", "ilike", `%${query}%`)
+          .where(knex.raw(`CAST(report.reportid AS TEXT)`), "ilike", `%${query}%`)
+          .orWhere("report.title", "ilike", `%${query}%`)
           .orWhere("report.description", "ilike", `%${query}%`)
           .orWhere("report.storedprocedure", "ilike", `%${query}%`)
           .orWhere("sc.alias", "ilike", `%${query}%`)

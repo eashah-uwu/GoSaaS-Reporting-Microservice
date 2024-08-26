@@ -22,7 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const schema = z.object({
   alias: z.string().min(3, "Alias must be atleast 3 characters").max(25, "Alias should not exceed 25 characters"),
-  description: z.string().min(10, "Alias must be atleast 3 characters").max(125, "Alias should not exceed 25 characters"),
+  description: z.string().min(5, "Description must be atleast 5 characters").max(125, "Description should not exceed 125 characters"),
 });
 
 interface AddReportProps {
@@ -31,7 +31,7 @@ interface AddReportProps {
   onAdd: () => void;
   onEdit?: () => void;
   applicationId: string;
-  report?: any; 
+  report?: any;
 }
 
 const AddReport: FC<AddReportProps> = ({
@@ -46,6 +46,7 @@ const AddReport: FC<AddReportProps> = ({
   const [destinations, setDestinations] = useState<any[]>([]);
   const [storedProcedures, setStoredProcedures] = useState<any[]>([]);
   const [parameters, setParameters] = useState('');
+  const [filename, setFilename] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const userid = useSelector((state: RootState) => state.auth.userId || "");
   const token = useSelector((state: RootState) => state.auth.token);
@@ -69,7 +70,7 @@ const AddReport: FC<AddReportProps> = ({
       file: "",
     },
   });
-  
+
   const formData = watch();
 
   useEffect(() => {
@@ -87,13 +88,13 @@ const AddReport: FC<AddReportProps> = ({
             },
           }),
         ]);
-  
+
         const fetchedSources = sourcesResponse.data.data;
         const fetchedDestinations = destinationsResponse.data.data;
-  
+
         setSources(fetchedSources);
         setDestinations(fetchedDestinations);
-  
+
         if (report) {
           const source = fetchedSources.find(
             (source: any) => source.connectionid === report.sourceconnectionid
@@ -101,8 +102,8 @@ const AddReport: FC<AddReportProps> = ({
           const destination = fetchedDestinations.find(
             (destination: any) => destination.destinationid === report.destinationid
           );
-  
-          
+
+
           console.log("this is the form im setting", formData);
           if (source) {
             const storedProcedureResponse = await axios.post(
@@ -114,12 +115,12 @@ const AddReport: FC<AddReportProps> = ({
                 },
               }
             );
-  
+
             if (storedProcedureResponse.data.success) {
               setStoredProcedures(storedProcedureResponse.data.data);
               setValue("storedProcedure", report.storedProcedure || "");
-              setValue("parameter", report.parameter || "");
-              setParameters(report.parameter || "");
+              setValue("parameter", report.parameters || "");
+              setParameters(report.parameters || "");
             } else {
               toast.error("Failed to load stored procedures: " + storedProcedureResponse.data.message);
             }
@@ -129,8 +130,8 @@ const AddReport: FC<AddReportProps> = ({
           setValue("description", report.description || "");
           setValue("source", source ? source.connectionid : "");
           setValue("destination", destination ? destination.destinationid : "");
-        
-          
+          const fileName = report.filekey.split('/').pop()?.split('-').pop();
+          setFilename(fileName)
         } else {
           reset({
             alias: "",
@@ -146,43 +147,52 @@ const AddReport: FC<AddReportProps> = ({
         toast.error("Failed to load dropdown data");
       }
     };
-  
+
     fetchDropdownData();
   }, [applicationId, token, report]);
-  
 
 
-const handleChange = async (e: any) => {
-  const { name, value } = e.target;
-  
 
-  if (name === "source") {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
-        { id: value },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+  const handleChange = async (e: any) => {
+    const { name, value } = e.target;
+
+
+    if (name === "source") {
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/connections/get-stored-procedures`,
+          { id: value },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setStoredProcedures(response.data.data);
+          toast.success("Connection successful, stored procedures loaded!");
+        } else {
+          toast.error("Failed to load stored procedures: " + response.data.message);
         }
-      );
-
-      if (response.data.success) {
-        setStoredProcedures(response.data.data);
-        toast.success("Connection successful, stored procedures loaded!");
-      } else {
-        toast.error("Failed to load stored procedures: " + response.data.message);
+      } catch (error: any) {
+        toast.error("Error testing connection. Please try again.");
       }
-    } catch (error: any) {
-      toast.error("Error testing connection. Please try again.");
     }
-  }
-};
+  };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      if (selectedFile.name.endsWith(".xsl")) {
+        const fileInput = document.getElementById('upload-file') as HTMLInputElement;
+        fileInput.style.color = "rgba(0, 0, 0, 1)";
+        setFile(e.target.files[0]);
+        setFilename("")
+      }else{
+
+        return toast.error("Only XSL files allowed !!")
+      }
     }
   };
   const handleProcedureSelect = (e: any) => {
@@ -213,21 +223,21 @@ const handleChange = async (e: any) => {
         formDataToSend.append("file", file);
       }
       formDataToSend.append("applicationid", applicationId);
-       
+
       formDataToSend.forEach((value, key) => {
         console.log(`${key}: ${value}`);
       });
-      
+
       if (report) {
         // Editingreport existing 
         formDataToSend.forEach((value, key) => {
           console.log(`${key}: ${value}`);
         });
-        
-   
+
+
         const response = await axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/reports/${report.reportid}`,
-            formDataToSend,
+          formDataToSend,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -264,11 +274,11 @@ const handleChange = async (e: any) => {
       }
     } catch (error: any) {
       if (error.response && error.response.status === StatusCodes.CONFLICT) {
-        toast.error("Alias must be unique" );
+        toast.error("Alias must be unique");
       } else {
         toast.error("Error creating report. Please try again.");
       }
-      
+
     }
   };
   console.log("Errors:", errors);
@@ -285,34 +295,38 @@ const handleChange = async (e: any) => {
     });
     setFile(null);
     setParameters("");
+    setFilename("")
     onClose();
   };
 
 
   return (
     <>
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{report ? "Edit Report" : "Configure Report"}</DialogTitle>
         <DialogContent>
 
-        <form onSubmit={handleSubmit (handleSubmitForm) }>
+          <form onSubmit={handleSubmit(handleSubmitForm)}>
 
-            <div className="formContainer">
-              <Controller
-                name="alias"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="dense"
-                    label="Alias"
-                    type="text"
-                    fullWidth
-                    error={!!errors.alias}
-                    helperText={errors.alias?.message?.toString()}
-                  />
-                )}
-              />
+            <div className={styles.formContainer}>
+              <div className={styles.formItem}>
+                <Controller
+                  name="alias"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      margin="dense"
+                      label="Alias"
+                      type="text"
+                      required
+                      fullWidth
+                      error={!!errors.alias}
+                      helperText={errors.alias?.message?.toString()}
+                    />
+                  )}
+                />
+              </div>
               <Controller
                 name="description"
                 control={control}
@@ -322,6 +336,7 @@ const handleChange = async (e: any) => {
                     margin="dense"
                     label="Description"
                     type="text"
+                    required
                     fullWidth
                     error={!!errors.description}
                     helperText={errors.description?.message?.toString()}
@@ -340,6 +355,7 @@ const handleChange = async (e: any) => {
                         label="Source"
                         select
                         fullWidth
+                        required
                         error={!!errors.source}
                         helperText={errors.source?.message?.toString()}
                         onChange={(e) => {
@@ -362,7 +378,7 @@ const handleChange = async (e: any) => {
                     )}
                   />
                 </div>
-                <div className="formItem">
+                <div className={styles.formItem}>
                   <Controller
                     name="destination"
                     control={control}
@@ -372,6 +388,7 @@ const handleChange = async (e: any) => {
                         margin="dense"
                         label="Destination"
                         select
+                        required
                         fullWidth
                         error={!!errors.destination}
                         helperText={errors.destination?.message?.toString()}
@@ -402,7 +419,7 @@ const handleChange = async (e: any) => {
                 </div>
               </div>
               <div className="formRow">
-                <div className="formItem">
+                <div className={styles.formItem}>
                   <Controller
                     name="storedProcedure"
                     control={control}
@@ -413,6 +430,7 @@ const handleChange = async (e: any) => {
                         label="Stored Procedure"
                         select
                         fullWidth
+                        required
                         error={!!errors.storedProcedure}
                         helperText={errors.storedProcedure?.message?.toString()}
                         onChange={(e) => {
@@ -430,9 +448,8 @@ const handleChange = async (e: any) => {
                         ))}
                       </TextField>
                     )}
-                  />
-                </div>
-                <div className="formItem">
+                  /></div>
+                <div className={styles.formItem}>
                   <Controller
                     name="parameter"
                     control={control}
@@ -441,6 +458,7 @@ const handleChange = async (e: any) => {
                         {...field}
                         margin="dense"
                         label="Parameter"
+                        required
                         type="text"
                         InputProps={{
                           readOnly: true,
@@ -455,14 +473,20 @@ const handleChange = async (e: any) => {
                 <input
                   accept=".xsl"
                   id="upload-file"
+                  multiple={false}
                   type="file"
                   onChange={handleFileChange}
+                  required={filename === ""}
+                  style={{ color: "rgba(0, 0, 0, 0)" }}
                 />
+                <p style={{ padding: "0.5rem", fontSize: "0.8rem" }}>
+                  {filename !== "" ? filename : ""}
+                </p>
               </div>
               <DialogActions className="formActions">
                 <Button
                   size="small"
-                  onClick={onClose}
+                  onClick={handleClose}
                   sx={{
                     backgroundColor: "#7d0e0e",
                     color: "white",

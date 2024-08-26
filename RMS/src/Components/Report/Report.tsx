@@ -189,7 +189,6 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           key !== "sourceconnectionid" &&
           key !== "storedprocedureid" &&
           key !== "status" &&
-          key !== "reportid" &&
           key !== "parameters" &&
           key !== "description"
       )

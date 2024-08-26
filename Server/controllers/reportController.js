@@ -199,6 +199,77 @@ const getReportById = async (req, res) => {
   });
   res.status(StatusCodes.OK).json(report);
 };
+const updateSingleStatus=async(req,res)=>{
+  const {
+    applicationid,
+    isactive
+  } = req.body;
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
+  const userid = req.user.userid;
+  const existingReport = await Report.findById(reportId);
+  if (!existingReport || existingReport.userid != userid) {
+    logger.warn("Report not found or unauthorized", { id: reportId });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
+  }
+
+  const report = await Report.updateSingleStatus(reportId, isactive);
+
+  logger.info("Report updated successfully", {
+    context: { traceid: req.traceId, report },
+  });
+  res.status(StatusCodes.OK).json({
+    message: "Report updated successfully!",
+    report,
+  });
+
+
+}
+const updateMultipleStatus = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids, status } = req.body;
+  if (!["active", "inactive"].includes(status)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid status!" });
+  }
+
+  const existingReports = await Report.findByIds(ids);
+  if (existingReports.length !== ids.length) {
+    logger.warn("Some Reports not found for Status Update", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Reports not found for Status Update!",
+    });
+  }
+
+  const applicationIds = existingReports.map((report) => report.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some((app) => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized Update attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized Update attempt!",
+    });
+  }
+
+  await Report.batchChangeStatus(ids, status);
+  logger.info("Reports status changed successfully", {
+    context: { traceid: req.traceId },
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Reports status changed successfully!" });
+};
+
+
+
+
+
 const updateReport = async (req, res) => {
   const {
     alias,
@@ -282,14 +353,6 @@ const updateReport = async (req, res) => {
     message: "Report updated successfully!",
     report,
   });
-
-  logger.error("Error updating report", {
-    context: { traceid: req.traceId, error },
-  });
-  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-    message: "An error occurred while updating the report",
-  });
-
 };
 
 
@@ -486,5 +549,7 @@ module.exports = {
   downloadXsl,
   reportGeneration,
   downloadReport,
-  deleteMultipleReports
+  deleteMultipleReports,
+  updateSingleStatus,
+  updateMultipleStatus
 };

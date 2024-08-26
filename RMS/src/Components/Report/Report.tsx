@@ -51,7 +51,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           },
         }
       );
-      setReports(data.data);
+      console.log(data)
+      const processedData = data.data.map((report: any) => ({
+        ...report,
+        status: report.isactive ? "active" : "inactive",
+      }));
+      console.log(processedData)
+      setReports(processedData);
       setTotal(data.total);
     } catch (err) {
       setError("Failed to fetch data");
@@ -67,24 +73,24 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const handleSave = async (updatedItems: any[]) => {
     try {
       const requests = updatedItems.map((item) => {
-        const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
+        const { applicationid,reportid, isactive } = item;
         return axios.put(
           `${import.meta.env.VITE_BACKEND_URL
-          }/api/destinations/${destinationid}`,
+          }/api/reports/status/${reportid}`,
           {
-            destinationid,
-            alias,
-            url,
-            apikey,
-            isactive,
-            isdeleted,
+            applicationid,isactive
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
       });
       await Promise.all(requests);
-      console.log("Updated Items", updatedItems);
+      toast.success("Updated Reports");
     } catch (error) {
-      alert("Failed to update data");
+      toast.error("Failed to Update Reports");
     }
   };
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +182,25 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     console.log("this app prints data", report)
     setOpenAddReport(true);
   };
-
+  const handleGroupStatusChange = async (selectedIds: string[], status: string) => {
+    try {
+      const data = { ids: selectedIds, status: status };
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports/group-status`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Successfully Updated Status of Reports")
+      fetchReports(page, pageSize, searchQuery, filters);
+    } catch (e) {
+      toast.error("Error Updating Status")
+      throw e;
+    }
+  };
 
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
@@ -248,13 +272,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         {!loading && !error && (
           <TableConfig
             data={reports}
-            includeStatus={false}
+            includeStatus={true}
             includeEdit={true}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="reportid"
-            onGroupStatusChange={() => { }}
+            onGroupStatusChange={handleGroupStatusChange}
             onDelete={handleReportDelete}
             onAddData={handleAddReportOpen}
             onEdit={handleEdit}

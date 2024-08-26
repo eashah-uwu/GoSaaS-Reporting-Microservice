@@ -15,7 +15,8 @@ const {
   reportGeneration,
   downloadReport,
   deleteMultipleReports,
-  //updateMultipleStatus
+  updateSingleStatus,
+  updateMultipleStatus
 } = require("../controllers/reportController");
 const validateQuery = require("../middlewares/validateQuery");
 const verifyToken = require("../middlewares/auth");
@@ -26,6 +27,8 @@ router.get("/download-xsl/:reportid",verifyToken,downloadXsl)
 router.get("/download-report/:reporthistoryid",verifyToken,downloadReport)
 router.get("/history",verifyToken, getReports);
 router.get("/:applicationid",verifyToken, getReportsByApplicationId);
+router.put("/status/:reportid",verifyToken, updateSingleStatus);
+router.put("/group-status",verifyToken, updateMultipleStatus);
 router.put("/:reportid",verifyToken,upload.single("file"), updateReport);
 router.delete("/delete",verifyToken, deleteMultipleReports); 
 router.delete("/:reportid",verifyToken, deleteReport);

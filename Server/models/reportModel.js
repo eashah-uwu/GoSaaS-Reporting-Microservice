@@ -186,6 +186,7 @@ class Report {
         "report.sourceconnectionid",
         "report.destinationid",
         "report.parameters",
+        "report.isactive",
         "report.storedprocedure as storedProcedure",
         "report.applicationid",
         "sc.alias as sourceConnection",
@@ -300,6 +301,19 @@ class Report {
       .update({ isdeleted: true, updatedat: new Date() })
       .returning("*");
     return connections;
+  }
+  static async batchChangeStatus(ids, status) {
+    const isActive = status === "active";
+    return knex("report")
+      .whereIn("reportid", ids)
+      .update({ isactive: isActive, updatedat: new Date() })
+      .returning("*");
+  }
+  static async updateSingleStatus(reportId, isactive) {
+    return knex("report")
+    .where({ "reportid": reportId})
+      .update({ isactive: isactive, updatedat: new Date() })
+      .returning("*");
   }
 }
 

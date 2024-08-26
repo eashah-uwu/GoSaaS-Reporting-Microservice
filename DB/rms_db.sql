@@ -54,6 +54,7 @@ CREATE TABLE Connection (
     Host VARCHAR(255),
     Port INT,
     Database VARCHAR(255),
+    Schema VARCHAR(255),  -- Added Schema column
     Type VARCHAR(50),
     Username VARCHAR(255) NOT NULL,
     isActive BOOLEAN DEFAULT TRUE,
@@ -67,6 +68,7 @@ CREATE TABLE Connection (
     FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID),
     FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID)
 );
+
 
 -- Create the StoredProcedure table
 CREATE TABLE StoredProcedure (

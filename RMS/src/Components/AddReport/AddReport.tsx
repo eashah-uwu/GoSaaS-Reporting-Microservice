@@ -15,6 +15,15 @@ import { StatusCodes } from "http-status-codes";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../State/store";
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+
+const schema = z.object({
+  alias: z.string().min(3, "Alias must be atleast 3 characters").max(25, "Alias should not exceed 25 characters"),
+  description: z.string().min(10, "Alias must be atleast 3 characters").max(125, "Alias should not exceed 25 characters"),
+});
 
 interface AddReportProps {
   open: boolean;
@@ -41,15 +50,27 @@ const AddReport: FC<AddReportProps> = ({
   const userid = useSelector((state: RootState) => state.auth.userId || "");
   const token = useSelector((state: RootState) => state.auth.token);
 
-  
-  const [formData, setFormData] = useState({
-    alias: report?.title || '',
-    description: report?.description || '',
-    source: report?.sourceConnection || '',
-    destination: report?.destination || '',
-    storedProcedure: report?.storedProcedure || '',
-    parameter: report?.parameter || ''
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      alias: report?.title || "",
+      description: report?.description || "",
+      source: report?.sourceconnectionid || "",
+      destination: report?.destinationid || "",
+      storedProcedure: report?.storedProcedure || "",
+      parameter: report?.parameter || "",
+      file: "",
+    },
   });
+  
+  const formData = watch();
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -96,27 +117,22 @@ const AddReport: FC<AddReportProps> = ({
   
             if (storedProcedureResponse.data.success) {
               setStoredProcedures(storedProcedureResponse.data.data);
-              setFormData((prev) => ({
-                ...prev,
-                storedProcedure: report.storedProcedure || "",
-                parameter: report.parameter || "",
-              }));
+              setValue("storedProcedure", report.storedProcedure || "");
+              setValue("parameter", report.parameter || "");
               setParameters(report.parameter || "");
             } else {
               toast.error("Failed to load stored procedures: " + storedProcedureResponse.data.message);
             }
           }
 
-          setFormData((prev) => ({
-            ...prev,
-            alias: report.title || "",
-            description: report.description || "",
-            source: source ? source.connectionid : "",
-            destination: destination ? destination.destinationid : "",
-          }));
+          setValue("alias", report.title || "");
+          setValue("description", report.description || "");
+          setValue("source", source ? source.connectionid : "");
+          setValue("destination", destination ? destination.destinationid : "");
+        
           
         } else {
-          setFormData({
+          reset({
             alias: "",
             description: "",
             source: "",
@@ -138,7 +154,7 @@ const AddReport: FC<AddReportProps> = ({
 
 const handleChange = async (e: any) => {
   const { name, value } = e.target;
-  setFormData((prev) => ({ ...prev, [name]: value }));
+  
 
   if (name === "source") {
     try {
@@ -172,13 +188,14 @@ const handleChange = async (e: any) => {
   const handleProcedureSelect = (e: any) => {
     const selectedProc = storedProcedures.find(proc => proc.procedure_name === e.target.value);
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value, parameter: selectedProc.parameter_list })
+    setValue(name, value);
+    setValue('parameter', selectedProc.parameter_list || "");
     setParameters(selectedProc.parameter_list);
   };
 
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
+  const handleSubmitForm = async (data: any) => {
 
+    console.log("i am here")
     if (!file && !report) {
       toast.error("Please upload an .xls file.");
       return;
@@ -254,10 +271,11 @@ const handleChange = async (e: any) => {
       
     }
   };
+  console.log("Errors:", errors);
 
 
   const handleClose = () => {
-    setFormData({
+    reset({
       alias: '',
       description: '',
       source: '',
@@ -276,164 +294,202 @@ const handleChange = async (e: any) => {
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>{report ? "Edit Report" : "Configure Report"}</DialogTitle>
         <DialogContent>
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formContainer}>
-              <TextField
-                margin="dense"
-                id="alias"
+
+        <form onSubmit={handleSubmit (handleSubmitForm) }>
+
+            <div className="formContainer">
+              <Controller
                 name="alias"
-                label="Alias"
-                type="text"
-                fullWidth
-                value={formData.alias}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="Alias"
+                    type="text"
+                    fullWidth
+                    error={!!errors.alias}
+                    helperText={errors.alias?.message?.toString()}
+                  />
+                )}
               />
-              <TextField
-                margin="dense"
-                id="description"
+              <Controller
                 name="description"
-                label="Description"
-                type="text"
-                fullWidth
-                value={formData.description}
-                onChange={handleChange}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    margin="dense"
+                    label="Description"
+                    type="text"
+                    fullWidth
+                    error={!!errors.description}
+                    helperText={errors.description?.message?.toString()}
+                  />
+                )}
               />
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="source"
-                  name="source"
-                  label="Source"
-                  select
-                  fullWidth
-                  value={formData.source}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="" hidden>
-                    Select Source
-                  </MenuItem>
-                  {sources.map((source) => (
-                    <MenuItem
-                      key={source.connectionid}
-                      value={source.connectionid}
-                    >
-                      {source.alias}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="destination"
-                  name="destination"
-                  label="Destination"
-                  select
-                  fullWidth
-                  value={formData.destination}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="" hidden>
-                    Select Destination
-                  </MenuItem>
-                  {report ? (
-                    <MenuItem
-                      key={report.destinationid}
-                      value={report.destinationid}
-                    >
-                      {report.destination}
-                    </MenuItem>
-                  ) : (
-                    destinations.map((destination) => (
-                      <MenuItem
-                        key={destination.destinationid}
-                        value={destination.destinationid}
+              <div className="formRow">
+                <div className="formItem">
+                  <Controller
+                    name="source"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        margin="dense"
+                        label="Source"
+                        select
+                        fullWidth
+                        error={!!errors.source}
+                        helperText={errors.source?.message?.toString()}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleChange(e);
+                        }}
                       >
-                        {destination.alias}
-                      </MenuItem>
-                    ))
-                  )}
-                </TextField>
+                        <MenuItem value="" hidden>
+                          Select Source
+                        </MenuItem>
+                        {sources.map((source) => (
+                          <MenuItem
+                            key={source.connectionid}
+                            value={source.connectionid}
+                          >
+                            {source.alias}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                  />
+                </div>
+                <div className="formItem">
+                  <Controller
+                    name="destination"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        margin="dense"
+                        label="Destination"
+                        select
+                        fullWidth
+                        error={!!errors.destination}
+                        helperText={errors.destination?.message?.toString()}
+                      >
+                        <MenuItem value="" hidden>
+                          Select Destination
+                        </MenuItem>
+                        {report ? (
+                          <MenuItem
+                            key={report.destinationid}
+                            value={report.destinationid}
+                          >
+                            {report.destination}
+                          </MenuItem>
+                        ) : (
+                          destinations.map((destination) => (
+                            <MenuItem
+                              key={destination.destinationid}
+                              value={destination.destinationid}
+                            >
+                              {destination.alias}
+                            </MenuItem>
+                          ))
+                        )}
+                      </TextField>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="storedProcedure"
-                  name="storedProcedure"
-                  label="Stored Procedure"
-                  select
-                  fullWidth
-                  value={formData.storedProcedure}
-                  onChange={handleProcedureSelect}
-                >
-                  <MenuItem value="" hidden>
-                    Select Stored Procedure
-                  </MenuItem>
-                  {storedProcedures.map((proc, index) => (
-                    <MenuItem key={index} value={proc.procedure_name}>
-                      {proc.procedure_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              <div className="formRow">
+                <div className="formItem">
+                  <Controller
+                    name="storedProcedure"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        margin="dense"
+                        label="Stored Procedure"
+                        select
+                        fullWidth
+                        error={!!errors.storedProcedure}
+                        helperText={errors.storedProcedure?.message?.toString()}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleProcedureSelect(e);
+                        }}
+                      >
+                        <MenuItem value="" hidden>
+                          Select Stored Procedure
+                        </MenuItem>
+                        {storedProcedures.map((proc, index) => (
+                          <MenuItem key={index} value={proc.procedure_name}>
+                            {proc.procedure_name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                  />
+                </div>
+                <div className="formItem">
+                  <Controller
+                    name="parameter"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        margin="dense"
+                        label="Parameter"
+                        type="text"
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
               </div>
-              <div className={styles.formItem}>
-                <TextField
-                  margin="dense"
-                  id="parameter"
-                  name="parameter"
-                  label="Parameter"
-                  type="text"
-                  value={parameters}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  fullWidth
-                  onChange={handleChange}
+              <div className="formRow">
+                <input
+                  accept=".xsl"
+                  id="upload-file"
+                  type="file"
+                  onChange={handleFileChange}
                 />
               </div>
-            </div>
-            <div className={styles.formRow}>
-              <input
-                accept=".xsl"
-                id="upload-file"
-                type="file"
-                onChange={handleFileChange}
-              />
-            </div>
-            <DialogActions className={styles.formActions}>
-              <Button
-                size="small"
-                onClick={onClose}
-                sx={{
-                  backgroundColor: "#7d0e0e",
-                  color: "white",
-                  ":hover": {
+              <DialogActions className="formActions">
+                <Button
+                  size="small"
+                  onClick={onClose}
+                  sx={{
                     backgroundColor: "#7d0e0e",
                     color: "white",
-                  },
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  backgroundColor: "#7d0e0e",
-                  color: "white",
-                  ":hover": {
+                    ":hover": {
+                      backgroundColor: "#7d0e0e",
+                      color: "white",
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="small"
+                  sx={{
                     backgroundColor: "#7d0e0e",
                     color: "white",
-                  },
-                }}
-              >
-                {report ? "Update" : "Generate"}
-              </Button>
-            </DialogActions>
+                    ":hover": {
+                      backgroundColor: "#7d0e0e",
+                      color: "white",
+                    },
+                  }}
+                >
+                  {report ? "Update" : "Generate"}
+                </Button>
+              </DialogActions>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

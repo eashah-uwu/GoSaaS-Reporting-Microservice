@@ -177,8 +177,8 @@ class Report {
   }) {
     let baseQuery = knex("report")
       .select(
-        "report.title",
         "report.reportid",
+        "report.title",
         "report.description",
         knex.raw(
           `to_char("report"."generationdate", 'YYYY-MM-DD') as "generationDate"`
@@ -186,6 +186,7 @@ class Report {
         "report.sourceconnectionid",
         "report.destinationid",
         "report.parameters",
+        "report.isactive",
         "report.storedprocedure as storedProcedure",
         "report.applicationid",
         "sc.alias as sourceConnection",
@@ -204,7 +205,8 @@ class Report {
       })
       .andWhere((builder) => {
         builder
-          .where("report.title", "ilike", `%${query}%`)
+          .where(knex.raw(`CAST(report.reportid AS TEXT)`), "ilike", `%${query}%`)
+          .orWhere("report.title", "ilike", `%${query}%`)
           .orWhere("report.description", "ilike", `%${query}%`)
           .orWhere("report.storedprocedure", "ilike", `%${query}%`)
           .orWhere("sc.alias", "ilike", `%${query}%`)
@@ -299,6 +301,19 @@ class Report {
       .update({ isdeleted: true, updatedat: new Date() })
       .returning("*");
     return connections;
+  }
+  static async batchChangeStatus(ids, status) {
+    const isActive = status === "active";
+    return knex("report")
+      .whereIn("reportid", ids)
+      .update({ isactive: isActive, updatedat: new Date() })
+      .returning("*");
+  }
+  static async updateSingleStatus(reportId, isactive) {
+    return knex("report")
+    .where({ "reportid": reportId})
+      .update({ isactive: isactive, updatedat: new Date() })
+      .returning("*");
   }
 }
 

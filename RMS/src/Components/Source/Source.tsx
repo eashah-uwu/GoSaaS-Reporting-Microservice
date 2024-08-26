@@ -53,7 +53,7 @@ const Source: React.FC<SourceProps> = ({ applicationId }) => {
       );
       const processedData = data.data.map((app: any) => ({
         ...app,
-        status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
+        status: app.isactive ? "active" : "inactive",
       }));
 
       setConnections(processedData);

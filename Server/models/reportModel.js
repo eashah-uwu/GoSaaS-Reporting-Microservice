@@ -72,6 +72,7 @@ class Report {
       applicationid,
       storedprocedureid,
       userid,
+      filekey
     } = data;
     const [report] = await knex("report")
       .where({ reportid: id })
@@ -86,6 +87,7 @@ class Report {
         storedprocedureid: storedprocedureid,
         userid: userid,
         updatedat: new Date(),
+        filekey:filekey
       })
       .returning("*");
     return report;

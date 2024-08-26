@@ -41,8 +41,11 @@ CREATE TABLE Application (
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CreatedBy INT NOT NULL,
     UpdatedBy INT,
-    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID)
+    UserID INT NOT NULL,  -- Added UserID column
+    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID),
+    FOREIGN KEY (UserID) REFERENCES "User"(UserID)  -- Foreign key constraint for UserID
 );
+
 
 -- Create the Connection table
 CREATE TABLE Connection (

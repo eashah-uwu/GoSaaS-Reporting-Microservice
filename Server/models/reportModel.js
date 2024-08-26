@@ -22,7 +22,6 @@ class Report {
         destinationid: destination_p,
         applicationid: applicationid_p,
         storedprocedure: storedprocedure_p,
-        userid: userid_p,
         createdat: new Date(),
         updatedat: new Date(),
         createdby: userid_p,
@@ -84,7 +83,7 @@ class Report {
         destinationid: destinationid,
         applicationid: applicationid,
         storedprocedureid: storedprocedureid,
-        userid: userid,
+        createdby: userid,
         updatedat: new Date(),
       })
       .returning("*");
@@ -102,7 +101,6 @@ class Report {
   static async findByTitle(title) {
     return knex("report").select("*").where({ title }).first();
   }
-
 
   static async search({ query, offset, limit, filters, sortField, sortOrder }) {
     let baseQuery = knex("report")
@@ -129,14 +127,13 @@ class Report {
     return baseQuery.offset(offset).limit(limit);
   }
 
-
   static async findByName(title, applicationid) {
     return knex("report")
-          .where({ applicationid: applicationid, isdeleted: false })
-          .andWhere("title", "ilike", title)
-          .first();
+      .where({ applicationid: applicationid, isdeleted: false })
+      .andWhere("title", "ilike", title)
+      .first();
   }
-  static asyn
+  static asyn;
   static async countSearchResults(applicationid, query, filters) {
     let baseQuery = knex("report")
       .count({ count: "*" })
@@ -217,7 +214,7 @@ class Report {
 
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
-    }else {
+    } else {
       baseQuery.orderBy("report.createdat", "desc");
     }
 
@@ -238,7 +235,7 @@ class Report {
         "reportstatushistory.filekey"
       )
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
-      .where({ "reportstatushistory.userid": userid })
+      .where({ "reportstatushistory.createdby": userid })
       .andWhere((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)
@@ -253,8 +250,7 @@ class Report {
 
     if (filters.sortField && filters.sortField !== "None") {
       baseQuery.orderBy(filters.sortField, filters.sortOrder || "asc");
-    }
-    else{
+    } else {
       baseQuery.orderBy("r.generationdate", "desc");
     }
 
@@ -264,7 +260,7 @@ class Report {
     let baseQuery = knex("reportstatushistory")
       .count({ count: "*" })
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
-      .where({ "reportstatushistory.userid": userid })
+      .where({ "reportstatushistory.createdby": userid })
       .where((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)
@@ -282,9 +278,9 @@ class Report {
   }
   static async findByIds(ids) {
     return knex("report")
-    .whereIn("reportid", ids)
-    .andWhere({isdeleted: false})
-    .returning("*");
+      .whereIn("reportid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
   }
   static async deleteMultiple(ids) {
     const reports = await knex("report")

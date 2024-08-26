@@ -39,7 +39,7 @@ const createReport = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingReport = await Report.findByName(alias,applicationid);
+  const existingReport = await Report.findByName(alias, applicationid);
   if (existingReport) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -211,7 +211,7 @@ const updateReport = async (req, res) => {
   } = req.body;
 
   const { reportid } = req.params;
-  const reportId = parseInt(reportid, 10); 
+  const reportId = parseInt(reportid, 10);
   const userid = req.user.userid;
 
   const sourceId = parseInt(source, 10);
@@ -233,11 +233,10 @@ const updateReport = async (req, res) => {
       message: "Title of report must be unique",
     });
   }
-  
-  const data = {
+  let data = {
     title: alias,
     description,
-    generationdate: existingReport.generationdate, 
+    generationdate: existingReport.generationdate,
     parameters: parameter,
     sourceconnectionid: sourceId,
     destinationid: destinationId,
@@ -245,26 +244,52 @@ const updateReport = async (req, res) => {
     storedProcedure: storedProcedure,
     userid: userid,
   };
-  
-  
+  if (req.file) {
+    const { buffer, originalname } = req.file;
+    const destination_db = await Destination.findById(existingReport.destinationid);
+    await deleteFile(
+      destination_db.cloudprovider,
+      destination_db.url,
+      destination_db.apikey,
+      destination_db.bucketname,
+      existingReport.filekey
+    );
 
-  try {
-    const report = await Report.update(reportId, data);
-    logger.info("Report updated successfully", {
-      context: { traceid: req.traceId, report },
-    });
-    res.status(StatusCodes.OK).json({
-      message: "Report updated successfully!",
-      report,
-    });
-  } catch (error) {
-    logger.error("Error updating report", {
-      context: { traceid: req.traceId, error },
-    });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "An error occurred while updating the report",
-    });
+    const uid = uuidv4(); // Generate a unique identifier
+    const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
+    const folderName = `user_${userid}`;
+    const key = `${folderName}/${fileName}`;
+
+    const newDestination = await Destination.findById(destinationId);
+    await uploadFile(
+      newDestination.cloudprovider,
+      newDestination.url,
+      newDestination.apikey,
+      { key, buffer },
+      newDestination.bucketname
+    );
+    data={
+      ...data,
+      filekey:key
+    }
   }
+
+  const report = await Report.update(reportId, data);
+  logger.info("Report updated successfully", {
+    context: { traceid: req.traceId, report },
+  });
+  res.status(StatusCodes.OK).json({
+    message: "Report updated successfully!",
+    report,
+  });
+
+  logger.error("Error updating report", {
+    context: { traceid: req.traceId, error },
+  });
+  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    message: "An error occurred while updating the report",
+  });
+
 };
 
 
@@ -290,14 +315,14 @@ const deleteReport = async (req, res) => {
   }
   const destination_db = await Destination.findById(report.destinationid);
 
-    await deleteFile(
-      destination_db.cloudprovider,
-      destination_db.url,
-      destination_db.apikey,
-      destination_db.bucketname,
-      report.filekey
-    );
-  
+  await deleteFile(
+    destination_db.cloudprovider,
+    destination_db.url,
+    destination_db.apikey,
+    destination_db.bucketname,
+    report.filekey
+  );
+
 
   await Report.delete(reportId);
   logger.info("Report deleted successfully", {
@@ -307,7 +332,7 @@ const deleteReport = async (req, res) => {
 };
 
 const deleteMultipleReports = async (req, res) => {
-  const userid=req.user.userid;
+  const userid = req.user.userid;
   const { ids } = req.body;
   const existingReports = await Report.findByIds(ids);
   if (existingReports.length !== ids.length) {
@@ -327,15 +352,15 @@ const deleteMultipleReports = async (req, res) => {
       message: "Some Reports found unauthorized for deletion!"
     });
   }
-  console.log("existingReports",existingReports)
+  console.log("existingReports", existingReports)
   for (const report of existingReports) {
     const destination_db = await Destination.findById(report.destinationid);
     await deleteFile(
       destination_db.cloudprovider,
-        destination_db.url,
-        destination_db.apikey,
-        destination_db.bucketname,
-        report.filekey
+      destination_db.url,
+      destination_db.apikey,
+      destination_db.bucketname,
+      report.filekey
     );
     console.log("deell11")
   }

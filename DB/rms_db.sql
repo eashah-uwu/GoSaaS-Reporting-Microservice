@@ -139,7 +139,7 @@ CREATE TABLE public.reportstatushistory (
     reportstatushistoryid serial4 NOT NULL,
     reportid int4 NOT NULL,
     status varchar(50) NOT NULL,
-    "timestamp" timestamp NOT NULL,
+    "timestamp" timestamp  DEFAULT CURRENT_TIMESTAMP NULL,
     createdby int4 NULL,
     userid int4 NULL, -- Added userid column
     message varchar(255) NULL,

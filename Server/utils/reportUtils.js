@@ -16,6 +16,7 @@ async function insertStatusRecord(reportid, userid) {
       .insert({
         reportid: reportid,
         status: "Pending",
+        createdby: userid,
         userid: userid,
         filekey: "Pending",
         createdat: new Date(),

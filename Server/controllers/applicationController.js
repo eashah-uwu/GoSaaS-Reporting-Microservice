@@ -171,9 +171,9 @@ const deleteMultipleApplications = async (req, res) => {
     });
   }
   await Promise.all([
-    Connection.deleteByApplicationIds([ids]),
-    Destination.deleteByApplicationIds([ids]),
-    Report.deleteByApplicationIds([ids]),
+    Connection.deleteByApplicationIds(ids),
+    Destination.deleteByApplicationIds(ids),
+    Report.deleteByApplicationIds(ids),
   ]);
   await Application.deleteMultiple(ids);
   logger.info("Applications deleted successfully", {

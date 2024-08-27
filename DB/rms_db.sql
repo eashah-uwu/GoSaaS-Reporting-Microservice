@@ -70,6 +70,7 @@ CREATE TABLE Connection (
 );
 
 
+
 -- Create the StoredProcedure table
 CREATE TABLE StoredProcedure (
     StoredProcedureID SERIAL PRIMARY KEY,
@@ -184,6 +185,8 @@ CREATE TABLE AuditTrail (
 	CONSTRAINT audittrail_event FOREIGN KEY (AuditEventID) REFERENCES AuditEvents(ID),
 	CONSTRAINT audittrail_user FOREIGN KEY (UserID) REFERENCES "User"(UserID)
 );
+ALTER TABLE AuditTrail
+ADD COLUMN isDeleted BOOLEAN DEFAULT FALSE;
 
 -- Application Module Events
 INSERT INTO AuditEvents (CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, Event, Description, Module)

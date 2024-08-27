@@ -323,6 +323,30 @@ class Report {
       .update({ isactive: isActive, updatedat: new Date() })
       .returning("*");
   }
+  static async connnectionsReportBatchStatusDisable(ids) {
+    return knex("report")
+      .whereIn("sourceconnectionid", ids)
+      .update({ isactive: false, updatedat: new Date() })
+      .returning("*");
+  }
+  static async destinationsReportBatchStatusDisable(ids) {
+    return knex("report")
+      .whereIn("destinationid", ids)
+      .update({ isactive: false, updatedat: new Date() })
+      .returning("*");
+  }
+  static async connnectionsReportStatusDisable(connectionid) {
+    return knex("report")
+      .where({ "sourceconnectionid": connectionid })
+      .update({ isactive: false, updatedat: new Date() })
+      .returning("*");
+  }
+  static async destinationsReportStatusDisable(destinationid) {
+    return knex("report")
+      .where({ "destinationid": destinationid })
+      .update({ isactive: false, updatedat: new Date() })
+      .returning("*");
+  }
   static async updateSingleStatus(reportId, isactive) {
     return knex("report")
       .where({ "reportid": reportId })

@@ -6,6 +6,7 @@ const config = require("config");
 require("dotenv").config();
 const Destination = require("../models/destinationModel");
 const Application = require("../models/applicationModel");
+const Connection = require("../models/connectionModel.js");
 const {
   uploadFile,
   downloadFile,
@@ -223,7 +224,18 @@ const updateSingleStatus=async(req,res)=>{
     logger.warn("Report not found or unauthorized", { id: reportId });
     return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
   }
-
+  if(isactive===true){
+    const reportsconnection= await Connection.findById(existingReport.sourceconnectionid);
+    if(reportsconnection.isactive===false){
+      logger.warn("Report's Source Connection is inActive", { id: reportId });
+      return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: "Report's Source Connection is inActive" });
+    }
+    const reportsDestination= await Destination.findById(existingReport.destinationid);
+    if(reportsDestination.isactive===false){
+      logger.warn("Report's Destination is inActive", { id: reportId });
+      return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: "Report's Destination is inActive" });
+    }
+  }
   const report = await Report.updateSingleStatus(reportId, isactive);
 
   logger.info("Report updated successfully", {
@@ -233,9 +245,21 @@ const updateSingleStatus=async(req,res)=>{
     message: "Report updated successfully!",
     report,
   });
-
-
 }
+
+const checkConnectionAndDestinationStatus = async (report) => {
+  const reportsConnection = await Connection.findById(report.sourceconnectionid);
+  if (!reportsConnection.isactive) {
+    return `Source connection is inactive for report ID ${report.reportid}`;
+  }
+
+  const reportsDestination = await Destination.findById(report.destinationid);
+  if (!reportsDestination.isactive) {
+    return `Destination is inactive for report ID ${report.reportid}`;
+  }
+
+  return null;
+};
 const updateMultipleStatus = async (req, res) => {
   const userid = req.user.userid;
   const { ids, status } = req.body;
@@ -266,6 +290,16 @@ const updateMultipleStatus = async (req, res) => {
     return res.status(StatusCodes.FORBIDDEN).json({
       message: "Unauthorized Update attempt!",
     });
+  }
+
+  if (status === "active") {
+    for (let report of existingReports) {
+      const errorMessage = await checkConnectionAndDestinationStatus(report);
+      if (errorMessage) {
+        logger.warn(errorMessage, { id: report.reportid });
+        return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: errorMessage });
+      }
+    }
   }
 
   await Report.batchChangeStatus(ids, status);

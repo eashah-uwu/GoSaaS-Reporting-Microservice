@@ -5,6 +5,7 @@ const connectionSchema = require("../schemas/connectionSchemas");
 const config = require("config");
 const ConnectionFactory = require("../config/db/connectionFactory");
 const Application = require("../models/applicationModel");
+const Report = require("../models/reportModel")
 
 // Create a new connection
 const createConnection = async (req, res) => {
@@ -104,25 +105,12 @@ const createConnection = async (req, res) => {
 //test connection
 const testConnection = async (req, res) => {
   const { type, ...config } = req.body;
-
-  try {
-    const connection = ConnectionFactory.createConnection(type, config);
-    const result = await connection.testConnection();
-    logger.info("Connection test successful", {
-      context: { traceid: req.traceId, type, config, result },
-    });
-    res.status(StatusCodes.OK).json(result);
-  } catch (error) {
-    logger.error("Error testing connection", {
-      context: { traceid: req.traceId, type, config, error: error.message },
-    });
-
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "An error occurred while testing the connection",
-      error: error.message,
-    });
-  }
+  const connection = ConnectionFactory.createConnection(type, config);
+  const result = await connection.testConnection();
+  logger.info("Connection test successful", {
+    context: { traceid: req.traceId, type, config, result },
+  });
+  res.status(StatusCodes.OK).json(result);
 };
 
 const getStoredProcedures = async (req, res) => {
@@ -265,6 +253,10 @@ const updateConnection = async (req, res) => {
     });
   }
 
+  if (data.isactive === false) {
+    await Report.connnectionsReportStatusDisable(data.connectionid)
+  }
+
   try {
     // Proceed with the update if no duplicates are found
     const updatedConnection = await Connection.update(parsedId, data);
@@ -321,9 +313,9 @@ const deleteConnection = async (req, res) => {
     .json({ message: "Connection deleted successfully!" });
 };
 
-const updateMultipleStatus=async(req,res)=>{
-  const userid=req.user.userid;
-  const { ids,status } = req.body;
+const updateMultipleStatus = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids, status } = req.body;
   if (!['active', 'inactive'].includes(status)) {
     return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status!" });
   }
@@ -351,6 +343,9 @@ const updateMultipleStatus=async(req,res)=>{
     });
   }
 
+  if (status === "inactive") {
+    await Report.connnectionsReportBatchStatusDisable(ids)
+  }
   await Connection.batchChangeStatus(ids, status);
   logger.info("Connections status changed successfully", {
     context: { traceid: req.traceId },

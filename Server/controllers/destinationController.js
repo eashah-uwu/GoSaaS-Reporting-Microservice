@@ -7,6 +7,7 @@ const {
 const config = require("config");
 const logger = require("../logger");
 const Application = require("../models/applicationModel");
+const Report = require("../models/reportModel.js");
 const {
   createDestinationSchema,
   updateDestinationSchema,
@@ -142,6 +143,9 @@ const updateDestination = async (req, res) => {
       message: "Destination alias must be unique",
     });
   }
+  if (data.isactive === false) {
+    await Report.destinationsReportStatusDisable(existingDestination.destinationid)
+  }
 
   const destination = await Destination.update(destinationid, data);
 
@@ -255,7 +259,9 @@ const updateMultipleStatus = async (req, res) => {
       message: "Unauthorized Update attempt!",
     });
   }
-
+  if (status === "inactive") {
+    await Report.destinationsReportBatchStatusDisable(ids)
+  }
   await Destination.batchChangeStatus(ids, status);
   logger.info("Destinations status changed successfully", {
     context: { traceid: req.traceId },

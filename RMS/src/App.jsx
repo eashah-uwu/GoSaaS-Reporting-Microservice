@@ -27,11 +27,13 @@ function App() {
       <div className="container">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<OAuthCallback />}></Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/:applicationid" element={<ApplicationPage />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/audit" element={<AuditPage />} />
+            <Route path="/auth/callback" element={<OAuthCallback />}></Route>
           </Route>
         </Routes>
       </div>

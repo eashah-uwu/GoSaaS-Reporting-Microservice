@@ -115,7 +115,7 @@ const createColumns = (baseColumns: { accessorKey: string; header: string; }[], 
             cell: (info: any) => <StatusSelect value={info.getValue()} rowId={info.row.original[rowIdAccessor]} handleStatusChange={handleStatusChange} />,
         });
     }
-    if (rowIdAccessor != "reportstatushistoryid") {
+    if (rowIdAccessor != "reportstatushistoryid" && rowIdAccessor != "id") {
 
         columns.push({
             accessorKey: "edit",

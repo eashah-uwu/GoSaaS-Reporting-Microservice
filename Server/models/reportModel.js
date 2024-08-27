@@ -236,6 +236,7 @@ class Report {
       .select(
         "reportstatushistory.reportstatushistoryid",
         "reportstatushistory.reportid",
+        `app.name as applicationName`,
         "r.title",
         knex.raw(
           `to_char("r"."generationdate", 'YYYY-MM-DD') as "generationDate"`
@@ -245,12 +246,14 @@ class Report {
         "reportstatushistory.filekey"
       )
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .leftJoin("application as app", "r.applicationid", "app.applicationid")
       .where({ "reportstatushistory.userid": userid })
       .andWhere((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)
           .orWhere("r.title", "ilike", `%${query}%`)
           .orWhere("r.description", "ilike", `%${query}%`)
+          .orWhere("app.name", "ilike", `%${query}%`)
           .orWhere(
             knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
             "ilike",
@@ -270,12 +273,14 @@ class Report {
     let baseQuery = knex("reportstatushistory")
       .count({ count: "*" })
       .leftJoin("report as r", "reportstatushistory.reportid", "r.reportid")
+      .leftJoin("application as app", "r.applicationid", "app.applicationid")
       .where({ "reportstatushistory.userid": userid })
       .where((builder) => {
         builder
           .where("reportstatushistory.status", "ilike", `%${query}%`)
           .orWhere("r.title", "ilike", `%${query}%`)
           .orWhere("r.description", "ilike", `%${query}%`)
+          .orWhere("app.name", "ilike", `%${query}%`)
           .orWhere(
             knex.raw(`to_char("r"."generationdate", 'YYYY-MM-DD')`),
             "ilike",

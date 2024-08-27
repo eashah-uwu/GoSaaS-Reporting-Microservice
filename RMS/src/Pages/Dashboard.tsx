@@ -1,18 +1,42 @@
-import React from "react";
+
 import Navbar from "../Components/Navbar/Navbar";
 import Table from "../Components/Table/Table";
+import React, { useEffect, useState } from "react";
 import Dashboard from "../Components/Dashboard/Dashboard";
 import WidgetWrapper from "../Components/WidgetWrapper";
-import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../State/store";
 import { Box, Typography } from "@mui/material";
+import axios from "axios";
 
 function DashboardPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportStats, setReportStats] = useState<any>({});
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const openReportModal = () => setIsReportModalOpen(true);
   const closeReportModal = () => setIsReportModalOpen(false);
 
-  const handleAdd = () => {};
+  useEffect(() => {
+    const fetchReportStats = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL
+          }/api/reports/stats`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setReportStats(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch application data", error);
+      }
+    };
+
+    fetchReportStats();
+  }, []); 
   return (
     <>
       <Navbar />
@@ -45,7 +69,7 @@ function DashboardPage() {
               borderRadius: "0.35rm",
             }}
           >
-            Total Reports:
+            Total Reports: {reportStats.totalReports?reportStats.totalReports:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -57,7 +81,7 @@ function DashboardPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Processing:
+            Processing:{reportStats.processing?reportStats.processing:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -69,7 +93,7 @@ function DashboardPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Queued:
+            Successful:{reportStats.successful?reportStats.successful:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -81,7 +105,7 @@ function DashboardPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Failed:
+            Failed:{reportStats.failed?reportStats.failed:0}
           </Typography>
         </WidgetWrapper>
       </Box>

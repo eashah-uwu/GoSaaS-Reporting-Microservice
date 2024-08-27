@@ -176,6 +176,17 @@ const getReports = async (req, res) => {
   });
 };
 
+const getReportsStats = async (req, res) => {
+  const userid = req.user.userid;
+  const reportsStats= await ReportStatusHistory.getReportStats(userid);
+  logger.info("Reports Stats retrieved by user ID", {
+    context: { traceid: req.traceId, userid, reportsStats },
+  });
+  res.status(StatusCodes.OK).json({
+    data: reportsStats,
+    message:"Reports Stats retrieved Successfully",
+  });
+}
 const getReportById = async (req, res) => {
   const { id } = req.params;
   const reportId = parseInt(id, 10);
@@ -551,5 +562,6 @@ module.exports = {
   downloadReport,
   deleteMultipleReports,
   updateSingleStatus,
-  updateMultipleStatus
+  updateMultipleStatus,
+  getReportsStats
 };

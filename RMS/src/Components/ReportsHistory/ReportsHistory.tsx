@@ -169,6 +169,7 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             onDelete={() => { }}
             onAddData={() => { }}
             onEdit={() => { }}
+            includeCheckboxes={false}
           />
         )}
         {!loading && !error && (

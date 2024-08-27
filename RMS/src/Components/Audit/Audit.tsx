@@ -270,16 +270,17 @@ const handleGroupStatusChange = async (selectedIds: string[], selectedStatus: st
 
           <TableConfig
             data={auditData}
-            includeStatus={true} // Show the Status column
+            includeStatus={false} 
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}  // Function to handle multiple updates
-            onDelete={handleDelete}  // Function to handle multiple deletions
+            onDelete={handleDelete}  
             rowIdAccessor="id"
             includeEdit={false}
             onAddData={() => {}}
             onEdit={() => {}}
-            onGroupStatusChange={handleGroupStatusChange}  // Function to handle status changes
+            onGroupStatusChange={handleGroupStatusChange}  
+            includeCheckboxes={false}
           />
 
             <Box

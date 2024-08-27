@@ -62,6 +62,7 @@ class Report {
   }
 
   static async update(id, data) {
+
     const {
       title,
       description,
@@ -70,7 +71,7 @@ class Report {
       sourceconnectionid,
       destinationid,
       applicationid,
-      storedprocedure,
+      storedProcedure,
       userid,
       filekey
     } = data;
@@ -84,7 +85,7 @@ class Report {
         sourceconnectionid: sourceconnectionid,
         destinationid: destinationid,
         applicationid: applicationid,
-        storedprocedure: storedprocedure,
+        storedprocedure: storedProcedure,
         userid: userid,
         updatedat: new Date(),
         filekey: filekey

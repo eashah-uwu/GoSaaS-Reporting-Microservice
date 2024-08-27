@@ -70,7 +70,7 @@ class Report {
       sourceconnectionid,
       destinationid,
       applicationid,
-      storedprocedureid,
+      storedprocedure,
       userid,
       filekey
     } = data;
@@ -80,11 +80,11 @@ class Report {
         title,
         description,
         generationdate: new Date(generationdate),
-        parameters: parameters ? JSON.stringify(parameters) : null, // Ensure parameters are updated as JSON
+        parameters: parameters ? JSON.stringify(parameters) : null, 
         sourceconnectionid: sourceconnectionid,
         destinationid: destinationid,
         applicationid: applicationid,
-        storedprocedureid: storedprocedureid,
+        storedprocedure: storedprocedure,
         userid: userid,
         updatedat: new Date(),
         filekey: filekey

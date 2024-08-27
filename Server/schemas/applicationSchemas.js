@@ -10,8 +10,6 @@ const applicationSchema = z.object({
     .max(100, "Description must be at most 100 characters")
     .regex(/^[^\d]/, "Description cannot start with a number"),
   isactive: z.boolean().default(true),
-  createdby: z.number().int().optional(),
-  updatedby: z.number().int().optional(),
   isdeleted: z.boolean().default(false),
 });
 

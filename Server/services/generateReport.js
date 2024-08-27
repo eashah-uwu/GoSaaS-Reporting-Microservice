@@ -63,10 +63,10 @@ async function generateReport(reportName, userid, parameters) {
 
     // Step 5: Download the XSL file from the destination
     const file = await downloadFile(
-      "aws",
+      destinationDetails.cloudprovider,
       destinationDetails.url,
       destinationDetails.apikey,
-      "reportsdestination0",
+      destinationDetails.bucketname,
       reportDetails.filekey
     );
     if (!file) {
@@ -107,11 +107,11 @@ async function generateReport(reportName, userid, parameters) {
 
     // Step 10: Upload the PDF to the destination
     const uploadResult = await uploadFile(
-      "aws",
+      destinationDetails.cloudprovider,
       destinationDetails.url,
       destinationDetails.apikey,
       { key: pdfKey, buffer: pdfBuffer },
-      "reportsdestination0"
+      destinationDetails.bucketname
     );
     if (!uploadResult.success) {
       await updateStatusRecord(

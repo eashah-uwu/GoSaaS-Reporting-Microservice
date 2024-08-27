@@ -1,12 +1,41 @@
-import React from 'react';
 import Navbar from "../Components/Navbar/Navbar";
 import WidgetWrapper from "../Components/WidgetWrapper";
 import { Box, Typography } from "@mui/material";
+import { useSelector } from "react-redux";
+import { RootState } from "../State/store";
+import React, { useEffect, useState } from "react";
 import ReportHistory from '../Components/ReportsHistory/ReportsHistory';
+import Breadcrumbs from "../Components/BreadCrumbs/BreadCrumbs";
+import axios from "axios";
 function ReportPage() {
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportStats, setReportStats] = useState<any>({});
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  useEffect(() => {
+    const fetchReportStats = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL
+          }/api/reports/stats`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setReportStats(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch application data", error);
+      }
+    };
+
+    fetchReportStats();
+  }, []); 
   return (
     <>   
       <Navbar />
+      <Breadcrumbs/>
       <Typography variant="h4" sx={{ marginTop: "2rem", marginLeft: "10%" }}>
         Reports Overview
       </Typography>
@@ -32,7 +61,7 @@ function ReportPage() {
               borderRadius: "0.35rem",
             }}
           >
-            Total Reports Generated:
+            Total Reports Generated: {reportStats.totalReports?reportStats.totalReports:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -44,7 +73,7 @@ function ReportPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Reports in Review:
+            Reports in Review:{reportStats.processing?reportStats.processing:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -56,7 +85,7 @@ function ReportPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Approved Reports:
+            Approved Reports:{reportStats.successful?reportStats.successful:0}
           </Typography>
         </WidgetWrapper>
         <WidgetWrapper customColor="#8B0000">
@@ -68,7 +97,7 @@ function ReportPage() {
               padding: "0.1rem 0.1rem",
             }}
           >
-            Rejected Reports:
+            Rejected Reports:{reportStats.failed?reportStats.failed:0}
           </Typography>
         </WidgetWrapper>
       </Box>

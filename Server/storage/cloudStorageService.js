@@ -1,17 +1,18 @@
 const AWS = require('aws-sdk');
+const c = require('config');
 // const { Storage } = require('@google-cloud/storage');
 // const { BlobServiceClient } = require('@azure/storage-blob');
 
-const connectToDestination = async (destination, url, apiKey) => {
+const connectToDestination = async (destination, url, apiKey,bucketname) => {
         if (destination === 'aws') {
             AWS.config.update({
                 accessKeyId: url,
                 secretAccessKey: apiKey,
                 region: "eu-north-1" 
             });
-
             const s3 = new AWS.S3();
-            await s3.listBuckets().promise(); 
+            const bucketParams = { Bucket: bucketname };
+            const response = await s3.headBucket(bucketParams).promise();
             return { success: true, message: 'Connected to AWS' };
         } else if (destination === 'gcp') {
           //  const storage = new Storage({ projectId: url, keyFilename: apiKey });

@@ -27,13 +27,13 @@ class Application {
 
     const [formattedApplication] = await knex("application")
       .select(
-        'applicationid',
+        "applicationid",
         knex.raw(`to_char("createdat", 'YYYY-MM-DD') as "createdat"`),
-        'isactive',
-        'isdeleted',
-        'name'
+        "isactive",
+        "isdeleted",
+        "name"
       )
-      .where('applicationid', application.applicationid);
+      .where("applicationid", application.applicationid);
 
     return formattedApplication;
   }
@@ -41,11 +41,11 @@ class Application {
   static async findAll() {
     return knex("application").select("*").where({ isdeleted: false });
   }
-  static async findByName(name,userid) {
+  static async findByName(name, userid) {
     return knex("application")
-          .where({ userid: userid, isdeleted: false })
-          .andWhere("name", "ilike", name)
-          .first();
+      .where({ userid: userid, isdeleted: false })
+      .andWhere("name", "ilike", name)
+      .first();
   }
 
   static async findById(id) {
@@ -55,9 +55,9 @@ class Application {
   }
   static async findByIds(ids) {
     return knex("application")
-    .whereIn("applicationid", ids)
-    .andWhere({isdeleted: false})
-    .returning("*");
+      .whereIn("applicationid", ids)
+      .andWhere({ isdeleted: false })
+      .returning("*");
   }
   static async deleteMultiple(ids) {
     const applications = await knex("application")
@@ -67,10 +67,10 @@ class Application {
     return applications;
   }
   static async batchChangeStatus(ids, status) {
-    const isActive = status === 'active';
+    const isActive = status === "active";
     return knex("application")
       .whereIn("applicationid", ids)
-      .update({ isactive:isActive, updatedat: new Date() })
+      .update({ isactive: isActive, updatedat: new Date() })
       .returning("*");
   }
   static async update(id, data) {
@@ -79,7 +79,7 @@ class Application {
       applicationid: id,
     });
     if (!description) {
-      description = prevApplication.description
+      description = prevApplication.description;
     }
     const [application] = await knex("application")
       .where({ applicationid: id })
@@ -102,7 +102,6 @@ class Application {
       .returning("*");
     return application;
   }
-  
 
   static async countAll() {
     const [{ count }] = await knex("application")
@@ -139,13 +138,12 @@ class Application {
     if (filters.sortField && filters.sortField !== "None") {
       const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
       baseQuery.orderBy(filters.sortField, sortOrder);
-    }else{
+    } else {
       baseQuery.orderBy("createdat", "desc");
     }
 
     return baseQuery.offset(offset).limit(limit);
   }
-
 
   static async countSearchResults(query, filters = {}, userid) {
     let baseQuery = knex("application")

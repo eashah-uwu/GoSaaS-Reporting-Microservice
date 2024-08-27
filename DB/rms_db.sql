@@ -25,14 +25,10 @@ CREATE TABLE "User" (
     Name VARCHAR(255) NOT NULL,
     Password VARCHAR(255) NOT NULL,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    LastLoginAt TIMESTAMP NULL,
+    LastLogoutAt TIMESTAMP NULL
 );
-
-
-ALTER TABLE "User"
-ADD COLUMN "LastLoginAt" TIMESTAMP NULL,
-ADD COLUMN "LastLogoutAt" TIMESTAMP NULL;
-
 
 -- Create the Application table
 CREATE TABLE Application (
@@ -41,13 +37,15 @@ CREATE TABLE Application (
     Description TEXT,
     isActive BOOLEAN DEFAULT TRUE,
     IsDeleted BOOLEAN DEFAULT FALSE,
-    UserID INT NOT NULL,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT,
+    CreatedBy INT NOT NULL,
     UpdatedBy INT,
-    FOREIGN KEY (UserID) REFERENCES "User"(UserID)
+    UserID INT NOT NULL,  -- Added UserID column
+    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID),
+    FOREIGN KEY (UserID) REFERENCES "User"(UserID)  -- Foreign key constraint for UserID
 );
+
 
 -- Create the Connection table
 CREATE TABLE Connection (
@@ -56,6 +54,7 @@ CREATE TABLE Connection (
     Host VARCHAR(255),
     Port INT,
     Database VARCHAR(255),
+    Schema VARCHAR(255),  -- Added Schema column
     Type VARCHAR(50),
     Username VARCHAR(255) NOT NULL,
     isActive BOOLEAN DEFAULT TRUE,
@@ -64,18 +63,12 @@ CREATE TABLE Connection (
     ApplicationID INT NOT NULL,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT,
+    CreatedBy INT NOT NULL,
     UpdatedBy INT,
-    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID),
+    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID)
 );
 
--- Add the "schema" column
-ALTER TABLE Connection
-ADD COLUMN "schema" VARCHAR(255);
-
--- Modify the "Username" column to allow NULL values
-ALTER TABLE Connection
-ALTER COLUMN Username DROP NOT NULL;
 
 
 -- Create the StoredProcedure table
@@ -86,8 +79,9 @@ CREATE TABLE StoredProcedure (
     Definition TEXT,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT,
-    FOREIGN KEY (SourceConnectionID) REFERENCES Connection(ConnectionID)
+    CreatedBy INT NOT NULL,
+    FOREIGN KEY (SourceConnectionID) REFERENCES Connection(ConnectionID),
+    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID)
 );
 
 -- Create the Destination table
@@ -96,20 +90,21 @@ CREATE TABLE Destination (
     Alias VARCHAR(255),
     URL VARCHAR(255),
     APIKey VARCHAR(255),
+    BucketName VARCHAR(255),
+    CloudProvider VARCHAR(255),  -- New column for the cloud provider's name
     isActive BOOLEAN DEFAULT TRUE,
     IsDeleted BOOLEAN DEFAULT FALSE,
     ApplicationID INT NOT NULL,
     CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT,
+    CreatedBy INT NOT NULL,
     UpdatedBy INT,
-    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID),
+    FOREIGN KEY (CreatedBy) REFERENCES "User"(UserID)
 );
 
--- Drop table
-
--- DROP TABLE public.report;
-
+-- Create the Report table
+-- Create the Report table with userid column and foreign key constraint
 CREATE TABLE public.report (
     reportid serial4 NOT NULL,
     title varchar(255) NOT NULL,
@@ -119,44 +114,48 @@ CREATE TABLE public.report (
     sourceconnectionid int4 NULL,
     destinationid int4 NULL,
     applicationid int4 NULL,
+    userid int4 NULL, -- Added userid column
     storedprocedure varchar(255) NULL,
-    userid int4 NULL,
     createdat timestamp NOT NULL,
     updatedat timestamp NULL,
-    createdby int4 NULL,
+    createdby int4 NOT NULL,
     filekey varchar(255) NULL,
     isdeleted bool DEFAULT true NULL,
     CONSTRAINT report_pkey PRIMARY KEY (reportid),
     CONSTRAINT report_applicationid_fkey FOREIGN KEY (applicationid) REFERENCES public.application(applicationid),
     CONSTRAINT report_destinationid_fkey FOREIGN KEY (destinationid) REFERENCES public.destination(destinationid),
     CONSTRAINT report_sourceconnectionid_fkey FOREIGN KEY (sourceconnectionid) REFERENCES public."connection"(connectionid),
-    CONSTRAINT report_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid)
+    CONSTRAINT report_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid),
+    CONSTRAINT report_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid) -- Added foreign key constraint
 );
+
 CREATE INDEX idx_report_appid ON public.report USING btree (applicationid);
 CREATE INDEX idx_report_destid ON public.report USING btree (destinationid);
 CREATE INDEX idx_report_sourceconnid ON public.report USING btree (sourceconnectionid);
-CREATE INDEX idx_report_userid ON public.report USING btree (userid);
+CREATE INDEX idx_report_createdby ON public.report USING btree (createdby);
 
--- Drop table
-
--- DROP TABLE public.reportstatushistory;
-
+-- Create the ReportStatusHistory table
+-- Create the ReportStatusHistory table with userid column and foreign key constraint
 CREATE TABLE public.reportstatushistory (
     reportstatushistoryid serial4 NOT NULL,
     reportid int4 NOT NULL,
     status varchar(50) NOT NULL,
-    "timestamp" timestamp NOT NULL,
-    "UserID" int4 NULL,
+    "timestamp" timestamp  DEFAULT CURRENT_TIMESTAMP NULL,
+    createdby int4 NULL,
+    userid int4 NULL, -- Added userid column
     message varchar(255) NULL,
     createdat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
     updatedat timestamp DEFAULT CURRENT_TIMESTAMP NULL,
     filekey varchar(255) NULL,
     CONSTRAINT reportstatushistory_pkey PRIMARY KEY (reportstatushistoryid),
-    CONSTRAINT reportstatushistory_reportid_fkey FOREIGN KEY (reportid) REFERENCES public.report(reportid)
+    CONSTRAINT reportstatushistory_reportid_fkey FOREIGN KEY (reportid) REFERENCES public.report(reportid),
+    CONSTRAINT reportstatushistory_createdby_fkey FOREIGN KEY (createdby) REFERENCES public."User"(userid),
+    CONSTRAINT reportstatushistory_userid_fkey FOREIGN KEY (userid) REFERENCES public."User"(userid) -- Added foreign key constraint
 );
+
 CREATE INDEX idx_reportstatushistory_reportid ON public.reportstatushistory USING btree (reportid);
 
---Delete Previous Audit Table
+-- Delete Previous Audit Table
 DROP TABLE IF EXISTS AuditTrail;
 DROP TABLE IF EXISTS AuditEvents;
 
@@ -172,7 +171,6 @@ CREATE TABLE AuditEvents (
 	CONSTRAINT auditevents_pk PRIMARY KEY (ID)
 );
 
-
 CREATE TABLE AuditTrail (
 	ID int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	IsActive boolean NULL,
@@ -182,14 +180,13 @@ CREATE TABLE AuditTrail (
 	CreatedDate timestamptz(6) NULL,
 	UserID int8 NULL,
 	AuditEventID int8 NULL,
+    isDeleted BOOLEAN DEFAULT FALSE,
 	CONSTRAINT audittrail_pk PRIMARY KEY (ID),
 	CONSTRAINT audittrail_event FOREIGN KEY (AuditEventID) REFERENCES AuditEvents(ID),
 	CONSTRAINT audittrail_user FOREIGN KEY (UserID) REFERENCES "User"(UserID)
 );
 ALTER TABLE AuditTrail
 ADD COLUMN isDeleted BOOLEAN DEFAULT FALSE;
-
-
 
 -- Application Module Events
 INSERT INTO AuditEvents (CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, Event, Description, Module)
@@ -199,7 +196,7 @@ VALUES
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Deleted', 'Application was deleted', 'Application'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Restored', 'Application was restored from deletion', 'Application'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Inactivated', 'Application status was changed to inactive', 'Application'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Activated', 'Application status was changed to inactive', 'Application'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Activated', 'Application status was changed to active', 'Application'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Application Name Changed', 'Application name was updated', 'Application'),
 
 -- Destination Module Events
@@ -223,59 +220,6 @@ VALUES
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Updated', 'Report details were updated', 'Report'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Deleted', 'Report was deleted', 'Report'),
 ('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Restored', 'Report was restored from deletion', 'Report'),
-('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Parameters Modified', 'Parameters for the report were modified', 'Report')
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Generated', 'Report was generated', 'Report'),
+('admin', CURRENT_TIMESTAMP, NULL, NULL, 'Report Failed', 'Report generation failed', 'Report');
 
-;
-
-
-
--- Create indexes if necessary
-CREATE INDEX idx_user_email ON "User" (Email);
-CREATE INDEX idx_application_userid ON Application (UserID);
-CREATE INDEX idx_connection_appid ON Connection (ApplicationID);
-CREATE INDEX idx_destination_appid ON Destination (ApplicationID);
-CREATE INDEX idx_storedprocedure_sourceconnid ON StoredProcedure (SourceConnectionID);
-
--- Insert data into User table
-INSERT INTO "User" (Email, Password, Name, CreatedAt, UpdatedAt)
-VALUES 
-('user1@example.com', 'password1', 'User One', NOW(), NOW()),
-('user2@example.com', 'password2', 'User Two', NOW(), NOW()),
-('user3@example.com', 'password3', 'User Three', NOW(), NOW());
-
--- Insert data into Application table
-INSERT INTO Application (Name, Description, isActive, IsDeleted, UserID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
-VALUES 
-('App1', 'Description for App1', TRUE, FALSE, 1, NOW(), NOW(), 1, 1),
-('App2', 'Description for App2', TRUE, FALSE, 2, NOW(), NOW(), 2, 2),
-('App3', 'Description for App3', FALSE, FALSE, 3, NOW(), NOW(), 3, 3),
-('App4', 'Description for App4', FALSE, FALSE, 3, NOW(), NOW(), 1, 1),
-('App5', 'Description for App5', FALSE, FALSE, 3, NOW(), NOW(), 2, 2),
-('App6', 'Description for App6', FALSE, FALSE, 3, NOW(), NOW(), 3, 3),
-('App7', 'Description for App7', FALSE, FALSE, 3, NOW(), NOW(), 3, 3);
-
--- Insert data into Connection table
-INSERT INTO Connection (Alias, Host, Port, Database, Type, Username, isActive, IsDeleted, Password, ApplicationID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
-VALUES 
-('Conn1', 'localhost', 5432, 'db1', 'PostgreSQL', 'user1', TRUE, FALSE, 'password1', 1, NOW(), NOW(), 1, 1),
-('Conn2', 'localhost', 5432, 'db2', 'MySQL', 'user2', TRUE, FALSE, 'password2', 2, NOW(), NOW(), 2, 2),
-('Conn3', 'localhost', 5432, 'db3', 'Oracle', 'user3', FALSE, TRUE, 'password3', 3, NOW(), NOW(), 3, 3);
-
--- Insert data into StoredProcedure table
-INSERT INTO StoredProcedure (SourceConnectionID, Name, Definition, CreatedAt, UpdatedAt, CreatedBy)
-VALUES 
-(1, 'sp1', 'CREATE PROCEDURE sp1 AS BEGIN SELECT * FROM table1; END;', NOW(), NOW(), 1),
-(2, 'sp2', 'CREATE PROCEDURE sp2 AS BEGIN SELECT * FROM table2; END;', NOW(), NOW(), 2),
-(3, 'sp3', 'CREATE PROCEDURE sp3 AS BEGIN SELECT * FROM table3; END;', NOW(), NOW(), 3);
-
--- Insert data into Destination table
-INSERT INTO Destination (Alias, URL, APIKey, isActive, IsDeleted, ApplicationID, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
-VALUES 
-('Dest1', 'http://example.com/api1', 'apikey1', TRUE, FALSE, 1, NOW(), NOW(), 1, 1),
-('Dest2', 'http://example.com/api2', 'apikey2', TRUE, FALSE, 2, NOW(), NOW(), 2, 2),
-('Dest3', 'http://example.com/api3', 'apikey3', FALSE, TRUE, 3, NOW(), NOW(), 3, 3);
-
-
-
-
--- Example query to view data

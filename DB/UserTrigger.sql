@@ -1,17 +1,26 @@
 
+-- Drop existing triggers if they exist
+DROP TRIGGER IF EXISTS user_insert_trigger ON "User";
+DROP TRIGGER IF EXISTS user_login_trigger ON "User";
+DROP TRIGGER IF EXISTS user_logout_trigger ON "User";
+DROP TRIGGER IF EXISTS user_update_trigger ON "User";
+
+
 -- Function for logging Insert operations (User Created)
 CREATE OR REPLACE FUNCTION log_user_insert()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
+
+    INSERT INTO audittrail (isactive, createdby, modifieddate, description, createddate, userid, auditeventid)
     VALUES (
-        TRUE, -- IsActive
-        NEW.Name, -- CreatedBy
-        CURRENT_TIMESTAMP, -- ModifiedDate
-        CONCAT('User Created: ', NEW.Name, ' at ', NEW.CreatedAt), -- Description
-        NEW.CreatedAt, -- CreatedDate
-        NEW.UserID, -- UserID
-        (SELECT ID FROM AuditEvents WHERE Event = 'User Created' AND Module = 'User') -- AuditEventID
+        TRUE, -- isActive
+        NEW.name, -- createdBy
+        CURRENT_TIMESTAMP, -- modifiedDate
+        CONCAT('User Created: ', NEW.name, ' at ', NEW.createdat), -- description
+        NEW.createdat, -- createdDate
+        NEW.userid, -- userID
+        (SELECT id FROM auditevents WHERE event = 'User Created' AND module = 'User') -- auditEventID
+
     );
     RETURN NEW;
 END;
@@ -21,15 +30,17 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION log_user_login()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
+
+    INSERT INTO audittrail (isactive, createdby, modifieddate, description, createddate, userid, auditeventid)
     VALUES (
-        TRUE, -- IsActive
-        NEW.Name, -- CreatedBy
-        CURRENT_TIMESTAMP, -- ModifiedDate
-        CONCAT('User Logged In: ', NEW.Name, ' at ', NEW."LastLoginAt"), -- Description
-        NEW."LastLoginAt", -- CreatedDate
-        NEW.UserID, -- UserID
-        (SELECT ID FROM AuditEvents WHERE Event = 'User Logged In' AND Module = 'User') -- AuditEventID
+        TRUE, -- isActive
+        NEW.name, -- createdBy
+        CURRENT_TIMESTAMP, -- modifiedDate
+        CONCAT('User Logged In: ', NEW.name, ' at ', NEW.lastloginat), -- description
+        NEW.lastloginat, -- createdDate
+        NEW.userid, -- userID
+        (SELECT id FROM auditevents WHERE event = 'User Logged In' AND module = 'User') -- auditEventID
+
     );
     RETURN NEW;
 END;
@@ -39,15 +50,16 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION log_user_logout()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
+    INSERT INTO audittrail (isactive, createdby, modifieddate, description, createddate, userid, auditeventid)
     VALUES (
-        TRUE, -- IsActive
-        NEW.Name, -- CreatedBy
-        CURRENT_TIMESTAMP, -- ModifiedDate
-        CONCAT('User Logged Out: ', NEW.Name, ' at ', NEW."LastLogoutAt"), -- Description
-        NEW."LastLogoutAt", -- CreatedDate
-        NEW.UserID, -- UserID
-        (SELECT ID FROM AuditEvents WHERE Event = 'User Logged Out' AND Module = 'User') -- AuditEventID
+        TRUE, -- isActive
+        NEW.name, -- createdBy
+        CURRENT_TIMESTAMP, -- modifiedDate
+        CONCAT('User Logged Out: ', NEW.name, ' at ', NEW.lastlogoutat), -- description
+        NEW.lastlogoutat, -- createdDate
+        NEW.userid, -- userID
+        (SELECT id FROM auditevents WHERE event = 'User Logged Out' AND module = 'User') -- auditEventID
+
     );
     RETURN NEW;
 END;
@@ -58,15 +70,17 @@ CREATE OR REPLACE FUNCTION log_user_update()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Log the update event
-    INSERT INTO AuditTrail (IsActive, CreatedBy, ModifiedDate, Description, CreatedDate, UserID, AuditEventID)
+
+    INSERT INTO audittrail (isactive, createdby, modifieddate, description, createddate, userid, auditeventid)
     VALUES (
-        TRUE, -- IsActive
-        NEW.Name, -- CreatedBy
-        CURRENT_TIMESTAMP, -- ModifiedDate
-        CONCAT('User Updated: ', NEW.Name, ' at ', NEW.UpdatedAt), -- Description
-        NEW.UpdatedAt, -- CreatedDate
-        NEW.UserID, -- UserID
-        (SELECT ID FROM AuditEvents WHERE Event = 'User Updated' AND Module = 'User') -- AuditEventID
+        TRUE, -- isActive
+        NEW.name, -- createdBy
+        CURRENT_TIMESTAMP, -- modifiedDate
+        CONCAT('User Updated: ', NEW.name, ' at ', NEW.updatedat), -- description
+        NEW.updatedat, -- createdDate
+        NEW.userid, -- userID
+        (SELECT id FROM auditevents WHERE event = 'User Updated' AND module = 'User') -- auditEventID
+
     );
     RETURN NEW;
 END;
@@ -83,45 +97,51 @@ EXECUTE FUNCTION log_user_insert();
 CREATE TRIGGER user_login_trigger
 AFTER UPDATE ON "User"
 FOR EACH ROW
-WHEN (NEW."LastLoginAt" IS NOT NULL AND OLD."LastLoginAt" IS DISTINCT FROM NEW."LastLoginAt")
+
+WHEN (NEW.lastloginat IS NOT NULL AND OLD.lastloginat IS DISTINCT FROM NEW.lastloginat)
+
 EXECUTE FUNCTION log_user_login();
 
 -- Trigger for user logout
 CREATE TRIGGER user_logout_trigger
 AFTER UPDATE ON "User"
 FOR EACH ROW
-WHEN (NEW."LastLogoutAt" IS NOT NULL AND OLD."LastLogoutAt" IS DISTINCT FROM NEW."LastLogoutAt")
+
+WHEN (NEW.lastlogoutat IS NOT NULL AND OLD.lastlogoutat IS DISTINCT FROM NEW.lastlogoutat)
+
 EXECUTE FUNCTION log_user_logout();
 
 -- Trigger for general user updates
 CREATE TRIGGER user_update_trigger
 AFTER UPDATE ON "User"
 FOR EACH ROW
-WHEN (NEW."LastLoginAt" IS NULL AND NEW."LastLogoutAt" IS NULL AND 
-      (OLD.Name IS DISTINCT FROM NEW.Name OR OLD.Email IS DISTINCT FROM NEW.Email))
+
+WHEN (NEW.lastloginat IS NULL AND NEW.lastlogoutat IS NULL AND 
+      (OLD.name IS DISTINCT FROM NEW.name OR OLD.email IS DISTINCT FROM NEW.email))
 EXECUTE FUNCTION log_user_update();
 
-
-select * from "User" u 
 -- Test SQL
 -- Insert a new user to trigger the log_user_insert function
-INSERT INTO "User" (Email, Name, Password)
+INSERT INTO "User" (email, name, password)
+
 VALUES ('testuser@example.com', 'Test User', 'password123');
 
 -- Update the user's name to trigger the log_user_update function
 UPDATE "User"
-SET Name = 'Updated User', UpdatedAt = CURRENT_TIMESTAMP
-WHERE Email = 'testuser@example.com';
 
--- Update LastLoginAt to trigger the log_user_login function
-UPDATE "User"
-SET "LastLoginAt" = CURRENT_TIMESTAMP
-WHERE Email = 'testuser@example.com';
+SET name = 'Updated User', updatedat = CURRENT_TIMESTAMP
+WHERE email = 'testuser@example.com';
 
--- Update LastLogoutAt to trigger the log_user_logout function
+-- Update lastloginat to trigger the log_user_login function
 UPDATE "User"
-SET "LastLogoutAt" = CURRENT_TIMESTAMP
-WHERE Email = 'testuser@example.com';
+SET lastloginat = CURRENT_TIMESTAMP
+WHERE email = 'testuser@example.com';
+
+-- Update lastlogoutat to trigger the log_user_logout function
+UPDATE "User"
+SET lastlogoutat = CURRENT_TIMESTAMP
+WHERE email = 'testuser@example.com';
 
 -- View audit trail entries
-SELECT * FROM AuditTrail;
+SELECT * FROM audittrail;
+

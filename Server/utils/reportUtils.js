@@ -16,6 +16,7 @@ async function insertStatusRecord(reportid, userid) {
       .insert({
         reportid: reportid,
         status: "Pending",
+        createdby: userid,
         userid: userid,
         filekey: "Pending",
         createdat: new Date(),
@@ -55,7 +56,7 @@ async function updateStatusRecord(statusId, pdfkey, status, message = "") {
 // Function to check report existence
 async function checkReportExistence(reportName, userid) {
   const report = await knex("report")
-    .where({ title: reportName, createdby: userid, isdeleted: false })
+    .where({ title: reportName, createdby: userid, isdeleted: false,isactive:true })
     .first();
   return !!report;
 }

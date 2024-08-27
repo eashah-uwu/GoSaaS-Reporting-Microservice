@@ -21,6 +21,8 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
   const [openAddDestination, setOpenAddDestination] = useState<boolean>(false);
   const [editingDestination, setEditingDestination] = useState<any>(null);
   const token = useSelector((state: RootState) => state.auth.token);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -52,7 +54,7 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
 
       const processedData = data.data.map((app: any) => ({
         ...app,
-        status: app.isdeleted ? "delete" : app.isactive ? "active" : "inactive",
+        status: app.isactive ? "active" : "inactive",
       }));
 
       setDestinations(processedData);
@@ -116,6 +118,12 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
     if (Number(event.target.value) != 0) {
       setPageSize(Number(event.target.value));
       setPage(1);
+    }
+  };
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if(Number(event.target.value)!=0){
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
     }
   };
 
@@ -301,8 +309,13 @@ const Destination: React.FC<DestinationProps> = ({ applicationId }) => {
             >
               <TextField
                 label="Items per page"
-                value={pageSize < total ? pageSize : total}
-                onChange={handlePageSizeChange}
+                value={itemsPerPage < total ? itemsPerPage : total}
+                onKeyDown={(event: any) => {
+                  if (event.key === 'Enter') {
+                    handlePageSizeChange(event);
+                  }
+                }}
+                onChange={handleItemsPerPageChange}
                 variant="standard"
                 type="number"
                 size="small"

@@ -18,8 +18,11 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
+  const [currentReport, setCurrentReport] = useState<any | null>(null);
 
   const [openAddReport, setOpenAddReport] = useState<boolean>(false);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -48,7 +51,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           },
         }
       );
-      setReports(data.data);
+      console.log(data)
+      const processedData = data.data.map((report: any) => ({
+        ...report,
+        status: report.isactive ? "active" : "inactive",
+      }));
+      console.log(processedData)
+      setReports(processedData);
       setTotal(data.total);
     } catch (err) {
       setError("Failed to fetch data");
@@ -63,26 +72,25 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
 
   const handleSave = async (updatedItems: any[]) => {
     try {
-      // const requests = updatedItems.map((item) => {
-      //   const { destinationid, alias, url, apikey, isactive, isdeleted } = item;
-      //   return axios.put(
-      //     `${
-      //       import.meta.env.VITE_BACKEND_URL
-      //     }/api/destinations/${destinationid}`,
-      //     {
-      //       destinationid,
-      //       alias,
-      //       url,
-      //       apikey,
-      //       isactive,
-      //       isdeleted,
-      //     }
-      //   );
-      // });
-      // await Promise.all(requests);
-      // console.log("Updated Items", updatedItems);
+      const requests = updatedItems.map((item) => {
+        const { applicationid,reportid, isactive } = item;
+        return axios.put(
+          `${import.meta.env.VITE_BACKEND_URL
+          }/api/reports/status/${reportid}`,
+          {
+            applicationid,isactive
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      });
+      await Promise.all(requests);
+      toast.success("Updated Reports");
     } catch (error) {
-      alert("Failed to update data");
+      toast.error("Failed to Update Reports");
     }
   };
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +114,12 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       setPage(1);
     }
   };
-
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (Number(event.target.value) != 0) {
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
+    }
+  };
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
     setPage(1);
@@ -116,9 +129,16 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
     setOpenAddReport(true);
   };
 
+
   const handleAddReportClose = () => {
+    setCurrentReport(null);
     setOpenAddReport(false);
   };
+
+  const handleUpdateReport = () => {
+    fetchReports(page, pageSize, searchQuery, filters);
+  };
+
   const handleAddReport = () => {
     fetchReports(page, pageSize, searchQuery, filters);
   };
@@ -156,8 +176,32 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       throw e;
     }
   };
- 
-  const handleEdit = (connection: any) => { };
+
+  const handleEdit = (report: any) => {
+    setCurrentReport(report);
+    console.log("this app prints data", report)
+    setOpenAddReport(true);
+  };
+  const handleGroupStatusChange = async (selectedIds: string[], status: string) => {
+    try {
+      const data = { ids: selectedIds, status: status };
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/reports/group-status`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Successfully Updated Status of Reports")
+      fetchReports(page, pageSize, searchQuery, filters);
+    } catch (e) {
+      toast.error("Error Updating Status")
+      throw e;
+    }
+  };
+
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
@@ -168,8 +212,9 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           key !== "applicationid" &&
           key !== "sourceconnectionid" &&
           key !== "storedprocedureid" &&
+          key !== "isactive" &&
           key !== "status" &&
-          key !== "reportid" &&
+          key !== "parameters" &&
           key !== "description"
       )
       .map((key) =>
@@ -191,7 +236,7 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
           <Filter
             columns={baseColumns}
             onFilterChange={handleFilterChange}
-            showStatusFilter={false}
+            showStatusFilter={true}
           />
         </Box>
         <Box
@@ -228,13 +273,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
         {!loading && !error && (
           <TableConfig
             data={reports}
-            includeStatus={false}
+            includeStatus={true}
             includeEdit={true}
             baseColumns={baseColumns}
             pageSize={pageSize}
             onSave={handleSave}
             rowIdAccessor="reportid"
-            onGroupStatusChange={()=>{}}
+            onGroupStatusChange={handleGroupStatusChange}
             onDelete={handleReportDelete}
             onAddData={handleAddReportOpen}
             onEdit={handleEdit}
@@ -269,8 +314,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             >
               <TextField
                 label="Items per page"
-                value={pageSize < total ? pageSize : total}
-                onChange={handlePageSizeChange}
+                value={itemsPerPage < total ? itemsPerPage : total}
+                onKeyDown={(event: any) => {
+                  if (event.key === 'Enter') {
+                    handlePageSizeChange(event);
+                  }
+                }}
+                onChange={handleItemsPerPageChange}
                 variant="standard"
                 type="number"
                 size="small"
@@ -283,15 +333,15 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
             </FormControl>
           </Box>
         )}
-        {/* <a href={`${import.meta.env.VITE_BACKEND_URL}/api/reports/download/11`} download>
-          <button>Download File</button>
-        </a> */}
+
       </div>
       <AddReport
         open={openAddReport}
         applicationId={applicationId}
         onClose={handleAddReportClose}
         onAdd={handleAddReport}
+        onEdit={handleUpdateReport}
+        report={currentReport}
       />
     </>
   );

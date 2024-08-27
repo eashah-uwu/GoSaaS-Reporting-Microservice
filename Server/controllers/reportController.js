@@ -6,6 +6,7 @@ const config = require("config");
 require("dotenv").config();
 const Destination = require("../models/destinationModel");
 const Application = require("../models/applicationModel");
+const Connection = require("../models/connectionModel.js");
 const {
   uploadFile,
   downloadFile,
@@ -15,6 +16,7 @@ const { generateReport } = require("../services/generateReport");
 const { v4: uuidv4 } = require("uuid");
 const ReportStatusHistory = require("../models/reportStatusHistory.js");
 const reportQueue = require("../queues/reportQueue");
+const { Store } = require("express-session");
 
 const createReport = async (req, res) => {
   const { buffer, originalname } = req.file;
@@ -38,8 +40,7 @@ const createReport = async (req, res) => {
       .json({ message: "Application not found" });
   }
 
-  const existingReport = await Report.findByName(alias,userid);
-  console.log(existingReport)
+  const existingReport = await Report.findByName(alias, applicationid);
   if (existingReport) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
@@ -56,12 +57,14 @@ const createReport = async (req, res) => {
 
   const destination_db = await Destination.findById(destination);
   await uploadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
     { key, buffer },
-    "reportsdestination0"
+    destination_db.bucketname
   );
+
+  console.log(source);
 
   const newReport = await Report.create(
     alias,
@@ -104,10 +107,10 @@ const downloadXsl = async (req, res) => {
   }
   const destination_db = await Destination.findById(report.destinationid);
   const file = await downloadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
-    "reportsdestination0",
+    destination_db.bucketname,
     report.filekey
   );
   const fileName = report.filekey.split("/").pop()?.split("-").pop();
@@ -130,10 +133,10 @@ const downloadReport = async (req, res) => {
   const report = await Report.findById(reportHistory.reportid);
   const destination_db = await Destination.findById(report.destinationid);
   const file = await downloadFile(
-    "aws",
+    destination_db.cloudprovider,
     destination_db.url,
     destination_db.apikey,
-    "reportsdestination0",
+    destination_db.bucketname,
     reportHistory.filekey
   );
   const fileName = report.filekey.split("/").pop()?.split("-").pop();
@@ -174,6 +177,17 @@ const getReports = async (req, res) => {
   });
 };
 
+const getReportsStats = async (req, res) => {
+  const userid = req.user.userid;
+  const reportsStats= await ReportStatusHistory.getReportStats(userid);
+  logger.info("Reports Stats retrieved by user ID", {
+    context: { traceid: req.traceId, userid, reportsStats },
+  });
+  res.status(StatusCodes.OK).json({
+    data: reportsStats,
+    message:"Reports Stats retrieved Successfully",
+  });
+}
 const getReportById = async (req, res) => {
   const { id } = req.params;
   const reportId = parseInt(id, 10);
@@ -197,21 +211,137 @@ const getReportById = async (req, res) => {
   });
   res.status(StatusCodes.OK).json(report);
 };
+const updateSingleStatus=async(req,res)=>{
+  const {
+    applicationid,
+    isactive
+  } = req.body;
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
+  const userid = req.user.userid;
+  const existingReport = await Report.findById(reportId);
+  if (!existingReport || existingReport.userid != userid) {
+    logger.warn("Report not found or unauthorized", { id: reportId });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
+  }
+  if(isactive===true){
+    const reportsconnection= await Connection.findById(existingReport.sourceconnectionid);
+    if(reportsconnection.isactive===false){
+      logger.warn("Report's Source Connection is inActive", { id: reportId });
+      return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: "Report's Source Connection is inActive" });
+    }
+    const reportsDestination= await Destination.findById(existingReport.destinationid);
+    if(reportsDestination.isactive===false){
+      logger.warn("Report's Destination is inActive", { id: reportId });
+      return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: "Report's Destination is inActive" });
+    }
+  }
+  const report = await Report.updateSingleStatus(reportId, isactive);
+
+  logger.info("Report updated successfully", {
+    context: { traceid: req.traceId, report },
+  });
+  res.status(StatusCodes.OK).json({
+    message: "Report updated successfully!",
+    report,
+  });
+}
+
+const checkConnectionAndDestinationStatus = async (report) => {
+  const reportsConnection = await Connection.findById(report.sourceconnectionid);
+  if (!reportsConnection.isactive) {
+    return `Source connection is inactive for report ID ${report.reportid}`;
+  }
+
+  const reportsDestination = await Destination.findById(report.destinationid);
+  if (!reportsDestination.isactive) {
+    return `Destination is inactive for report ID ${report.reportid}`;
+  }
+
+  return null;
+};
+const updateMultipleStatus = async (req, res) => {
+  const userid = req.user.userid;
+  const { ids, status } = req.body;
+  if (!["active", "inactive"].includes(status)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid status!" });
+  }
+
+  const existingReports = await Report.findByIds(ids);
+  if (existingReports.length !== ids.length) {
+    logger.warn("Some Reports not found for Status Update", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "Some Reports not found for Status Update!",
+    });
+  }
+
+  const applicationIds = existingReports.map((report) => report.applicationid);
+  const applications = await Application.findByIds(applicationIds);
+  const unauthorized = applications.some((app) => app.userid !== userid);
+
+  if (unauthorized) {
+    logger.warn("Unauthorized Update attempt", {
+      context: { traceid: req.traceId },
+    });
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: "Unauthorized Update attempt!",
+    });
+  }
+
+  if (status === "active") {
+    for (let report of existingReports) {
+      const errorMessage = await checkConnectionAndDestinationStatus(report);
+      if (errorMessage) {
+        logger.warn(errorMessage, { id: report.reportid });
+        return res.status(StatusCodes.FAILED_DEPENDENCY).json({ message: errorMessage });
+      }
+    }
+  }
+
+  await Report.batchChangeStatus(ids, status);
+  logger.info("Reports status changed successfully", {
+    context: { traceid: req.traceId },
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Reports status changed successfully!" });
+};
+
+
+
+
 
 const updateReport = async (req, res) => {
-  const { reportid } = req.params;
-  const userid = req.user.userid;
-  const existingReport = await Report.findById(reportid);
-  if (!existingReport && existingReport.userid != userid) {
-    logger.warn("Report not found", { id });
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Report not found" });
-  }
-  const data = reportSchema.partial().parse(req.body);
+  const {
+    alias,
+    description,
+    source,
+    destination,
+    storedProcedure,
+    parameter,
+    applicationid,
+  } = req.body;
 
-  const otherReport = await Report.findByName(alias,userid);
-  if (otherReport && otherReport.reportid != reportid) {
+  const { reportid } = req.params;
+  const reportId = parseInt(reportid, 10);
+  const userid = req.user.userid;
+
+  const sourceId = parseInt(source, 10);
+  const destinationId = parseInt(destination, 10);
+  const applicationId = parseInt(applicationid, 10);
+
+
+  const existingReport = await Report.findById(reportId);
+  if (!existingReport || existingReport.userid != userid) {
+    logger.warn("Report not found or unauthorized", { id: reportId });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Report not found or unauthorized" });
+  }
+  const otherReport = await Report.findByName(alias, existingReport.applicationid);
+  if (otherReport && otherReport.reportid != reportId) {
     logger.warn("Title of report must be unique", {
       context: { traceid: req.traceId },
     });
@@ -219,8 +349,48 @@ const updateReport = async (req, res) => {
       message: "Title of report must be unique",
     });
   }
+  let data = {
+    title: alias,
+    description,
+    generationdate: existingReport.generationdate,
+    parameters: parameter,
+    sourceconnectionid: sourceId,
+    destinationid: destinationId,
+    applicationid: applicationId,
+    storedProcedure: storedProcedure,
+    userid: userid,
+  };
+  if (req.file) {
+    const { buffer, originalname } = req.file;
+    const destination_db = await Destination.findById(existingReport.destinationid);
+    await deleteFile(
+      destination_db.cloudprovider,
+      destination_db.url,
+      destination_db.apikey,
+      destination_db.bucketname,
+      existingReport.filekey
+    );
 
-  const report = await Report.update(reportid, data);
+    const uid = uuidv4(); // Generate a unique identifier
+    const fileName = `${uid}-${originalname}`; // Combine userid, uid, and originalname for uniqueness
+    const folderName = `user_${userid}`;
+    const key = `${folderName}/${fileName}`;
+
+    const newDestination = await Destination.findById(destinationId);
+    await uploadFile(
+      newDestination.cloudprovider,
+      newDestination.url,
+      newDestination.apikey,
+      { key, buffer },
+      newDestination.bucketname
+    );
+    data={
+      ...data,
+      filekey:key
+    }
+  }
+
+  const report = await Report.update(reportId, data);
   logger.info("Report updated successfully", {
     context: { traceid: req.traceId, report },
   });
@@ -229,6 +399,7 @@ const updateReport = async (req, res) => {
     report,
   });
 };
+
 
 const deleteReport = async (req, res) => {
   const { reportid } = req.params;
@@ -252,14 +423,14 @@ const deleteReport = async (req, res) => {
   }
   const destination_db = await Destination.findById(report.destinationid);
 
-    await deleteFile(
-      "aws",
-      destination_db.url,
-      destination_db.apikey,
-      "reportsdestination0",
-      report.filekey
-    );
-  
+  await deleteFile(
+    destination_db.cloudprovider,
+    destination_db.url,
+    destination_db.apikey,
+    destination_db.bucketname,
+    report.filekey
+  );
+
 
   await Report.delete(reportId);
   logger.info("Report deleted successfully", {
@@ -269,7 +440,7 @@ const deleteReport = async (req, res) => {
 };
 
 const deleteMultipleReports = async (req, res) => {
-  const userid=req.user.userid;
+  const userid = req.user.userid;
   const { ids } = req.body;
   const existingReports = await Report.findByIds(ids);
   if (existingReports.length !== ids.length) {
@@ -289,15 +460,15 @@ const deleteMultipleReports = async (req, res) => {
       message: "Some Reports found unauthorized for deletion!"
     });
   }
-  console.log("existingReports",existingReports)
+  console.log("existingReports", existingReports)
   for (const report of existingReports) {
     const destination_db = await Destination.findById(report.destinationid);
     await deleteFile(
-        "aws",
-        destination_db.url,
-        destination_db.apikey,
-        "reportsdestination0",
-        report.filekey
+      destination_db.cloudprovider,
+      destination_db.url,
+      destination_db.apikey,
+      destination_db.bucketname,
+      report.filekey
     );
     console.log("deell11")
   }
@@ -423,5 +594,8 @@ module.exports = {
   downloadXsl,
   reportGeneration,
   downloadReport,
-  deleteMultipleReports
+  deleteMultipleReports,
+  updateSingleStatus,
+  updateMultipleStatus,
+  getReportsStats
 };

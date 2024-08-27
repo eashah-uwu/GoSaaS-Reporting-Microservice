@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { RootState } from "../../State/store";
 
-interface ReportHistoryProps {}
+interface ReportHistoryProps { }
 
 const ReportHistory: React.FC<ReportHistoryProps> = () => {
   const [reports, setReports] = useState<any[]>([]);
@@ -17,6 +17,7 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
 
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
@@ -74,36 +75,41 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
   };
 
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(Number(event.target.value)!=0){
+    if (Number(event.target.value) != 0) {
       setPageSize(Number(event.target.value));
       setPage(1);
     }
   };
-
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (Number(event.target.value) != 0) {
+      setItemsPerPage(Number(event.target.value));
+      console.log(event.target.value)
+    }
+  };
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
     setPage(1);
   };
 
-  const handleAddReport = (newReport: any) => {};
+  const handleAddReport = (newReport: any) => { };
 
-  const handleReportDelete = async (reportid: string | null) => {};
-  const handleEdit = (connection: any) => {};
+  const handleReportDelete = async (reportid: string | null) => { };
+  const handleEdit = (connection: any) => { };
   const generateBaseColumns = (data: any[]) => {
     if (data.length === 0) return [];
     const sample = data[0];
     return Object.keys(sample)
       .filter(
         (key) =>
-          key !== "reportid" && key!=="reportstatushistoryid"
+          key !== "reportid" && key !== "reportstatushistoryid"
       )
       .map((key) =>
         key === "filekey"
           ? { accessorKey: key, header: "Download Report" }
           : {
-              accessorKey: key,
-              header: key.charAt(0).toUpperCase() + key.slice(1),
-            }
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+          }
       );
   };
 
@@ -157,12 +163,12 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             includeEdit={false}
             baseColumns={baseColumns}
             pageSize={pageSize}
-            onGroupStatusChange={()=>{}}
-            onSave={() => {}}
+            onGroupStatusChange={() => { }}
+            onSave={() => { }}
             rowIdAccessor="reportstatushistoryid"
-            onDelete={() => {}}
-            onAddData={() => {}}
-            onEdit={() => {}}
+            onDelete={() => { }}
+            onAddData={() => { }}
+            onEdit={() => { }}
           />
         )}
         {!loading && !error && (
@@ -194,8 +200,13 @@ const ReportHistory: React.FC<ReportHistoryProps> = () => {
             >
               <TextField
                 label="Items per page"
-                value={pageSize < total ? pageSize : total}
-                onChange={handlePageSizeChange}
+                value={itemsPerPage < total ? itemsPerPage : total}
+                onKeyDown={(event: any) => {
+                  if (event.key === 'Enter') {
+                    handlePageSizeChange(event);
+                  }
+                }}
+                onChange={handleItemsPerPageChange}
                 variant="standard"
                 type="number"
                 size="small"

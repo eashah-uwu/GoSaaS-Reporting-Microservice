@@ -6,9 +6,9 @@ const logger = require("../logger"); // Assuming you have a logger configured
 const reportWorker = new Worker(
   "reportQueue",
   async (job) => {
-    const { reportName, userid, parameters } = job.data;
+    const { reportName, userid, parameters,statusId } = job.data;
     try {
-      const result = await generateReport(reportName, userid, parameters);
+      const result = await generateReport(reportName, userid, parameters,statusId);
       return result;
     } catch (error) {
       logger.error(`Report generation failed: ${error.message}`);

@@ -15,19 +15,17 @@ const {
 } = require("../utils/reportUtils"); // Import utility functions
 const js2xmlparser = require("js2xmlparser");
 
-async function generateReport(reportName, userid, parameters) {
-  let statusId;
+async function generateReport(reportName, userid, parameters,statusId) {
 
   try {
-    // Step 1: Check if the report name exists
-    const reportExists = await checkReportExistence(reportName, userid);
-    if (!reportExists) {
-      throw new Error("Report not found");
-    }
-
+    await updateStatusRecord(
+      statusId,
+      "InProgress",
+      "InProgress",
+      "Report is now in progress"
+    );
     // Step 2: Get report details (connection, destination, etc.)
     const reportDetails = await getReportDetails(reportName, userid);
-    statusId = await insertStatusRecord(reportDetails.reportid, userid);
 
     // Step 3: Get the connection details using sourceconnectionid
     const connectionDetails = await getConnectionDetails(

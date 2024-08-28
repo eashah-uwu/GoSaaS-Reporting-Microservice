@@ -234,6 +234,9 @@ const updateConnection = async (req, res) => {
         message: "Connection alias must be unique",
       });
     }
+    const { type: type_t, ...config } = req.body;
+    const testconnection = ConnectionFactory.createConnection(type_t, config);
+    const result = await testconnection.testConnection();
   }
 
   // Check for duplicate connection details
@@ -258,9 +261,7 @@ const updateConnection = async (req, res) => {
     });
   }
 
-  const { type: type_t, ...config } = req.body;
-  const testconnection = ConnectionFactory.createConnection(type_t, config);
-  const result = await testconnection.testConnection();
+
 
   if (data.isactive === false) {
     await Report.connnectionsReportStatusDisable(data.connectionid)

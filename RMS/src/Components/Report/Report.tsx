@@ -5,6 +5,7 @@ import TableConfig from "../TableConfig/TableConfig";
 import Filter from "../Filter/Filter";
 import { TextField, Button, Box, Pagination, FormControl } from "@mui/material";
 import AddReport from "../AddReport/AddReport";
+import { StatusCodes } from "http-status-codes";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { RootState } from "../../State/store";
@@ -89,8 +90,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       });
       await Promise.all(requests);
       toast.success("Updated Reports");
-    } catch (error) {
-      toast.error("Failed to Update Reports");
+    } catch (e:any) {
+      if (e.response && e.response.status === StatusCodes.FAILED_DEPENDENCY) {
+        toast.error("Report Connection and Destination must be active");
+      } else {
+        toast.error("Error Updating Status")
+        throw e;
+      }
     }
   };
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,9 +202,13 @@ const Report: React.FC<ReportProps> = ({ applicationId }) => {
       );
       toast.success("Successfully Updated Status of Reports")
       fetchReports(page, pageSize, searchQuery, filters);
-    } catch (e) {
-      toast.error("Error Updating Status")
-      throw e;
+    } catch (e:any) {
+      if (e.response && e.response.status === StatusCodes.FAILED_DEPENDENCY) {
+        toast.error("All Reports Connections and Destinations must be active");
+      } else {
+        toast.error("Error Updating Status")
+        throw e;
+      }
     }
   };
 

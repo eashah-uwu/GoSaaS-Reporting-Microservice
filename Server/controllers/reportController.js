@@ -3,6 +3,11 @@ const { StatusCodes } = require("http-status-codes");
 const logger = require("../logger");
 const reportSchema = require("../schemas/reportSchemas");
 const config = require("config");
+const {
+  checkReportExistence,
+  insertStatusRecord,
+  getReportDetails,
+} = require("../utils/reportUtils");
 require("dotenv").config();
 const Destination = require("../models/destinationModel");
 const Application = require("../models/applicationModel");
@@ -554,11 +559,18 @@ const reportGeneration = async (req, res, next) => {
   const { reportName, userid, parameters } = req.body;
 
   try {
-    // Add job to the queue
+    const reportExists = await checkReportExistence(reportName, userid);
+    if (!reportExists) {
+      throw new Error("Report not found");
+    }
+
+    const reportDetails = await getReportDetails(reportName, userid);
+    const statusId = await insertStatusRecord(reportDetails.reportid, userid);
     const job = await reportQueue.add("generateReport", {
       reportName,
       userid,
       parameters,
+      statusId
     });
 
     if (!job) {

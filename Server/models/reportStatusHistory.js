@@ -23,7 +23,7 @@ class ReportStatusHistory {
  
     results.forEach(result => {
       stats.totalReports += parseInt(result.count, 10);
-      if (result.status === 'Pending') {
+      if (result.status === 'Pending' || result.status === 'InProgress') {
         stats.processing = parseInt(result.count, 10);
       } else if (result.status === 'Generated') {
         stats.successful = parseInt(result.count, 10);

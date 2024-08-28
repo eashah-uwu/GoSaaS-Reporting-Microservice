@@ -93,6 +93,8 @@ async function generateReport(reportName, userid, parameters) {
     // Step 7: Execute the generated query
     const schemaName = connectionDetails.schema || "public";
     const result = await getProcedureRows(testKnex, query, schemaName);
+    
+    console.log(result);
 
     // Step 8: Convert result to XML
     const xmlData = js2xmlparser.parse("ReportData", {
@@ -100,8 +102,10 @@ async function generateReport(reportName, userid, parameters) {
       data: result,
     });
     const htmlContent = await performXsltTransformation(xmlData, xslContent);
-
+      
+    console.log(htmlContent);
     // Step 9: Generate the PDF
+ 
     const pdfBuffer = await generatePDF(htmlContent);
     const pdfKey = `reports/${reportName}-${Date.now()}.pdf`;
 

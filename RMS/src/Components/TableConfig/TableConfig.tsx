@@ -153,7 +153,7 @@ const TableConfig: FC<TableConfigProps> = ({
             justifyContent: "flex-end",
           }}
         >
-          {rowIdAccessor !== "reportstatushistoryid" && (
+          {(rowIdAccessor !== "reportstatushistoryid" && rowIdAccessor !== "id") &&  ( 
             <>
               {data.length > 0 && (
                 <span className={classes.save_button_span}>
@@ -168,6 +168,7 @@ const TableConfig: FC<TableConfigProps> = ({
                   </Button>
                 </span>
               )}
+              
               <AddButton onClick={onAddData} />
             </>
           )}

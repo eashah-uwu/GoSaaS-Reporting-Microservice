@@ -50,11 +50,11 @@ const createDestination = async (req, res) => {
   );
 
   if (duplicateDestinations[0]) {
-    logger.warn("A connection with the same details already exists", {
+    logger.warn("A Destination with the same details already exists", {
       context: { traceid: req.traceId },
     });
     return res.status(StatusCodes.CONFLICT).json({
-      message: "A connection with the same details already exists",
+      message: "A Destination with the same details already exists",
     });
   }
 
@@ -143,18 +143,21 @@ const updateDestination = async (req, res) => {
       message: "Destination alias must be unique",
     });
   }
+
+
   if (data.isactive === false) {
     await Report.destinationsReportStatusDisable(existingDestination.destinationid)
   }
-
-  const destination = await Destination.update(destinationid, data);
+  const { destination, url, apiKey, bucketname } = req.body;
+  await connectToDestination(destination, url, apiKey, bucketname);
+  const updatedDestination = await Destination.update(destinationid, data);
 
   logger.info("Destination updated successfully", {
-    context: { traceid: req.traceId, destinationid, destination },
+    context: { traceid: req.traceId, destinationid, updatedDestination },
   });
   res.status(StatusCodes.OK).json({
     message: "Destination updated successfully!",
-    destination,
+    updatedDestination,
   });
 };
 

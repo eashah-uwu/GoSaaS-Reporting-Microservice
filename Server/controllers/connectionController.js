@@ -46,6 +46,7 @@ const createConnection = async (req, res) => {
     schema,
   } = data;
 
+
   const existingConnection = await Connection.findByName(alias, applicationid);
   if (existingConnection) {
     logger.warn("Alias name must be unique", {
@@ -75,6 +76,10 @@ const createConnection = async (req, res) => {
       message: "A connection with the same details already exists",
     });
   }
+  const { type: type_t, ...config } = req.body;
+  const testconnection = ConnectionFactory.createConnection(type_t, config);
+  const result = await testconnection.testConnection();
+
   // Call the model method to create a new connection
   const connection = await Connection.create(
     username,
@@ -253,29 +258,22 @@ const updateConnection = async (req, res) => {
     });
   }
 
+  const { type: type_t, ...config } = req.body;
+  const testconnection = ConnectionFactory.createConnection(type_t, config);
+  const result = await testconnection.testConnection();
+
   if (data.isactive === false) {
     await Report.connnectionsReportStatusDisable(data.connectionid)
   }
 
-  try {
-    // Proceed with the update if no duplicates are found
-    const updatedConnection = await Connection.update(parsedId, data);
-    logger.info("Connection updated successfully", {
-      context: { traceid: req.traceId, connection: updatedConnection },
-    });
-    return res.status(StatusCodes.OK).json({
-      message: "Connection updated successfully",
-      connection: updatedConnection,
-    });
-  } catch (error) {
-    logger.error("Failed to update connection", {
-      context: { traceid: req.traceId, error: error.message },
-    });
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Failed to update connection",
-      error: error.message,
-    });
-  }
+  const updatedConnection = await Connection.update(parsedId, data);
+  logger.info("Connection updated successfully", {
+    context: { traceid: req.traceId, connection: updatedConnection },
+  });
+  return res.status(StatusCodes.OK).json({
+    message: "Connection updated successfully",
+    connection: updatedConnection,
+  });
 };
 
 // Delete a connection (soft delete)

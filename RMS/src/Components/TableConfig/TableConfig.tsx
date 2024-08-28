@@ -179,7 +179,7 @@ const TableConfig: FC<TableConfigProps> = ({
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         title="Confirm Deletion"
-        message="Are you sure you want to delete this application?"
+        message="Are you sure you want to delete this Selected Items?"
       />
       <Confirmation
         open={openStatusDialog}

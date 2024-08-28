@@ -64,7 +64,6 @@ const createReport = async (req, res) => {
     destination_db.bucketname
   );
 
-  console.log(source);
 
   const newReport = await Report.create(
     alias,
@@ -460,7 +459,7 @@ const deleteMultipleReports = async (req, res) => {
       message: "Some Reports found unauthorized for deletion!"
     });
   }
-  console.log("existingReports", existingReports)
+  
   for (const report of existingReports) {
     const destination_db = await Destination.findById(report.destinationid);
     await deleteFile(
@@ -470,7 +469,6 @@ const deleteMultipleReports = async (req, res) => {
       destination_db.bucketname,
       report.filekey
     );
-    console.log("deell11")
   }
 
   await Report.deleteMultiple(ids);

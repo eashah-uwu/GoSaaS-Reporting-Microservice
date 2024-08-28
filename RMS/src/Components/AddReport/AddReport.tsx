@@ -470,6 +470,7 @@ const AddReport: FC<AddReportProps> = ({
                 </div>
               </div>
               <div className="formRow">
+                <label htmlFor="upload-file" style={{padding:"0.5rem",paddingBottom:"1rem",display:"block"}}>XSL file : </label>
                 <input
                   accept=".xsl"
                   id="upload-file"
